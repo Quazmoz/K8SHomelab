@@ -4,3 +4,6 @@ resources:
   - ./kubernetes-dashboard
   - ./metallb-system
   - ./ingress-nginx
+  - ./local-storage
+  - ./prometheus
+  - ./grafana

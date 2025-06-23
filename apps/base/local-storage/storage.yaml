@@ -1,0 +1,56 @@
+# A StorageClass to identify our local, manually-provisioned volumes
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
+# The Persistent Volume for Prometheus data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prometheus-local-pv
+spec:
+  capacity:
+    storage: 45Gi # Feel free to adjust the size
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/prometheus
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - debiank8snode
+---
+# The Persistent Volume for Grafana data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana-local-pv
+spec:
+  capacity:
+    storage: 25Gi # Feel free to adjust the size
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/grafana
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - debiank8snode
