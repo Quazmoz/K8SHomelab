@@ -4,7 +4,6 @@ metadata:
   name: homepage-config
   namespace: default
 data:
-  # --- Homepage Settings ---
   settings.yaml: |
     title: Homelab Dashboard
     background: https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2693&auto=format&fit=crop
@@ -13,7 +12,6 @@ data:
         cluster:
           inCluster: true
 
-  # --- Your list of services ---
   services.yaml: |
     - "Cluster Tools":
         - "Kubernetes Dashboard":
@@ -38,17 +36,15 @@ data:
             icon: plex.png
             description: Media Server
 
-  # --- Optional Widgets ---
   widgets.yaml: |
     - resources:
         label: "Node Resources"
         kubernetes:
-          k8s_node: "debiank8snode" # Change to the node you want to monitor
+          k8s_node: "debiank8snode"
     - search:
         provider: duckduckgo
         target: _blank
 
-  # --- Optional Bookmarks ---
   bookmarks.yaml: |
     - "Favorites":
         - "GitHub":
