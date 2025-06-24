@@ -1,0 +1,47 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: plex
+  namespace: default
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: plex
+      version: "7.1.x"
+      sourceRef:
+        kind: HelmRepository
+        name: k8s-at-home
+        namespace: flux-system
+      interval: 1m
+  values:
+    # We will use a LoadBalancer service to give Plex its own IP
+    service:
+      main:
+        type: LoadBalancer
+
+    # Tell Plex which claim token to use on first startup
+    # IMPORTANT: Paste your claim token here!
+    claimToken: "claim-PBhyhacoBU29DvmyATfN"
+
+    # Set your timezone to get correct show times, etc.
+    # A list can be found here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+    timezone: "America/New_York"
+
+    # Define the two volumes we need for Plex
+    persistence:
+      # For the configuration data
+      config:
+        enabled: true
+        storageClass: "local-storage" # Use the fast local storage
+        size: 20Gi
+      # For your media files
+      media:
+        enabled: true
+        # This volume doesn't use a storage class, it will find
+        # the NFS PV we manually created earlier.
+        existingClaim: "" # Leave this empty
+        mountPath: /media
+        volumeName: plex-media
+        accessMode: ReadWriteMany
+        size: 4Gi

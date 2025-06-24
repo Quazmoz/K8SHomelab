@@ -5,5 +5,7 @@ resources:
   - ./metallb-system
   - ./ingress-nginx
   - ./local-storage
+  - ./nfs-storage
   - ./prometheus
   - ./grafana
+  - ./plex

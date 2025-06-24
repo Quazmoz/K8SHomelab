@@ -14,7 +14,7 @@ metadata:
   name: prometheus-local-pv
 spec:
   capacity:
-    storage: 45Gi # Feel free to adjust the size
+    storage: 45Gi
   volumeMode: Filesystem
   accessModes:
   - ReadWriteOnce
@@ -38,7 +38,7 @@ metadata:
   name: grafana-local-pv
 spec:
   capacity:
-    storage: 25Gi # Feel free to adjust the size
+    storage: 25Gi
   volumeMode: Filesystem
   accessModes:
   - ReadWriteOnce
@@ -46,6 +46,30 @@ spec:
   storageClassName: local-storage
   local:
     path: /mnt/k8s-data/grafana
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - debiank8snode
+---
+# The Persistent Volume for Plex Config data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: plex-config-local-pv
+spec:
+  capacity:
+    storage: 20Gi 
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/plex-config
   nodeAffinity:
     required:
       nodeSelectorTerms:
