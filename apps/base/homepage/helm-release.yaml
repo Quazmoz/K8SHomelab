@@ -11,7 +11,7 @@ spec:
       version: "1.2.x" # Use a recent, stable version range
       sourceRef:
         kind: HelmRepository
-        name: homepage
+        name: jameswynn-charts
         namespace: flux-system
       interval: 1m
   values:
