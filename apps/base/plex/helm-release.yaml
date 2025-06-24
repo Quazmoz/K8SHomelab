@@ -22,7 +22,7 @@ spec:
 
     # Tell Plex which claim token to use on first startup
     # IMPORTANT: Paste your claim token here!
-    claimToken: "claim-ezkjUkG7rY2c6kUpSMuo"
+    claimToken: "claim-CTo7YbXxzEhR6KyMJQHW"
 
     # Set your timezone to get correct show times, etc.
     # A list can be found here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
