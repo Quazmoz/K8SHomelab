@@ -31,7 +31,6 @@ data:
 
     - "Media":
         - "Plex":
-            # IMPORTANT: Replace 192.168.1.240 with your actual Plex IP
             href: http://192.168.1.240:32400/web
             icon: plex.png
             description: Media Server
