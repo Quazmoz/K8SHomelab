@@ -9,7 +9,7 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: homepage-config # The Deployment will look for this name
+  name: homepage-config # This name is referenced by the Deployment below
   namespace: default
 data:
   # --- Homepage Settings ---
@@ -18,9 +18,7 @@ data:
     background: https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2693&auto=format&fit=crop
     providers:
       kubernetes:
-        cluster:
-          # This tells homepage to get stats from inside the cluster
-          inCluster: true
+        inCluster: true
 
   services.yaml: |
     - "Cluster Tools":
@@ -41,22 +39,15 @@ data:
 
     - "Media":
         - "Plex":
-            # Make sure this is your correct Plex IP!
-            href: http://192.168.1.240:32400/web
+            href: http://192.168.1.221:32400/web
             icon: plex.png
             description: Media Server
 
-  # --- Optional Widgets ---
+  # --- Simplified Widgets ---
   widgets.yaml: |
-    - kubernetes:
-        cluster:
-          show: true
-        nodes:
-          show: true
-    - resources:
-        label: "Node Resources"
-        kubernetes:
-          k8s_node: "debiank8snode"
+    - search:
+        provider: duckduckgo
+        target: _blank
 
   # --- Optional Bookmarks ---
   bookmarks.yaml: |
@@ -64,8 +55,8 @@ data:
         - "GitHub":
             href: "https://github.com/quazmoz"
 
-  # --- Leave these empty unless you use them ---
   docker.yaml: ""
+  kubernetes.yaml: ""
   custom.css: ""
   custom.js: ""
 ---
