@@ -47,6 +47,15 @@ data:
     - search:
         provider: duckduckgo
         target: _blank
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+        nodes:
+          show: true
+          cpu: true
+          memory: true
 
   bookmarks.yaml: |
     - Developer:
