@@ -10,4 +10,3 @@ resources:
   - ./grafana
   - ./plex
   - ./homepage
-  - ./kube-flannel
