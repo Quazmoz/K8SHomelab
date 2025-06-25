@@ -17,13 +17,6 @@ data:
     providers:
       kubernetes:
         inCluster: true
-        metrics: true
-        namespaces:
-          - default
-          - kube-system
-        logs:
-          level: debug
-          provider: true
 
   services.yaml: |
     - "Cluster Tools":
@@ -54,14 +47,6 @@ data:
         provider: duckduckgo
         target: _blank
     - kubernetes:
-        cluster:
-          show: true
-          cpu: true
-          memory: true
-        nodes:
-          show: true
-          cpu: true
-          memory: true
 
   bookmarks.yaml: |
     - Developer:
@@ -76,7 +61,26 @@ data:
             - abbr: DevOps
               href: https://profile.quinnfavo.com/
   docker.yaml: ""
-  kubernetes.yaml: ""
+  kubernetes.yaml: |
+    mode: cluster
+    namespaces:
+      - default
+      - kube-system
+    resources:
+      - deployments
+      - pods
+      - services
+    cluster:
+      show: true
+      cpu: true
+      memory: true
+      showLabel: true
+      label: "Cluster"
+    nodes:
+      show: true
+      cpu: true
+      memory: true
+      showLabel: true
   custom.css: ""
   custom.js: ""
 ---
@@ -155,6 +159,10 @@ spec:
               value: "homepage.k8s.local"
             - name: LOG_LEVEL
               value: "debug"
+            - name: KUBERNETES_SERVICE_HOST
+              value: "kubernetes.default.svc"
+            - name: KUBERNETES_SERVICE_PORT
+              value: "443"
           volumeMounts:
             - mountPath: /app/config/settings.yaml
               name: config
