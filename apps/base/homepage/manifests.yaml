@@ -124,6 +124,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
+          env:
+            - name: HOMEPAGE_ALLOWED_HOSTS
+              value: "homepage.k8s.local"
           volumeMounts:
             - mountPath: /app/config/settings.yaml
               name: config
