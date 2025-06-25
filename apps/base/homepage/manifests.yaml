@@ -76,7 +76,7 @@ spec:
       serviceAccountName: homepage
       containers:
         - name: homepage
-          image: "ghcr.io/gethomepage/homepage:v0.6.7"  # Try an older version
+          image: "ghcr.io/gethomepage/homepage:latest"  # Try an older version
           imagePullPolicy: Always
           command:
             - "/bin/sh"
