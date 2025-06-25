@@ -9,32 +9,69 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: homepage-config
+  name: homepage-config # This name is referenced by the Deployment below
   namespace: default
 data:
   settings.yaml: |
     title: Homelab Dashboard
-    debug: true
+    debug: true  # Enable debugging
     providers:
       kubernetes:
         inCluster: true
-        refreshInterval: 10
+        refreshInterval: 10  # Refresh data every 10 seconds
 
-  # Other files remain the same...
+  services.yaml: |
+    - "Cluster Tools":
+        - "Kubernetes Dashboard":
+            href: https://dashboard.k8s.local
+            icon: kubernetes-dashboard.png
+            description: Cluster management UI
 
+    - "Monitoring":
+        - "Grafana":
+            href: http://grafana.k8s.local
+            icon: grafana.png
+            description: Metrics and dashboards
+        - "Prometheus":
+            href: http://prometheus.k8s.local
+            icon: prometheus.png
+            description: Time-series database
+
+    - "Media":
+        - "Plex":
+            href: http://192.168.1.221:32400/web
+            icon: plex.png
+            description: Media Server
+
+  # --- Simplified Widgets ---
   widgets.yaml: |
     - search:
         provider: duckduckgo
         target: _blank
     - kubernetes:
-      # Minimal configuration
-      cluster:
-        show: true
-      nodes:
-        show: true
+        # Minimal configuration
+        cluster:
+          show: true
+        nodes:
+          show: true
+        namespaces:
+          show: true
 
+  bookmarks.yaml: |
+    - Developer:
+        - Github:
+            - abbr: GH
+              href: https://github.com/quazmoz
+    - Profiles:
+        - LinkedIn:
+            - abbr: LI
+              href: https://www.linkedin.com/in/quinnfavo/
+        - QuinnFavo:
+            - abbr: DevOps
+              href: https://profile.quinnfavo.com/
+  docker.yaml: ""
   kubernetes.yaml: |
-    # Minimal configuration
+    # Minimal Kubernetes configuration
     mode: cluster
     cluster:
       show: true
@@ -49,10 +86,55 @@ data:
       displayedNamespaces:
         - default
         - kube-system
-
-  # Other files remain the same...
+  custom.css: ""
+  custom.js: ""
 ---
-# RBAC and Service remain the same...
+# --- 3. RBAC rules to allow Homepage to read node/pod status ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: homepage
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "namespaces", "pods", "services", "configmaps", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: homepage
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: homepage
+subjects:
+  - kind: ServiceAccount
+    name: homepage
+    namespace: default
+---
+# --- 4. The internal Service to expose the pod ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homepage
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: homepage
 ---
 # --- 5. The Deployment to run the Homepage application ---
 apiVersion: apps/v1
@@ -70,8 +152,8 @@ spec:
       labels:
         app.kubernetes.io/name: homepage
       annotations:
-        # Force pod recreation
-        timestamp: "{{now}}"
+        # Force pod recreation with timestamp
+        timestamp: "2025-06-25T21:45:00Z"
     spec:
       serviceAccountName: homepage
       containers:
@@ -108,7 +190,6 @@ spec:
           configMap:
             name: homepage-config
 ---
-
 # --- 6. The Ingress rule to expose Homepage to your network ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
