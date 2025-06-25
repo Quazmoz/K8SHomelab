@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+patches:
+  - path: ./patch.yaml
+    target:
+      kind: DaemonSet
+      name: kube-flannel-ds
+      namespace: kube-flannel
