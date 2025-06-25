@@ -53,10 +53,13 @@ data:
         - Github:
             - abbr: GH
               href: https://github.com/quazmoz
-    - Developer:
+    - Profiles:
         - LinkedIn:
             - abbr: LI
               href: https://www.linkedin.com/in/quinnfavo/
+        - QuinnFavo:
+            - abbr: DevOps
+              href: https://profile.quinnfavo.com/
   docker.yaml: ""
   kubernetes.yaml: ""
   custom.css: ""
