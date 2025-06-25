@@ -3,48 +3,58 @@ kind: ConfigMap
 metadata:
   name: homepage-config
   namespace: default
+  labels:
+    app.kubernetes.io/name: homepage
 data:
-  settings.yaml: |
-    title: Homelab Dashboard
-    background: https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2693&auto=format&fit=crop
-    providers:
-      kubernetes:
-        cluster:
-          inCluster: true
-
+  kubernetes.yaml: |
+    mode: cluster
+  settings.yaml: ""
+  #settings.yaml: |
+  #  providers:
+  #    longhorn:
+  #      url: https://longhorn.my.network
+  custom.css: ""
+  custom.js: ""
+  bookmarks.yaml: |
+    - Developer:
+        - Github:
+            - abbr: GH
+              href: https://github.com/
   services.yaml: |
-    - "Cluster Tools":
-        - "Kubernetes Dashboard":
-            href: https://dashboard.k8s.local
-            icon: kubernetes-dashboard.png
-            description: Cluster management UI
+    - My First Group:
+        - My First Service:
+            href: http://localhost/
+            description: Homepage is awesome
 
-    - "Monitoring":
-        - "Grafana":
-            href: http://grafana.k8s.local
-            icon: grafana.png
-            description: Metrics and dashboards
-        - "Prometheus":
-            href: http://prometheus.k8s.local
-            icon: prometheus.png
-            description: Time-series database
+    - My Second Group:
+        - My Second Service:
+            href: http://localhost/
+            description: Homepage is the best
 
-    - "Media":
-        - "Plex":
-            href: http://192.168.1.240:32400/web
-            icon: plex.png
-            description: Media Server
-
+    - My Third Group:
+        - My Third Service:
+            href: http://localhost/
+            description: Homepage is 😎
   widgets.yaml: |
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "cluster"
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
     - resources:
-        label: "Node Resources"
-        kubernetes:
-          k8s_node: "debiank8snode"
+        backend: resources
+        expanded: true
+        cpu: true
+        memory: true
+        network: default
     - search:
         provider: duckduckgo
         target: _blank
-
-  bookmarks.yaml: |
-    - "Favorites":
-        - "GitHub":
-            href: "https://github.com/quazmoz"
+  docker.yaml: ""
