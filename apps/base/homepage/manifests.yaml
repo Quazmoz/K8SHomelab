@@ -51,10 +51,10 @@ data:
 
   # --- Optional Bookmarks ---
   bookmarks.yaml: |
-    - "Favorites":
-        - "GitHub":
+    - Favorites:
+        - GitHub:
             href: "https://github.com/quazmoz"
-
+            abbr: GH
   docker.yaml: ""
   kubernetes.yaml: ""
   custom.css: ""
