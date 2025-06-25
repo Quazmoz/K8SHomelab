@@ -6,7 +6,6 @@ metadata:
   namespace: default
 ---
 # --- 2. The ConfigMap containing all your dashboard settings ---
-# I've used our previously designed one since it's already customized for you.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -23,7 +22,6 @@ data:
           # This tells homepage to get stats from inside the cluster
           inCluster: true
 
-  # --- Your list of services ---
   services.yaml: |
     - "Cluster Tools":
         - "Kubernetes Dashboard":
@@ -175,7 +173,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: "homepage.k8s.local" # Using our standard hostname
+  - host: "homepage.k8s.local"
     http:
       paths:
       - path: "/"
