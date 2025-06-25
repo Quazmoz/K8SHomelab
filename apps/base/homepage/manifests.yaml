@@ -42,13 +42,34 @@ data:
             icon: plex.png
             description: Media Server
 
-  # --- Simplified Widgets ---
+  # --- Widgets with all Kubernetes configuration inline ---
   widgets.yaml: |
     - search:
         provider: duckduckgo
         target: _blank
     - kubernetes:
-        # No configuration here, using kubernetes.yaml
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "Cluster"
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+        namespaces:
+          show: true
+          displayedNamespaces:
+            - default
+            - kube-system
+        pods:
+          show: false
+        deployments:
+          show: false
+        services:
+          show: false
 
   bookmarks.yaml: |
     - Developer:
@@ -63,47 +84,8 @@ data:
             - abbr: DevOps
               href: https://profile.quinnfavo.com/
   docker.yaml: ""
-  kubernetes.yaml: |
-    # Kubernetes widget configuration
-    mode: cluster
-    
-    # Define the cluster section properly
-    cluster:
-      show: true
-      cpu: true
-      memory: true
-      showLabel: true
-      label: "Cluster"
-    
-    # Define the nodes section properly
-    nodes:
-      show: true
-      cpu: true
-      memory: true
-      showLabel: true
-    
-    # Define the namespaces section properly
-    namespaces:
-      show: true
-      displayedNamespaces:
-        - default
-        - kube-system
-    
-    # Define pods, deployments, services sections
-    pods:
-      show: false
-    
-    deployments:
-      show: false
-    
-    services:
-      show: false
-    
-    # Resources to monitor
-    resources:
-      - deployments
-      - pods
-      - services
+  # Empty kubernetes.yaml since we're using inline configuration
+  kubernetes.yaml: ""
   custom.css: ""
   custom.js: ""
 ---
