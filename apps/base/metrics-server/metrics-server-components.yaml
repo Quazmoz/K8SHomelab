@@ -1,202 +1,211 @@
+# --- 1. ServiceAccount for Homepage to talk to the API Server ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  labels:
-    k8s-app: metrics-server
-  name: metrics-server
-  namespace: kube-system
+  name: homepage
+  namespace: default
 ---
+# --- 2. The ConfigMap containing all your dashboard settings ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config # This name is referenced by the Deployment below
+  namespace: default
+data:
+  settings.yaml: |
+    title: Homelab Dashboard
+    debug: true  # Enable debugging
+    providers:
+      kubernetes:
+        inCluster: true
+        refreshInterval: 10  # Refresh data every 10 seconds
+
+  services.yaml: |
+    - "Cluster Tools":
+        - "Kubernetes Dashboard":
+            href: https://dashboard.k8s.local
+            icon: kubernetes-dashboard.png
+            description: Cluster management UI
+
+    - "Monitoring":
+        - "Grafana":
+            href: http://grafana.k8s.local
+            icon: grafana.png
+            description: Metrics and dashboards
+        - "Prometheus":
+            href: http://prometheus.k8s.local
+            icon: prometheus.png
+            description: Time-series database
+
+    - "Media":
+        - "Plex":
+            href: http://192.168.1.221:32400/web
+            icon: plex.png
+            description: Media Server
+
+  # --- Simplified Widgets ---
+  widgets.yaml: |
+    - search:
+        provider: duckduckgo
+        target: _blank
+    - kubernetes:
+        # Minimal configuration
+        cluster:
+          show: true
+        nodes:
+          show: true
+        namespaces:
+          show: true
+
+  bookmarks.yaml: |
+    - Developer:
+        - Github:
+            - abbr: GH
+              href: https://github.com/quazmoz
+    - Profiles:
+        - LinkedIn:
+            - abbr: LI
+              href: https://www.linkedin.com/in/quinnfavo/
+        - QuinnFavo:
+            - abbr: DevOps
+              href: https://profile.quinnfavo.com/
+  docker.yaml: ""
+  kubernetes.yaml: |
+    # Minimal Kubernetes configuration
+    mode: cluster
+    cluster:
+      show: true
+      cpu: true
+      memory: true
+    nodes:
+      show: true
+      cpu: true
+      memory: true
+    namespaces:
+      show: true
+      displayedNamespaces:
+        - default
+        - kube-system
+  custom.css: ""
+  custom.js: ""
+---
+# --- 3. RBAC rules to allow Homepage to read node/pod status ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  labels:
-    k8s-app: metrics-server
-    rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    rbac.authorization.k8s.io/aggregate-to-edit: "true"
-    rbac.authorization.k8s.io/aggregate-to-view: "true"
-  name: system:aggregated-metrics-reader
+  name: homepage
 rules:
-- apiGroups:
-  - metrics.k8s.io
-  resources:
-  - pods
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    k8s-app: metrics-server
-  name: system:metrics-server
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - nodes/metrics
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    k8s-app: metrics-server
-  name: metrics-server-auth-reader
-  namespace: kube-system
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: extension-apiserver-authentication-reader
-subjects:
-- kind: ServiceAccount
-  name: metrics-server
-  namespace: kube-system
+  - apiGroups: [""]
+    resources: ["nodes", "namespaces", "pods", "services", "configmaps", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  labels:
-    k8s-app: metrics-server
-  name: metrics-server:system:auth-delegator
+  name: homepage
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: system:auth-delegator
+  name: homepage
 subjects:
-- kind: ServiceAccount
-  name: metrics-server
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: homepage
+    namespace: default
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  labels:
-    k8s-app: metrics-server
-  name: system:metrics-server
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:metrics-server
-subjects:
-- kind: ServiceAccount
-  name: metrics-server
-  namespace: kube-system
----
+# --- 4. The internal Service to expose the pod ---
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    k8s-app: metrics-server
-  name: metrics-server
-  namespace: kube-system
+  name: homepage
+  namespace: default
 spec:
+  type: ClusterIP
   ports:
-  - name: https
-    port: 443
-    protocol: TCP
-    targetPort: https
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
   selector:
-    k8s-app: metrics-server
+    app.kubernetes.io/name: homepage
 ---
+# --- 5. The Deployment to run the Homepage application ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    k8s-app: metrics-server
-  name: metrics-server
-  namespace: kube-system
+  name: homepage
+  namespace: default
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      k8s-app: metrics-server
-  strategy:
-    rollingUpdate:
-      maxUnavailable: 0
+      app.kubernetes.io/name: homepage
   template:
     metadata:
       labels:
-        k8s-app: metrics-server
+        app.kubernetes.io/name: homepage
+      annotations:
+        # Force pod recreation with timestamp
+        timestamp: "2025-06-25T21:45:00Z"
     spec:
+      serviceAccountName: homepage
       containers:
-      - args:
-        - --cert-dir=/tmp
-        - --secure-port=10250
-        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
-        - --kubelet-use-node-status-port
-        - --metric-resolution=15s
-        - --kubelet-insecure-tls
-        image: registry.k8s.io/metrics-server/metrics-server:v0.7.2
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /livez
-            port: https
-            scheme: HTTPS
-          periodSeconds: 10
-        name: metrics-server
-        ports:
-        - containerPort: 10250
-          name: https
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /readyz
-            port: https
-            scheme: HTTPS
-          initialDelaySeconds: 20
-          periodSeconds: 10
-        resources:
-          requests:
-            cpu: 100m
-            memory: 200Mi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          runAsUser: 1000
-          seccompProfile:
-            type: RuntimeDefault
-        volumeMounts:
-        - mountPath: /tmp
-          name: tmp-dir
-      nodeSelector:
-        kubernetes.io/os: linux
-      priorityClassName: system-cluster-critical
-      serviceAccountName: metrics-server
+        - name: homepage
+          image: "ghcr.io/gethomepage/homepage:v0.6.7"  # Try an older version
+          imagePullPolicy: Always
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "sleep 5 && exec node /app/index.js"  # Add startup delay
+          ports:
+            - containerPort: 3000
+          env:
+            - name: HOMEPAGE_ALLOWED_HOSTS
+              value: "homepage.k8s.local"
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: KUBERNETES_SERVICE_HOST
+              value: "kubernetes.default.svc"
+            - name: KUBERNETES_SERVICE_PORT
+              value: "443"
+            - name: HOMEPAGE_DISABLE_CACHE
+              value: "true"
+          volumeMounts:
+            - mountPath: /app/config
+              name: config
+        - name: debug
+          image: busybox
+          command: ['sleep', '3600']
+          securityContext:
+            runAsUser: 1000
       volumes:
-      - emptyDir: {}
-        name: tmp-dir
+        - name: config
+          configMap:
+            name: homepage-config
 ---
-apiVersion: apiregistration.k8s.io/v1
-kind: APIService
+# --- 6. The Ingress rule to expose Homepage to your network ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  labels:
-    k8s-app: metrics-server
-  name: v1beta1.metrics.k8s.io
+  name: homepage
+  namespace: default
 spec:
-  group: metrics.k8s.io
-  groupPriorityMinimum: 100
-  insecureSkipTLSVerify: true
-  service:
-    name: metrics-server
-    namespace: kube-system
-  version: v1beta1
-  versionPriority: 100
+  ingressClassName: nginx
+  rules:
+  - host: "homepage.k8s.local"
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: homepage
+            port:
+              number: 3000
