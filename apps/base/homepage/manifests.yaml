@@ -48,6 +48,12 @@ data:
     - search:
         provider: duckduckgo
         target: _blank
+
+  bookmarks.yaml: |
+    - Developer:
+        - Github:
+            - abbr: GH
+              href: https://github.com/quazmoz
   docker.yaml: ""
   kubernetes.yaml: ""
   custom.css: ""
