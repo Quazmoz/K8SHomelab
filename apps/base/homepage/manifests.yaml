@@ -49,13 +49,7 @@ data:
         provider: duckduckgo
         target: _blank
     - kubernetes:
-        # Minimal configuration
-        cluster:
-          show: true
-        nodes:
-          show: true
-        namespaces:
-          show: true
+        # No configuration here, using kubernetes.yaml
 
   bookmarks.yaml: |
     - Developer:
@@ -71,21 +65,46 @@ data:
               href: https://profile.quinnfavo.com/
   docker.yaml: ""
   kubernetes.yaml: |
-    # Minimal Kubernetes configuration
+    # Kubernetes widget configuration
     mode: cluster
+    
+    # Define the cluster section properly
     cluster:
       show: true
       cpu: true
       memory: true
+      showLabel: true
+      label: "Cluster"
+    
+    # Define the nodes section properly
     nodes:
       show: true
       cpu: true
       memory: true
+      showLabel: true
+    
+    # Define the namespaces section properly
     namespaces:
       show: true
       displayedNamespaces:
         - default
         - kube-system
+    
+    # Define pods, deployments, services sections
+    pods:
+      show: false
+    
+    deployments:
+      show: false
+    
+    services:
+      show: false
+    
+    # Resources to monitor
+    resources:
+      - deployments
+      - pods
+      - services
   custom.css: ""
   custom.js: ""
 ---
