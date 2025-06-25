@@ -15,7 +15,6 @@ data:
   # --- Homepage Settings ---
   settings.yaml: |
     title: Homelab Dashboard
-    background: https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2693&auto=format&fit=crop
     providers:
       kubernetes:
         inCluster: true
@@ -54,6 +53,10 @@ data:
         - Github:
             - abbr: GH
               href: https://github.com/quazmoz
+    - Developer:
+        - LinkedIn:
+            - abbr: LI
+              href: https://www.linkedin.com/in/quinnfavo/
   docker.yaml: ""
   kubernetes.yaml: ""
   custom.css: ""
