@@ -7,20 +7,20 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: n8n
-      version: "1.0.10"
+      # Tell it to look for a chart in the root of the Git repo
+      chart: ./
       sourceRef:
-        kind: HelmRepository
-        name: n8n
+        # Point to our new GitRepository source
+        kind: GitRepository
+        name: n8n-chart-source
         namespace: flux-system
       interval: 1m
   values:
-    # Use persistence to store workflows and credentials
+    # These values are compatible with the new chart
     persistence:
       enabled: true
       storageClass: "local-storage"
       size: 15Gi
 
-    # Set your timezone
     env:
       TZ: "America/New_York"
