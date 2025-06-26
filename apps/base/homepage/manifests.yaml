@@ -45,7 +45,7 @@ data:
 
     - "Automation":
         - "n8n":
-            href: http://grafana.k8s.local
+            href: http://n8n.k8s.local
             icon: n8n.png
             description: Automation Platform
 
