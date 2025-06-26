@@ -79,17 +79,19 @@ spec:
           values:
           - debiank8snode
 ---
-# The Persistent Volume for n8n data
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: n8n-local-pv
+  labels:
+    app: n8n
+    type: local
 spec:
   capacity:
     storage: 15Gi
   volumeMode: Filesystem
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
