@@ -43,6 +43,12 @@ data:
             icon: plex.png
             description: Media Server
 
+    - "Automation":
+        - "n8n":
+            href: http://grafana.k8s.local
+            icon: n8n.png
+            description: Automation Platform
+
   # --- Simplified Widgets ---
   widgets.yaml: |
     - search:
