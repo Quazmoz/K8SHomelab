@@ -11,3 +11,4 @@ resources:
   - ./plex
   - ./homepage
   - ./metrics-server
+  - ./n8n 
