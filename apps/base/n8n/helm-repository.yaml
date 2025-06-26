@@ -1,13 +1,10 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  # A new, clear name for our source
   name: n8n-chart-source
   namespace: flux-system
 spec:
   interval: 10m
-  # The GitHub repository URL you found
   url: https://github.com/8gears/n8n-helm-chart
-  # Use the main branch of the repository
   ref:
     branch: main

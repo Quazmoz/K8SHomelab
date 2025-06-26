@@ -21,13 +21,11 @@ spec:
         enabled: false
       database:
         type: "sqlite"
-
       persistence:
         enabled: true
         name: n8n-data
         storageClass: "local-storage"
         size: 15Gi
         accessMode: ReadWriteOnce
-
     env:
       TZ: "America/New_York"
