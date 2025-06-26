@@ -9,7 +9,7 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: homepage-config # This name is referenced by the Deployment below
+  name: homepage-config
   namespace: default
 data:
   settings.yaml: |
