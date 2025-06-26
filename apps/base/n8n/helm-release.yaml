@@ -7,20 +7,30 @@ spec:
   interval: 5m
   chart:
     spec:
-      # Tell it to look for a chart in the root of the Git repo
       chart: ./charts/n8n
       sourceRef:
-        # Point to our new GitRepository source
         kind: GitRepository
         name: n8n-chart-source
         namespace: flux-system
       interval: 1m
   values:
-    # These values are compatible with the new chart
-    persistence:
-      enabled: true
-      storageClass: "local-storage"
-      size: 15Gi
+    # This is the corrected structure for persistence in this chart
+    n8n:
+      # We are not using postgres, so these are false
+      postgresql:
+        enabled: false
+      database:
+        type: "sqlite"
+
+      # This enables the persistent volume for the data
+      persistence:
+        enabled: true
+        # This must match the name of the PVC that will be created
+        # and that will bind to our PV.
+        name: n8n-data
+        storageClass: "local-storage"
+        size: 15Gi
+        accessMode: ReadWriteOnce
 
     env:
       TZ: "America/New_York"
