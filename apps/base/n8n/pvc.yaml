@@ -1,11 +1,11 @@
-# n8n-pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: n8n-data-pvc
   namespace: default
   labels:
-    app: n8n
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/instance: n8n
 spec:
   accessModes:
     - ReadWriteOnce
@@ -13,7 +13,3 @@ spec:
   resources:
     requests:
       storage: 15Gi
-  selector:
-    matchLabels:
-      app: n8n
-      type: local
