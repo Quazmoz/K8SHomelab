@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       # Tell it to look for a chart in the root of the Git repo
-      chart: ./
+      chart: ./charts/n8n
       sourceRef:
         # Point to our new GitRepository source
         kind: GitRepository
