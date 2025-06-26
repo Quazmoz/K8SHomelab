@@ -1,27 +1,65 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: n8n
+  namespace: default
 spec:
   interval: 5m
   chart:
     spec:
-      chart: ./charts/n8n
+      chart: n8n
       sourceRef:
-        kind: GitRepository
+        kind: OCIRepository
         name: n8n-chart-source
         namespace: flux-system
       interval: 1m
   values:
-    n8n:
-      postgresql:
-        enabled: false
-      database:
-        type: "sqlite"
-      persistence:
-        enabled: true
-        name: n8n-data
-        storageClass: "local-storage"
-        size: 15Gi
-        accessMode: ReadWriteOnce
-      env:
-        - name: TZ
-          value: "America/New_York"
-        - name: DUMMY_REDEPLOY_TRIGGER
-          value: "v3"
+    image:
+      repository: n8nio/n8n
+      tag: "1.99.1"
+      pullPolicy: IfNotPresent
+    
+    service:
+      type: ClusterIP
+      port: 5678
+    
+    persistence:
+      enabled: true
+      existingClaim: n8n-data-pvc
+    
+    database:
+      type: sqlite
+    
+    env:
+      - name: N8N_PORT
+        value: "5678"
+      - name: N8N_PROTOCOL
+        value: "http"
+      - name: N8N_HOST
+        value: "n8n.k8s.local"
+      - name: N8N_EDITOR_BASE_URL
+        value: "http://n8n.k8s.local"
+      - name: NODE_ENV
+        value: "production"
+      - name: TZ
+        value: "America/New_York"
+    
+    livenessProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    
+    readinessProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+      requests:
+        cpu: 250m
+        memory: 512Mi
