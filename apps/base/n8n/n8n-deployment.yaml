@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: n8n
-  namespace: n8n
+  namespace: default
   labels:
     app: n8n
 spec:
@@ -57,21 +57,3 @@ spec:
       - name: n8n-data
         persistentVolumeClaim:
           claimName: n8n-data-pvc
----
-# n8n-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: n8n
-  namespace: n8n
-  labels:
-    app: n8n
-spec:
-  type: ClusterIP
-  ports:
-  - port: 5678
-    targetPort: 5678
-    protocol: TCP
-    name: http
-  selector:
-    app: n8n
