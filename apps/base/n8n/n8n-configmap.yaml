@@ -10,3 +10,4 @@ data:
   N8N_EDITOR_BASE_URL: "http://n8n.k8s.local"
   NODE_ENV: "production"
   TZ: "America/New_York"
+  N8N_SECURE_COOKIE: "false"  # Add this line to disable secure cookies
