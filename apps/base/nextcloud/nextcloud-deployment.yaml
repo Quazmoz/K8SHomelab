@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud
+  namespace: default
+  labels:
+    app: nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      securityContext:
+        fsGroup: 82  # www-data user
+      containers:
+      - name: nextcloud
+        image: nextcloud:25.0.3-apache
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+        - name: MYSQL_HOST
+          value: nextcloud-db
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: nextcloud-config
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: nextcloud-config
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secrets
+              key: MYSQL_PASSWORD
+        - name: NEXTCLOUD_ADMIN_USER
+          valueFrom:
+            configMapKeyRef:
+              name: nextcloud-config
+              key: NEXTCLOUD_ADMIN_USER
+        - name: NEXTCLOUD_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secrets
+              key: NEXTCLOUD_ADMIN_PASSWORD
+        - name: NEXTCLOUD_TRUSTED_DOMAINS
+          valueFrom:
+            configMapKeyRef:
+              name: nextcloud-config
+              key: NEXTCLOUD_TRUSTED_DOMAINS
+        - name: NEXTCLOUD_DATA_DIR
+          valueFrom:
+            configMapKeyRef:
+              name: nextcloud-config
+              key: NEXTCLOUD_DATA_DIR
+        - name: PHP_MEMORY_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: nextcloud-config
+              key: PHP_MEMORY_LIMIT
+        - name: PHP_UPLOAD_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: nextcloud-config
+              key: PHP_UPLOAD_LIMIT
+        volumeMounts:
+        - name: nextcloud-data
+          mountPath: /var/www/html
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2048Mi
+          requests:
+            cpu: 500m
+            memory: 1024Mi
+        livenessProbe:
+          httpGet:
+            path: /status.php
+            port: 80
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /status.php
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: nextcloud-data
+        persistentVolumeClaim:
+          claimName: nextcloud-data-pvc
