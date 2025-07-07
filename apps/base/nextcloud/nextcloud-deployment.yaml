@@ -16,10 +16,10 @@ spec:
         app: nextcloud
     spec:
       securityContext:
-        fsGroup: 82  # www-data user
+        fsGroup: 33  # Changed from 82 to 33 for www-data in Apache image
       containers:
       - name: nextcloud
-        image: nextcloud:latest
+        image: nextcloud:28.0.2-apache  # Specific version instead of latest
         ports:
         - containerPort: 80
           name: http
@@ -85,7 +85,7 @@ spec:
           httpGet:
             path: /status.php
             port: 80
-          initialDelaySeconds: 120
+          initialDelaySeconds: 180  # Increased from 120 to 180
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
@@ -93,10 +93,18 @@ spec:
           httpGet:
             path: /status.php
             port: 80
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60  # Increased from 30 to 60
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
+        startupProbe:  # Added startup probe
+          httpGet:
+            path: /status.php
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30  # Allow up to 5 minutes for startup
       volumes:
       - name: nextcloud-data
         persistentVolumeClaim:

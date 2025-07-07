@@ -1,22 +1,23 @@
-# nextcloud-cronjob.yaml
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: nextcloud-cron
   namespace: default
 spec:
-  schedule: "*/5 * * * *"  # Run every 5 minutes
+  schedule: "*/5 * * * *"
   concurrencyPolicy: Replace
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
-      backoffLimit: 0  # Don't retry failed jobs
+      backoffLimit: 0
       template:
         spec:
+          securityContext:
+            fsGroup: 33  # Changed from 82 to 33
           containers:
           - name: nextcloud-cron
-            image: nextcloud:28.0.2-apache
+            image: nextcloud:28.0.2-apache  # Same version as main container
             command:
             - /bin/sh
             - -c
