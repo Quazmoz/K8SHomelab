@@ -6,8 +6,12 @@ metadata:
   namespace: default
 spec:
   schedule: "*/5 * * * *"  # Run every 5 minutes
+  concurrencyPolicy: Replace
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      backoffLimit: 0  # Don't retry failed jobs
       template:
         spec:
           containers:
@@ -16,11 +20,24 @@ spec:
             command:
             - /bin/sh
             - -c
-            - php -f /var/www/html/cron.php
+            - |
+              # Wait for Nextcloud to be ready
+              echo "Waiting for Nextcloud to be ready..."
+              for i in {1..30}; do
+                if [ -f /var/www/html/config/config.php ]; then
+                  echo "Nextcloud config found, running cron..."
+                  php -f /var/www/html/cron.php
+                  exit $?
+                fi
+                echo "Waiting for Nextcloud config ($i/30)..."
+                sleep 10
+              done
+              echo "Nextcloud config not found after waiting. Exiting."
+              exit 1
             volumeMounts:
             - name: nextcloud-data
               mountPath: /var/www/html
-          restartPolicy: OnFailure
+          restartPolicy: Never
           volumes:
           - name: nextcloud-data
             persistentVolumeClaim:
