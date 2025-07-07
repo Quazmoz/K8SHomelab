@@ -42,6 +42,10 @@ data:
             href: http://192.168.1.221:32400/web
             icon: plex.png
             description: Media Server
+        - "Nextcloud":
+            href: http://nextcloud.k8s.local
+            icon: nextcloud.png
+            description: Storage
 
     - "Automation":
         - "n8n":
