@@ -19,7 +19,7 @@ spec:
         fsGroup: 82  # www-data user
       containers:
       - name: nextcloud
-        image: nextcloud:25.0.3-apache
+        image: nextcloud:28.0.1
         ports:
         - containerPort: 80
           name: http
