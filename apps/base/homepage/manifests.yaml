@@ -163,12 +163,23 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod recreation with timestamp
-        timestamp: "2025-06-25T22:00:00Z"
+        timestamp: "2025-07-13T14:00:00Z"
     spec:
       serviceAccountName: homepage
+      # Add node affinity to run only on non-ARM nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: NotIn
+                values:
+                - arm
+                - arm64
       containers:
         - name: homepage
-          image: "ghcr.io/gethomepage/homepage:latest"  # Go back to a known working version
+          image: "ghcr.io/gethomepage/homepage:latest"
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
