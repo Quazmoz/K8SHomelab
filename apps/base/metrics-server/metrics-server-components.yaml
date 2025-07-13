@@ -130,6 +130,17 @@ spec:
       labels:
         k8s-app: metrics-server
     spec:
+      # node affinity to run only on non-ARM nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: NotIn
+                values:
+                - arm
+                - arm64
       containers:
       - args:
         - --cert-dir=/tmp
