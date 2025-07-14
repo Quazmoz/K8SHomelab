@@ -13,4 +13,4 @@ resources:
   - ./metrics-server
   - ./n8n
 #  - ./nextcloud
-  - ../../clusters/my-homelab/nextcloud-kustomization.yaml
+#  - ../../clusters/my-homelab/nextcloud-kustomization.yaml
