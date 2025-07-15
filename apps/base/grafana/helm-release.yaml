@@ -40,7 +40,9 @@ spec:
             password: "${POSTGRES_PASSWORD}"
           jsonData:
             sslmode: "disable"
-
-    envFrom:
-      - secretRef:
-          name: postgres-credentials
+    env:
+      POSTGRES_PASSWORD:
+        valueFrom:
+          secretKeyRef:
+            name: postgres-credentials
+            key: POSTGRES_PASSWORD
