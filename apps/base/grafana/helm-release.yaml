@@ -1,3 +1,4 @@
+# grafana/helm-release.yaml (Updated)
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -15,14 +16,12 @@ spec:
         namespace: flux-system
       interval: 1m
   values:
-    # Use our local PV for grafana dashboards, settings, etc.
     persistence:
       enabled: true
       type: pvc
       storageClassName: "local-storage"
       size: 25Gi
 
-    # Pre-configure the Prometheus Datasource
     datasources:
       datasources.yaml:
         apiVersion: 1
@@ -32,3 +31,16 @@ spec:
           url: http://prometheus-server.default.svc.cluster.local
           access: proxy
           isDefault: true
+        - name: PostgreSQL
+          type: postgres
+          url: postgres-service:5432
+          user: grafana_user
+          database: grafana_db
+          secureJsonData:
+            password: "${POSTGRES_PASSWORD}"
+          jsonData:
+            sslmode: "disable"
+
+    extraEnvFrom:
+      - secretRef:
+          name: postgres-credentials

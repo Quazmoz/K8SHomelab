@@ -2,3 +2,6 @@ creation_rules:
   - path_regex: apps/base/nextcloud/.*\.yaml
     encrypted_regex: ^(data|stringData)$
     pgp: 793DC6A1A31DAAA0
+  - path_regex: apps/base/postgres/.*\.yaml
+    encrypted_regex: ^(data|stringData)$
+    pgp: 793DC6A1A31DAAA0

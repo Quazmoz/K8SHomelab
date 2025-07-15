@@ -14,3 +14,4 @@ resources:
   - ./n8n
 #  - ./nextcloud
 #  - ../../clusters/my-homelab/nextcloud-kustomization.yaml
+  - ./postgres
