@@ -41,6 +41,6 @@ spec:
           jsonData:
             sslmode: "disable"
 
-    extraEnvFrom:
+    envFrom:
       - secretRef:
           name: postgres-credentials
