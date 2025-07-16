@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: pihole
@@ -8,30 +8,36 @@ spec:
   chart:
     spec:
       chart: pihole
-      version: "2.1.x"
+      version: "2.20.0" # A recent stable version of this new chart
       sourceRef:
+        # Point to our new repository source
         kind: HelmRepository
-        name: k8s-at-home
+        name: mojo2600
         namespace: flux-system
       interval: 1m
   values:
+    # This chart uses a slightly different structure for values
+    podDnsConfig:
+      enabled: true
+
+    # This is CRITICAL. It forces the pod to run only on your Pi 3.
     nodeSelector:
-      kubernetes.io/hostname: raspberrypi3
+      kubernetes.io/hostname: raspberrypi3 # IMPORTANT: Use your actual hostname
 
     # Use persistence to store the configuration
-    persistence:
-      config:
-        enabled: true
-        storageClass: "local-storage"
-        size: 5Gi
+    persistentVolumeClaim:
+      enabled: true
+      storageClass: "local-storage"
+      size: 5Gi
 
     # Set the admin password for the web UI
-    adminPassword: "Testingsodontworry!"
+    # IMPORTANT: Change this to a secure password!
+    adminPassword: "Testingdontworry!"
 
-    # Expose the DNS service via a LoadBalancer so MetalLB gives it an IP
+    # Expose the DNS service via a LoadBalancer
     serviceDns:
       type: LoadBalancer
 
-    # Expose the Web UI service via a LoadBalancer as well
+    # Expose the Web UI service via a LoadBalancer
     serviceWeb:
       type: LoadBalancer
