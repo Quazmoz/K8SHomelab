@@ -1,4 +1,4 @@
-# grafana/helm-release.yaml (Updated)
+# grafana/helm-release.yaml (Final, More Robust Version)
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -22,6 +22,12 @@ spec:
       storageClassName: "local-storage"
       size: 25Gi
 
+    extraSecretMounts:
+      - name: postgres-password-file
+        secretName: postgres-credentials
+        mountPath: /etc/secrets/postgres
+        readOnly: true
+
     datasources:
       datasources.yaml:
         apiVersion: 1
@@ -36,8 +42,11 @@ spec:
           url: postgres-service:5432
           user: grafana_user
           database: grafana_db
+         
           secureJsonData:
-            password: "${POSTGRES_PASSWORD}"
+            password: "$__file{/etc/secrets/postgres/POSTGRES_PASSWORD}"
           jsonData:
             sslmode: "disable"
-    envFromSecret: "postgres-credentials"
+
+    # We no longer need the envFromSecret block, so it can be removed.
+    # envFromSecret: "postgres-credentials"
