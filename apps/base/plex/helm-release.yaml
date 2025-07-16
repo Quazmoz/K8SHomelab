@@ -24,7 +24,6 @@ spec:
         type: LoadBalancer
 
     # Tell Plex which claim token to use on first startup
-    # IMPORTANT: Paste your claim token here!
     claimToken: "claim-hp8vXwzJgjer8j_TsazJ"
 
     # Set your timezone to get correct show times, etc.
@@ -43,7 +42,7 @@ spec:
         enabled: true
         # This volume doesn't use a storage class, it will find
         # the NFS PV we manually created earlier.
-        existingClaim: "" # Leave this empty
+        existingClaim: ""
         mountPath: /media
         accessMode: ReadWriteMany
         size: 4Gi
