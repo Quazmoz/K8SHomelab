@@ -29,7 +29,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - debiank8snode
+          - quinn-hpprobook430g6
 ---
 # The Persistent Volume for Grafana data
 apiVersion: v1
@@ -53,7 +53,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - debiank8snode
+          - quinn-hpprobook430g6
 ---
 # The Persistent Volume for Plex Config data
 apiVersion: v1
@@ -77,7 +77,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - debiank8snode
+          - quinn-hpprobook430g6
 ---
 # The Persistent Volume for Pi-hole config
 apiVersion: v1

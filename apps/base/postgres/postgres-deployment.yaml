@@ -25,7 +25,7 @@ spec:
         app: postgres
     spec:
       nodeSelector:
-        kubernetes.io/hostname: debiank8snode
+        kubernetes.io/hostname: quinn-hpprobook430g6
       containers:
       - name: postgres
         image: postgres:15
