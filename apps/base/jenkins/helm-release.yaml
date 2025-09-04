@@ -1,0 +1,44 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: jenkins
+  namespace: default
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: jenkins
+      version: "4.9.x" # Use a recent, stable version range
+      sourceRef:
+        kind: HelmRepository
+        # This is a new repository, so we'll define it right here
+        name: jenkins
+        namespace: flux-system
+      interval: 1m
+  values:
+    controller:
+      # Use our local PV for the Jenkins home directory
+      persistence:
+        storageClass: "local-storage"
+        size: "20Gi"
+
+      # Add some essential plugins to install on first boot
+      installPlugins:
+        - kubernetes:4186.v1821a_19672f2
+        - workflow-aggregator:596.v802b_b_4fd69b_d
+        - git:5.2.2
+        - configuration-as-code:1782.v9b_3936650762
+
+      # Enforce non-root user and handle volume permissions
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+
+      # Define resource requests and limits for the Jenkins controller pod
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1Gi"
+        limits:
+          cpu: "2000m"
+          memory: "4Gi"
