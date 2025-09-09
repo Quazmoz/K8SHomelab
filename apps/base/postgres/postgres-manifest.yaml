@@ -1,43 +1,5 @@
 # TODO: This deployment relies on an insecure plain-text secret for credentials.
 
-# --- Persistent Volume for Postgres Data ---
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: postgres-local-pv
-spec:
-  capacity:
-    storage: 10Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
-  local:
-    path: /mnt/künstliche-intelligenz-data/postgres
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - quinn-hpprobook430g6
----
-# --- Persistent Volume Claim for Postgres ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgres-pvc
-  namespace: default
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-storage
-  resources:
-    requests:
-      storage: 10Gi
----
 # --- Internal Service for Postgres ---
 apiVersion: v1
 kind: Service
@@ -89,5 +51,6 @@ spec:
           mountPath: /var/lib/postgresql/data
       volumes:
       - name: postgres-storage
+        # The StatefulSet will look for this PVC, which we will now create separately.
         persistentVolumeClaim:
           claimName: postgres-pvc
