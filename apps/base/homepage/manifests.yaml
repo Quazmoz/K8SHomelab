@@ -39,7 +39,7 @@ data:
 
     - "Media":
         - "Plex":
-            href: http://192.168.1.221:32400/web
+            href: http://192.168.1.220:32400/web
             icon: plex.png
             description: Media Server
         - "Nextcloud":
