@@ -1,6 +1,3 @@
-# This file defines the Grafana application deployment itself.
-# It includes configuration for storage, datasources, and enabling the
-# automatic discovery of dashboards from ConfigMaps.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -11,7 +8,6 @@ spec:
   chart:
     spec:
       chart: grafana
-      # Using a known stable version from your reference
       version: "9.2.9"
       sourceRef:
         kind: HelmRepository
@@ -19,17 +15,7 @@ spec:
         namespace: flux-system
       interval: 1m
   values:
-    # --- Persistence ---
-    # Increased size to match your reference
-    persistence:
-      enabled: true
-      type: pvc
-      storageClassName: "local-storage"
-      size: 25Gi
-
     # --- Sidecar for Dashboard Discovery ---
-    # This enables the sidecar that watches for ConfigMaps with the correct label.
-    # It will automatically find and load any dashboards we define in other files.
     sidecar:
       dashboards:
         enabled: true
@@ -43,26 +29,33 @@ spec:
         datasources:
         - name: Prometheus
           type: prometheus
+          uid: prometheus
           url: http://prometheus-server.default.svc.cluster.local
           access: proxy
           isDefault: true
-        # Added PostgreSQL datasource from your reference
+        # TODO: This datasource uses a password from an insecure, plain-text secret.
+        # The secret should be encrypted with SOPS for any real-world use.
         - name: PostgreSQL
           type: postgres
           url: postgres-service:5432
           user: grafana_user
           database: grafana_db
           secureJsonData:
-            # Securely references the password from a Kubernetes Secret
-            password: "$__file{/etc/secrets/postgres/POSTGRES_PASSWORD}"
+            password: "$__file{/etc/secrets/postgres-credentials/POSTGRES_PASSWORD}"
           jsonData:
             sslmode: "disable"
+
+    # --- Persistence ---
+    persistence:
+      enabled: true
+      type: pvc
+      storageClassName: "local-storage"
+      size: 25Gi
 
     # --- Secret Mounting ---
     # This securely mounts the postgres password into the Grafana pod
     extraSecretMounts:
-      - name: postgres-password-file
+      - name: postgres-credentials-file
         secretName: postgres-credentials
-        mountPath: /etc/secrets/postgres
+        mountPath: /etc/secrets/postgres-credentials
         readOnly: true
-

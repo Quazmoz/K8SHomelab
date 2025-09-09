@@ -8,7 +8,7 @@ resources:
   - ./local-storage
   - ./nfs-storage
   - ./prometheus
-#  - ./grafana
+  - ./grafana
   - ./plex
   - ./homepage
   - ./metrics-server
