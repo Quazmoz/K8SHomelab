@@ -1,5 +1,7 @@
-# grafana/helm-release.yaml (Final, More Robust Version)
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+# This file defines the Grafana application deployment itself.
+# It includes configuration for storage, datasources, and enabling the
+# automatic discovery of dashboards from ConfigMaps.
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: grafana
@@ -9,6 +11,7 @@ spec:
   chart:
     spec:
       chart: grafana
+      # Using a known stable version from your reference
       version: "9.2.9"
       sourceRef:
         kind: HelmRepository
@@ -16,18 +19,24 @@ spec:
         namespace: flux-system
       interval: 1m
   values:
+    # --- Persistence ---
+    # Increased size to match your reference
     persistence:
       enabled: true
       type: pvc
       storageClassName: "local-storage"
       size: 25Gi
 
-    extraSecretMounts:
-      - name: postgres-password-file
-        secretName: postgres-credentials
-        mountPath: /etc/secrets/postgres
-        readOnly: true
+    # --- Sidecar for Dashboard Discovery ---
+    # This enables the sidecar that watches for ConfigMaps with the correct label.
+    # It will automatically find and load any dashboards we define in other files.
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
 
+    # --- Datasource Configuration ---
     datasources:
       datasources.yaml:
         apiVersion: 1
@@ -37,16 +46,23 @@ spec:
           url: http://prometheus-server.default.svc.cluster.local
           access: proxy
           isDefault: true
+        # Added PostgreSQL datasource from your reference
         - name: PostgreSQL
           type: postgres
           url: postgres-service:5432
           user: grafana_user
           database: grafana_db
-         
           secureJsonData:
+            # Securely references the password from a Kubernetes Secret
             password: "$__file{/etc/secrets/postgres/POSTGRES_PASSWORD}"
           jsonData:
             sslmode: "disable"
 
-    # We no longer need the envFromSecret block, so it can be removed.
-    # envFromSecret: "postgres-credentials"
+    # --- Secret Mounting ---
+    # This securely mounts the postgres password into the Grafana pod
+    extraSecretMounts:
+      - name: postgres-password-file
+        secretName: postgres-credentials
+        mountPath: /etc/secrets/postgres
+        readOnly: true
+
