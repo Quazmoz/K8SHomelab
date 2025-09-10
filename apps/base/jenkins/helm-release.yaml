@@ -1,3 +1,4 @@
+# This is the HelmRelease for Jenkins.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -11,16 +12,24 @@ spec:
       version: "4.9.x" # Use a recent, stable version range
       sourceRef:
         kind: HelmRepository
-        # This is a new repository, so we'll define it right here
         name: jenkins
         namespace: flux-system
       interval: 1m
   values:
     controller:
-      # Use our local PV for the Jenkins home directory
+      # We disable the chart's built-in persistence, as we are creating our own PVC manually.
       persistence:
-        storageClass: "local-storage"
-        size: "20Gi"
+        enabled: false
+
+      # We manually tell the Jenkins pod to mount our custom PVC.
+      additionalVolumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins
+      
+      additionalVolumeMounts:
+        - name: jenkins-home
+          mountPath: /var/jenkins_home
 
       # Add some essential plugins to install on first boot
       installPlugins:

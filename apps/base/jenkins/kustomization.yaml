@@ -1,5 +1,7 @@
+# This is the Kustomization for Jenkins.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - helm-release.yaml
   - ingress.yaml
+  - pvc.yaml

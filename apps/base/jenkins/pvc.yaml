@@ -1,0 +1,22 @@
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins
+  namespace: default
+spec:
+  # This must match the storage class of our PV
+  storageClassName: local-storage
+  
+  # This must match the access mode of our PV
+  accessModes:
+    - ReadWriteOnce
+    
+  # This requests the storage
+  resources:
+    requests:
+      storage: 20Gi
+      
+  # This creates an explicit 1-to-1 binding to the correct PV, preventing race conditions.
+  volumeName: jenkins-local-pv
+
