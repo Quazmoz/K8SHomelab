@@ -4,6 +4,13 @@ metadata:
   name: kubernetes-dashboard
   namespace: kubernetes-dashboard
   annotations:
+    # Annotations for Homepage Service Discovery
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "Cluster Tools"
+    gethomepage.dev/name: "Kubernetes Dashboard"
+    gethomepage.dev/icon: "kubernetes-dashboard.png"
+    gethomepage.dev/description: "Cluster management UI"
+    # Annotations for NGINX
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   ingressClassName: nginx

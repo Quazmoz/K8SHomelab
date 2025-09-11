@@ -14,61 +14,32 @@ metadata:
 data:
   settings.yaml: |
     title: Homelab Dashboard
-    debug: true  # Enable debugging
     providers:
       kubernetes:
-        inCluster: true
-        refreshInterval: 10  # Refresh data every 10 seconds
+        mode: cluster
+        # Enable Ingress discovery
+        ingress:
+          enabled: true
+          # Specify our ingress class to watch
+          class: "nginx"
 
+  # This services file now only contains items that are NOT discovered via Ingress.
   services.yaml: |
-    - "Cluster Tools":
-        - "Kubernetes Dashboard":
-            href: https://dashboard.k8s.local
-            icon: kubernetes-dashboard.png
-            description: Cluster management UI
-
-    - "Monitoring":
-        - "Grafana":
-            href: http://grafana.k8s.local
-            icon: grafana.png
-            description: Metrics and dashboards
-        - "Prometheus":
-            href: http://prometheus.k8s.local
-            icon: prometheus.png
-            description: Time-series database
-
     - "Media":
         - "Plex":
-            href: http://192.168.1.220:32400/web
+            # This must remain a static entry as it doesn't use an Ingress
+            href: http://192.168.1.221:32400/web
             icon: plex.png
             description: Media Server
-        - "Nextcloud":
-            href: http://nextcloud.k8s.local
-            icon: nextcloud.png
-            description: Storage
 
-    - "Automation":
-        - "n8n":
-            href: http://n8n.k8s.local
-            icon: n8n.png
-            description: Automation Platform
-        - "jenkins":
-            href: http://jenkins.k8s.local
-            icon: jenkins.png
-            description: CI/CD Platform
-
-  # --- Simplified Widgets ---
   widgets.yaml: |
     - search:
         provider: duckduckgo
         target: _blank
     - kubernetes:
-        # Minimal configuration
         cluster:
           show: true
         nodes:
-          show: true
-        namespaces:
           show: true
 
   bookmarks.yaml: |
@@ -83,43 +54,27 @@ data:
         - QuinnFavo:
             - abbr: DevOps
               href: https://profile.quinnfavo.com/
+
+  # --- These files are required by Homepage but can be empty ---
   docker.yaml: ""
-  kubernetes.yaml: |
-    # Minimal Kubernetes configuration
-    mode: cluster
-    cluster:
-      show: true
-      cpu: true
-      memory: true
-    nodes:
-      show: true
-      cpu: true
-      memory: true
-    namespaces:
-      show: true
-      displayedNamespaces:
-        - default
-        - kube-system
+  kubernetes.yaml: ""
   custom.css: ""
   custom.js: ""
 ---
-# --- 3. RBAC rules to allow Homepage to read node/pod status ---
+# --- 3. RBAC rules to allow Homepage to read Ingresses, nodes, pods, etc. ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: homepage
 rules:
   - apiGroups: [""]
-    resources: ["nodes", "namespaces", "pods", "services", "configmaps", "endpoints"]
+    resources: ["nodes", "namespaces", "pods", "services"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["metrics.k8s.io"]
     resources: ["nodes", "pods"]
     verbs: ["get", "list", "watch"]
-  - apiGroups: ["apps"]
-    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["batch"]
-    resources: ["jobs", "cronjobs"]
+  - apiGroups: ["networking.k8s.io"] # Added permission for Ingresses
+    resources: ["ingresses"]
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -165,69 +120,22 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: homepage
-      annotations:
-        # Force pod recreation with timestamp
-        timestamp: "2025-07-13T14:00:00Z"
     spec:
       serviceAccountName: homepage
-      # Add node affinity to run only on non-ARM nodes
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/arch
-                operator: NotIn
-                values:
-                - arm
-                - arm64
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
       containers:
         - name: homepage
-          image: "ghcr.io/gethomepage/homepage:latest"
-          imagePullPolicy: Always
+          image: "ghcr.io/gethomepage/homepage:v0.8.10"
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
               value: "homepage.k8s.local"
-            - name: LOG_LEVEL
-              value: "debug"
-            - name: KUBERNETES_SERVICE_HOST
-              value: "kubernetes.default.svc"
-            - name: KUBERNETES_SERVICE_PORT
-              value: "443"
-            - name: HOMEPAGE_DISABLE_CACHE
-              value: "true"
-          volumeMounts:
-            - mountPath: /app/config/settings.yaml
-              name: config
-              subPath: settings.yaml
-            - mountPath: /app/config/services.yaml
-              name: config
-              subPath: services.yaml
-            - mountPath: /app/config/widgets.yaml
-              name: config
-              subPath: widgets.yaml
-            - mountPath: /app/config/bookmarks.yaml
-              name: config
-              subPath: bookmarks.yaml
-            - mountPath: /app/config/docker.yaml
-              name: config
-              subPath: docker.yaml
-            - mountPath: /app/config/kubernetes.yaml
-              name: config
-              subPath: kubernetes.yaml
-            - mountPath: /app/config/custom.css
-              name: config
-              subPath: custom.css
-            - mountPath: /app/config/custom.js
-              name: config
-              subPath: custom.js
-        - name: debug
-          image: busybox
-          command: ['sleep', '3600']
-          securityContext:
-            runAsUser: 1000
       volumes:
         - name: config
           configMap:
@@ -239,6 +147,13 @@ kind: Ingress
 metadata:
   name: homepage
   namespace: default
+  annotations:
+    # Annotations for Homepage to discover itself
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "Cluster Tools"
+    gethomepage.dev/name: "Homepage"
+    gethomepage.dev/icon: "homepage.png"
+    gethomepage.dev/description: "This very dashboard"
 spec:
   ingressClassName: nginx
   rules:

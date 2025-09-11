@@ -3,6 +3,13 @@ kind: Ingress
 metadata:
   name: prometheus-server
   namespace: default
+  annotations:
+    # Annotations for Homepage Service Discovery
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/name: "Prometheus"
+    gethomepage.dev/icon: "prometheus.png"
+    gethomepage.dev/description: "Time-series database"
 spec:
   ingressClassName: nginx
   rules:

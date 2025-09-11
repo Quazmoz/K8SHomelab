@@ -4,12 +4,14 @@ metadata:
   name: n8n
   namespace: default
   annotations:
+    # Annotations for Homepage Service Discovery
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "Automation"
+    gethomepage.dev/name: "n8n"
+    gethomepage.dev/icon: "n8n.png"
+    gethomepage.dev/description: "Automation Platform"
+    # Annotations for NGINX
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
-    nginx.ingress.kubernetes.io/websocket-services: "n8n"
-    nginx.ingress.kubernetes.io/websocket-services-port: "5678"
 spec:
   ingressClassName: nginx
   rules:

@@ -3,6 +3,13 @@ kind: Ingress
 metadata:
   name: grafana
   namespace: default
+  annotations:
+    # Annotations for Homepage Service Discovery
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/name: "Grafana"
+    gethomepage.dev/icon: "grafana.png"
+    gethomepage.dev/description: "Metrics and dashboards"
 spec:
   ingressClassName: nginx
   rules:
