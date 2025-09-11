@@ -15,6 +15,10 @@ spec:
         namespace: flux-system
       interval: 1m
   values:
+    # Explicitly select single-binary mode to satisfy chart validation
+    mode: singleBinary
+
+    # Ensure distributed/scalable targets are off
     write:
       enabled: false
     read:
@@ -22,7 +26,7 @@ spec:
     backend:
       enabled: false
 
-    # Important: let the chart know storage type
+    # Inform chart helpers we use filesystem storage and avoid common storage block
     loki:
       storage:
         type: filesystem
@@ -31,14 +35,17 @@ spec:
     singleBinary:
       enabled: true
 
+      # Persistent volume for Loki data
       persistence:
         enabled: true
         storageClassName: "local-storage"
         size: 10Gi
 
+      # Schedule on the node that has the local PV path
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
 
+      # Loki config for filesystem + boltdb-shipper
       config:
         auth_enabled: false
         server:
