@@ -1,0 +1,34 @@
+# This ConfigMap holds the configuration for Loki.
+# It's configured for single-binary mode using filesystem storage.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-config
+  namespace: default
+data:
+  loki-config.yaml: |
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+    ingester:
+      lifecycler:
+        address: 127.0.0.1
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+    storage_config:
+      boltdb_shipper:
+        active_index_directory: /data/loki/index
+        cache_location: /data/loki/cache
+      filesystem:
+        directory: /data/loki/chunks
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h

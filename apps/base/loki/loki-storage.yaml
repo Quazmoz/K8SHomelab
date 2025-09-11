@@ -1,0 +1,13 @@
+# This PersistentVolumeClaim will find and bind to the loki-local-pv we created earlier.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 10Gi
