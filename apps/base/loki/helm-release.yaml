@@ -8,10 +8,10 @@ spec:
   chart:
     spec:
       chart: loki
-      version: "6.40.0" # Use a recent, stable version range
+      version: "6.5.x" # Use a recent, stable version range
       sourceRef:
         kind: HelmRepository
-        name: grafana
+        name: grafana # Loki charts are in the Grafana repository
         namespace: flux-system
       interval: 1m
   values:
@@ -19,11 +19,21 @@ spec:
     loki:
       auth_enabled: false
 
-    # Use our local PersistentVolume for storing log data
+      # --- THIS IS THE CRITICAL FIX ---
+      # This block explicitly tells Loki to use the filesystem for storage
+      # instead of its default S3 object store.
+      storage:
+        type: "filesystem"
+        filesystem:
+          # This is the directory inside the pod where the PV will be mounted
+          directory: /data/loki
+
+    # This enables the persistent volume
     persistence:
       enabled: true
       storageClassName: "local-storage"
       size: 10Gi
+      # The chart will create a PVC that binds to our loki-local-pv
 
     # Run the pod as a non-root user for better security
     podSecurityContext:
@@ -34,3 +44,4 @@ spec:
     # Ensure the Loki pod runs on the node where its storage is located
     nodeSelector:
       kubernetes.io/hostname: quinn-hpprobook430g6
+
