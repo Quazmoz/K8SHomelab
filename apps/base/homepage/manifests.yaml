@@ -12,45 +12,28 @@ metadata:
   name: homepage-config
   namespace: default
 data:
+  # --- Homepage Settings ---
   settings.yaml: |
     title: Homelab Dashboard
     providers:
       kubernetes:
         inCluster: true
+        # This block enables automatic discovery of services from Ingress annotations
+        ingress:
+          enabled: true
+          namespace: "" # "" means scan all namespaces
+          class: "nginx"
 
+  # --- services.yaml ---
+  # This file is now much cleaner. We only list services that are NOT exposed via Ingress.
   services.yaml: |
-    - "Cluster Tools":
-        - "Kubernetes Dashboard":
-            href: https://dashboard.k8s.local
-            icon: kubernetes-dashboard.png
-            description: Cluster management UI
-
-    - "Monitoring":
-        - "Grafana":
-            href: http://grafana.k8s.local
-            icon: grafana.png
-            description: Metrics and dashboards
-        - "Prometheus":
-            href: http://prometheus.k8s.local
-            icon: prometheus.png
-            description: Time-series database
-
     - "Media":
         - "Plex":
             href: http://192.168.1.221:32400/web
             icon: plex.png
             description: Media Server
 
-    - "Automation":
-        - "n8n":
-            href: http://n8n.k8s.local
-            icon: n8n.png
-            description: Automation Platform
-        - "Jenkins":
-            href: http://jenkins.k8s.local
-            icon: jenkins.png
-            description: CI/CD Platform
-
+  # --- Widgets ---
   widgets.yaml: |
     - search:
         provider: duckduckgo
@@ -58,9 +41,14 @@ data:
     - kubernetes:
         cluster:
           show: true
+          cpu: true
+          memory: true
         nodes:
           show: true
+          cpu: true
+          memory: true
 
+  # --- Your Bookmarks ---
   bookmarks.yaml: |
     - Developer:
         - Github:
@@ -80,7 +68,7 @@ data:
   custom.css: ""
   custom.js: ""
 ---
-# --- 3. RBAC rules to allow Homepage to read node/pod status ---
+# --- 3. RBAC rules to allow Homepage to read node/pod status AND INGRESSES ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -92,6 +80,7 @@ rules:
   - apiGroups: ["metrics.k8s.io"]
     resources: ["nodes", "pods"]
     verbs: ["get", "list", "watch"]
+  # --- ADD THIS RULE TO ALLOW INGRESS DISCOVERY ---
   - apiGroups: ["networking.k8s.io"]
     resources: ["ingresses"]
     verbs: ["get", "list", "watch"]
@@ -158,14 +147,12 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/config
-            # Add a new mount for the logs directory
             - name: logs
               mountPath: /app/config/logs
       volumes:
         - name: config
           configMap:
             name: homepage-config
-        # Add a new emptyDir volume for logs
         - name: logs
           emptyDir: {}
 ---
@@ -176,6 +163,7 @@ metadata:
   name: homepage
   namespace: default
   annotations:
+    # Annotations for Homepage to discover itself
     gethomepage.dev/enabled: "true"
     gethomepage.dev/group: "Cluster Tools"
     gethomepage.dev/name: "Homepage"
