@@ -40,7 +40,9 @@ spec:
         - name: loki
           # The image has been upgraded to a newer, stable version
           image: grafana/loki:3.5.5
-          # The problematic 'args' section has been removed
+          # This argument tells Loki which config file to use.
+          args:
+            - "-config.file=/etc/loki/config.yaml"
           ports:
             - containerPort: 3100
               name: http
