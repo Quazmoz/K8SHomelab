@@ -8,38 +8,47 @@ spec:
   chart:
     spec:
       chart: loki
-      version: "6.5.x" # Use a recent, stable version range
+      version: "6.5.x" # A recent, stable version
       sourceRef:
         kind: HelmRepository
-        name: grafana # Loki charts are in the Grafana repository
+        name: grafana
         namespace: flux-system
       interval: 1m
   values:
-    # This deploys Loki in a simple, single-pod mode suitable for a homelab
+    # This is the critical fix. We are providing a full configuration
+    # to run Loki in its simple, single-binary mode.
     loki:
-      auth_enabled: false
+      structuredConfig:
+        auth_enabled: false
+        server:
+          http_listen_port: 3100
+        # This tells Loki to run all components in one process
+        target: all
+        storage_config:
+          boltdb_shipper:
+            active_index_directory: /data/loki/boltdb-shipper-active
+            cache_location: /data/loki/boltdb-shipper-cache
+            cache_ttl: 24h
+            shared_store: boltdb
+          filesystem:
+            directory: /data/loki/chunks
+        schema_config:
+          configs:
+            - from: 2020-10-24
+              store: boltdb
+              object_store: filesystem
+              schema: v11
+              index:
+                prefix: index_
+                period: 24h
+        ruler:
+          alertmanager_url: http://prometheus-alertmanager.default.svc:9093
 
-      # --- THIS IS THE CRITICAL FIX ---
-      # This block explicitly tells Loki to use the filesystem for storage
-      # instead of its default S3 object store.
-      storage:
-        type: "filesystem"
-        filesystem:
-          # This is the directory inside the pod where the PV will be mounted
-          directory: /data/loki
-
-    # This enables the persistent volume
+    # This enables the persistent volume for the data
     persistence:
       enabled: true
       storageClassName: "local-storage"
       size: 10Gi
-      # The chart will create a PVC that binds to our loki-local-pv
-
-    # Run the pod as a non-root user for better security
-    podSecurityContext:
-      fsGroup: 1000
-      runAsGroup: 1000
-      runAsUser: 1000
     
     # Ensure the Loki pod runs on the node where its storage is located
     nodeSelector:
