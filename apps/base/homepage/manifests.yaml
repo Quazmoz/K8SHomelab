@@ -161,7 +161,7 @@ spec:
         fsGroupChangePolicy: "OnRootMismatch"
       containers:
         - name: homepage
-          image: "ghcr.io/gethomepage/homepage:v1.4.6"
+          image: "ghcr.io/gethomepage/homepage:v1.2.0"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
