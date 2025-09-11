@@ -38,375 +38,187 @@ data:
       "panels": [
         {
           "id": 1,
-          "gridPos": {
-            "h": 6,
-            "w": 8,
-            "x": 0,
-            "y": 0
-          },
+          "gridPos": { "h": 5, "w": 8, "x": 0, "y": 0 },
           "type": "stat",
           "title": "Nodes Ready",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "pluginVersion": "10.4.1",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
               "refId": "A",
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
               "expr": "sum(kube_node_status_condition{condition=\"Ready\", status=\"true\"})",
-              "legendFormat": "__auto",
-              "range": true,
               "instant": true
             }
           ],
           "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "horizontal",
-            "textMode": "value",
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto"
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+            "orientation": "horizontal", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"
           }
         },
         {
           "id": 2,
-          "gridPos": {
-            "h": 6,
-            "w": 8,
-            "x": 8,
-            "y": 0
-          },
+          "gridPos": { "h": 5, "w": 8, "x": 8, "y": 0 },
           "type": "stat",
           "title": "Pods Running",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "pluginVersion": "10.4.1",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
               "refId": "A",
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
               "expr": "sum(kube_pod_status_phase{phase=\"Running\"})",
-              "legendFormat": "__auto",
-              "range": true,
               "instant": true
             }
           ],
           "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "horizontal",
-            "textMode": "value",
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto"
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+            "orientation": "horizontal", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"
           }
         },
         {
           "id": 3,
-          "gridPos": {
-            "h": 6,
-            "w": 8,
-            "x": 16,
-            "y": 0
-          },
+          "gridPos": { "h": 5, "w": 8, "x": 16, "y": 0 },
           "type": "stat",
           "title": "Deployments Ready",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "pluginVersion": "10.4.1",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
               "refId": "A",
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
               "expr": "sum(kube_deployment_status_replicas_available)",
-              "legendFormat": "__auto",
-              "range": true,
               "instant": true
             }
           ],
           "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "horizontal",
-            "textMode": "value",
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto"
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+            "orientation": "horizontal", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto"
           }
         },
         {
           "id": 4,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 6
-          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
           "type": "gauge",
           "title": "Total CPU Usage",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "pluginVersion": "10.4.1",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
               "refId": "A",
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
               "expr": "sum(rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])) / sum(count without(cpu, mode) (node_cpu_seconds_total{mode=\"idle\"})) * 100",
-              "legendFormat": "__auto",
-              "range": true,
-              "instant": true
+              "instant": true,
+              "legendFormat": "Total Usage"
             }
           ],
           "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "auto",
-            "showThresholdLabels": false,
-            "showThresholdMarkers": true,
-            "text": {}
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+            "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true
           },
           "fieldConfig": {
             "defaults": {
-              "unit": "percent",
-              "min": 0,
-              "max": 100,
+              "unit": "percent", "min": 0, "max": 100,
               "thresholds": {
                 "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "orange",
-                    "value": 80
-                  },
-                  {
-                    "color": "red",
-                    "value": 90
-                  }
-                ]
+                "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 80 }, { "color": "red", "value": 90 } ]
               }
             }
           }
         },
         {
           "id": 5,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 6
-          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
           "type": "gauge",
           "title": "Total Memory Usage",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "pluginVersion": "10.4.1",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
               "refId": "A",
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
               "expr": "(1 - (sum(node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes))) * 100",
-              "legendFormat": "__auto",
-              "range": true,
-              "instant": true
+              "instant": true,
+              "legendFormat": "Total Usage"
             }
           ],
           "options": {
-            "reduceOptions": {
-              "values": false,
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": ""
-            },
-            "orientation": "auto",
-            "showThresholdLabels": false,
-            "showThresholdMarkers": true,
-            "text": {}
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+            "orientation": "auto", "showThresholdLabels": false, "showThresholdMarkers": true
           },
           "fieldConfig": {
             "defaults": {
-              "unit": "percent",
-              "min": 0,
-              "max": 100,
+              "unit": "percent", "min": 0, "max": 100,
               "thresholds": {
                 "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "orange",
-                    "value": 80
-                  },
-                  {
-                    "color": "red",
-                    "value": 90
-                  }
-                ]
+                "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 80 }, { "color": "red", "value": 90 } ]
               }
             }
           }
         },
         {
-          "id": 6,
-          "gridPos": {
-            "h": 10,
-            "w": 24,
-            "x": 0,
-            "y": 14
-          },
-          "type": "table",
-          "title": "Pod Distribution",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "pluginVersion": "10.4.1",
+          "id": 7,
+          "gridPos": { "h": 11, "w": 12, "x": 0, "y": 13 },
+          "type": "barchart",
+          "title": "CPU Usage by Node",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
               "refId": "A",
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "kube_pod_info",
-              "legendFormat": "__auto",
-              "range": true,
-              "instant": true
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+              "instant": true,
+              "legendFormat": "{{instance}}"
             }
           ],
           "options": {
-            "sortBy": [],
-            "showHeader": true
+            "orientation": "horizontal", "showValue": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }
           },
           "fieldConfig": {
             "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
+              "unit": "percent", "min": 0, "max": 100,
               "thresholds": {
                 "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
+                "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 80 }, { "color": "red", "value": 90 } ]
               }
             }
-          },
-          "transformations": [
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 11, "w": 12, "x": 12, "y": 13 },
+          "type": "barchart",
+          "title": "Memory Usage by Node",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
             {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Time": true,
-                  "Value": true,
-                  "created_by_kind": true,
-                  "created_by_name": true,
-                  "host_ip": true,
-                  "instance": true,
-                  "job": true,
-                  "pod_ip": true,
-                  "uid": true
-                },
-                "indexByName": {
-                  "Time": 0,
-                  "Value": 7,
-                  "created_by_kind": 3,
-                  "created_by_name": 4,
-                  "host_ip": 5,
-                  "instance": 6,
-                  "job": 8,
-                  "namespace": 1,
-                  "node": 2,
-                  "pod": 0,
-                  "pod_ip": 9,
-                  "uid": 10
-                },
-                "renameByName": {}
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
+              "instant": true,
+              "legendFormat": "{{instance}}"
+            }
+          ],
+          "options": {
+            "orientation": "horizontal", "showValue": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent", "min": 0, "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 80 }, { "color": "red", "value": 90 } ]
               }
             }
-          ]
+          }
         }
       ],
-      "refresh": "",
+      "refresh": "1m",
       "schemaVersion": 39,
       "style": "dark",
       "tags": [],
-      "templating": {
-        "list": []
-      },
-      "time": {
-        "from": "now-6h",
-        "to": "now"
-      },
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
       "timepicker": {},
       "timezone": "browser",
       "title": "Kubernetes Overview",
-      "uid": null,
-      "version": 1,
+      "uid": "k8s-overview",
+      "version": 2,
       "weekStart": ""
     }
 
