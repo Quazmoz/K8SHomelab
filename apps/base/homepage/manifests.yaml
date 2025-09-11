@@ -52,6 +52,10 @@ data:
             href: http://n8n.k8s.local
             icon: n8n.png
             description: Automation Platform
+        - "jenkins":
+            href: http://jenkins.k8s.local
+            icon: jenkins.png
+            description: CI/CD Platform
 
   # --- Simplified Widgets ---
   widgets.yaml: |
