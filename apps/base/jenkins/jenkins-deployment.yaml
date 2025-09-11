@@ -57,10 +57,7 @@ spec:
           ports:
             - containerPort: 8080
             - containerPort: 50000
-          # We tell Jenkins where to find the pre-installed plugins.
-          env:
-            - name: JENKINS_OPTS
-              value: --plugin-root=/var/jenkins_home/plugins
+          # The problematic JENKINS_OPTS environment variable has been removed.
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
@@ -69,7 +66,7 @@ spec:
       volumes:
         - name: jenkins-home
           persistentVolumeClaim:
-            claimName: jenkins-home # Note: This chart uses a different default PVC name
+            claimName: jenkins-home
         - name: jenkins-plugins
           emptyDir: {}
         - name: jenkins-config
@@ -97,3 +94,4 @@ spec:
             name: jenkins
             port:
               number: 8080
+
