@@ -1,0 +1,36 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: default
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: loki
+      version: "6.5.x" # Use a recent, stable version range
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: flux-system
+      interval: 1m
+  values:
+    # This deploys Loki in a simple, single-pod mode suitable for a homelab
+    loki:
+      auth_enabled: false
+
+    # Use our local PersistentVolume for storing log data
+    persistence:
+      enabled: true
+      storageClassName: "local-storage"
+      size: 10Gi
+
+    # Run the pod as a non-root user for better security
+    podSecurityContext:
+      fsGroup: 1000
+      runAsGroup: 1000
+      runAsUser: 1000
+    
+    # Ensure the Loki pod runs on the node where its storage is located
+    nodeSelector:
+      kubernetes.io/hostname: quinn-hpprobook430g6

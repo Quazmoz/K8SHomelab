@@ -152,3 +152,28 @@ spec:
           values:
           - quinn-hpprobook430g6
 
+---
+# The Persistent Volume for Loki data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: loki-local-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/loki
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6 # Target the powerful ProBook node for storage
+
