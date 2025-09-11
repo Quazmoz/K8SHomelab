@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: loki
-      # Using a known stable version from the Grafana chart repository
+      # Using a specific, known-stable version
       version: "6.5.2"
       sourceRef:
         kind: HelmRepository
@@ -37,4 +37,22 @@ spec:
       # Ensure the Loki pod runs on the node where its storage is located
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
+
+      # This explicitly configures Loki's internal settings for filesystem storage
+      config:
+        auth_enabled: false
+        server:
+          http_listen_port: 3100
+        storage_config:
+          filesystem:
+            directory: /data/loki
+        schema_config:
+          configs:
+            - from: 2020-10-24
+              store: boltdb-shipper
+              object_store: filesystem
+              schema: v11
+              index:
+                prefix: index_
+                period: 24h
 
