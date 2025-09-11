@@ -19,17 +19,11 @@ data:
         active_index_directory: /data/loki/boltdb-shipper-active
         cache_location: /data/loki/boltdb-shipper-cache
         cache_ttl: 24h
-        shared_store: boltdb
       filesystem:
         directory: /data/loki/chunks
     
-    # --- THIS IS THE CRITICAL FIX ---
-    # This block tells the compactor to use a directory inside our
-    # writable persistent volume instead of the root-owned /var/loki.
     compactor:
       working_directory: /data/loki/boltdb-shipper-compactor
-      shared_store: boltdb
-    # --- END OF FIX ---
 
     schema_config:
       configs:
@@ -43,3 +37,4 @@ data:
     
     ruler:
       alertmanager_url: http://prometheus-alertmanager.default.svc:9093
+
