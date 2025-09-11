@@ -34,19 +34,12 @@ data:
             description: Media Server
 
   # --- Widgets ---
+  # The kubernetes widget has been temporarily removed to resolve the API Error.
+  # We will add it back once the service discovery is confirmed to be working.
   widgets.yaml: |
     - search:
         provider: duckduckgo
         target: _blank
-    - kubernetes:
-        cluster:
-          show: true
-          cpu: true
-          memory: true
-        nodes:
-          show: true
-          cpu: true
-          memory: true
 
   # --- Your Bookmarks ---
   bookmarks.yaml: |
