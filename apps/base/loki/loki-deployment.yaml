@@ -38,11 +38,10 @@ spec:
         runAsGroup: 1000
       containers:
         - name: loki
-          # The image has been upgraded to a newer, stable version
           image: grafana/loki:3.5.5
-          # This argument tells Loki which config file to use.
           args:
             - "-config.file=/etc/loki/config.yaml"
+            - "-validation.allow-structured-metadata=false"
           ports:
             - containerPort: 3100
               name: http
