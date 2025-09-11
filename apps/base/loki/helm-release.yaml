@@ -8,49 +8,33 @@ spec:
   chart:
     spec:
       chart: loki
-      version: "6.5.x" # A recent, stable version
+      # Using a known stable version from the Grafana chart repository
+      version: "6.5.2"
       sourceRef:
         kind: HelmRepository
         name: grafana
         namespace: flux-system
       interval: 1m
   values:
-    # This is the critical fix. We are providing a full configuration
-    # to run Loki in its simple, single-binary mode.
-    loki:
-      structuredConfig:
-        auth_enabled: false
-        server:
-          http_listen_port: 3100
-        # This tells Loki to run all components in one process
-        target: all
-        storage_config:
-          boltdb_shipper:
-            active_index_directory: /data/loki/boltdb-shipper-active
-            cache_location: /data/loki/boltdb-shipper-cache
-            cache_ttl: 24h
-            shared_store: boltdb
-          filesystem:
-            directory: /data/loki/chunks
-        schema_config:
-          configs:
-            - from: 2020-10-24
-              store: boltdb
-              object_store: filesystem
-              schema: v11
-              index:
-                prefix: index_
-                period: 24h
-        ruler:
-          alertmanager_url: http://prometheus-alertmanager.default.svc:9093
-
-    # This enables the persistent volume for the data
-    persistence:
-      enabled: true
-      storageClassName: "local-storage"
-      size: 10Gi
+    # This is the critical fix. We are disabling the complex distributed
+    # components and enabling the simple single-binary mode.
+    write:
+      enabled: false
+    read:
+      enabled: false
+    backend:
+      enabled: false
     
-    # Ensure the Loki pod runs on the node where its storage is located
-    nodeSelector:
-      kubernetes.io/hostname: quinn-hpprobook430g6
+    singleBinary:
+      enabled: true
+      
+      # This enables the persistent volume for the data
+      persistence:
+        enabled: true
+        storageClassName: "local-storage"
+        size: 10Gi
+      
+      # Ensure the Loki pod runs on the node where its storage is located
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
 
