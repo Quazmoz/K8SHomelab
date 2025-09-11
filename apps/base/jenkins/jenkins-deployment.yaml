@@ -80,6 +80,13 @@ metadata:
   name: jenkins
   namespace: default
   annotations:
+    # Homepage Annotations
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "Automation"
+    gethomepage.dev/name: "Jenkins"
+    gethomepage.dev/icon: "jenkins.png"
+    gethomepage.dev/description: "CI/CD Platform"
+    # NGINX Annotations
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 spec:
   ingressClassName: nginx
@@ -94,4 +101,3 @@ spec:
             name: jenkins
             port:
               number: 8080
-
