@@ -75,12 +75,11 @@ metadata:
   name: homepage
 rules:
   - apiGroups: [""]
-    resources: ["nodes", "namespaces", "pods", "services"]
+    resources: ["nodes", "namespaces", "pods", "services", "endpoints"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["metrics.k8s.io"]
     resources: ["nodes", "pods"]
     verbs: ["get", "list", "watch"]
-  # --- ADD THIS RULE TO ALLOW INGRESS DISCOVERY ---
   - apiGroups: ["networking.k8s.io"]
     resources: ["ingresses"]
     verbs: ["get", "list", "watch"]
