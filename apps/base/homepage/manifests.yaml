@@ -23,20 +23,8 @@ data:
 
   services.yaml: |
     - "Cluster Tools":
-        - "Kubernetes Dashboard":
-            href: https://dashboard.k8s.local
-            icon: kubernetes-dashboard.png
-            description: Cluster management UI
 
     - "Monitoring":
-        - "Grafana":
-            href: http://grafana.k8s.local
-            icon: grafana.png
-            description: Metrics and dashboards
-        - "Prometheus":
-            href: http://prometheus.k8s.local
-            icon: prometheus.png
-            description: Time-series database
 
     - "Media":
         - "Plex":
@@ -49,14 +37,6 @@ data:
             description: Storage
 
     - "Automation":
-        - "n8n":
-            href: http://n8n.k8s.local
-            icon: n8n.png
-            description: Automation Platform
-        - "jenkins":
-            href: http://jenkins.k8s.local
-            icon: jenkins.png
-            description: CI/CD Platform
 
   widgets.yaml: |
     - search:
