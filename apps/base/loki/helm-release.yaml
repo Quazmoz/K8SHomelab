@@ -8,7 +8,6 @@ spec:
   chart:
     spec:
       chart: loki
-      # Using a specific, known-stable version
       version: "6.5.2"
       sourceRef:
         kind: HelmRepository
@@ -16,29 +15,30 @@ spec:
         namespace: flux-system
       interval: 1m
   values:
-    # This is the critical fix. We are disabling the complex distributed
-    # components and enabling the simple single-binary mode.
     write:
       enabled: false
     read:
       enabled: false
     backend:
       enabled: false
-    
+
+    # Important: let the chart know storage type
+    loki:
+      storage:
+        type: filesystem
+      commonConfig: null
+
     singleBinary:
       enabled: true
-      
-      # This enables the persistent volume for the data
+
       persistence:
         enabled: true
         storageClassName: "local-storage"
         size: 10Gi
-      
-      # Ensure the Loki pod runs on the node where its storage is located
+
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
 
-      # This explicitly configures Loki's internal settings for filesystem storage
       config:
         auth_enabled: false
         server:
@@ -55,4 +55,3 @@ spec:
               index:
                 prefix: index_
                 period: 24h
-
