@@ -12,28 +12,52 @@ metadata:
   name: homepage-config
   namespace: default
 data:
-  # --- Homepage Settings ---
+  # This data block is restored from your previously working version
   settings.yaml: |
     title: Homelab Dashboard
+    debug: true
     providers:
       kubernetes:
         inCluster: true
-        # This block enables automatic discovery of services from Ingress annotations
-        ingress:
-          enabled: true
-          namespace: "" # "" means scan all namespaces
-          class: "nginx"
+        refreshInterval: 10
 
-  # --- services.yaml ---
-  # This file is now much cleaner. We only list services that are NOT exposed via Ingress.
   services.yaml: |
+    - "Cluster Tools":
+        - "Kubernetes Dashboard":
+            href: https://dashboard.k8s.local
+            icon: kubernetes-dashboard.png
+            description: Cluster management UI
+
+    - "Monitoring":
+        - "Grafana":
+            href: http://grafana.k8s.local
+            icon: grafana.png
+            description: Metrics and dashboards
+        - "Prometheus":
+            href: http://prometheus.k8s.local
+            icon: prometheus.png
+            description: Time-series database
+
     - "Media":
         - "Plex":
-            href: http://192.181.1.221:32400/web
+            href: http://192.168.1.221:32400/web
             icon: plex.png
             description: Media Server
+        - "Nextcloud":
+            href: http://nextcloud.k8s.local
+            icon: nextcloud.png
+            description: Storage
 
-  # --- Widgets ---
+    - "Automation":
+        - "n8n":
+            href: http://n8n.k8s.local
+            icon: n8n.png
+            description: Automation Platform
+        - "jenkins":
+            href: http://jenkins.k8s.local
+            icon: jenkins.png
+            description: CI/CD Platform
+
   widgets.yaml: |
     - search:
         provider: duckduckgo
@@ -41,14 +65,11 @@ data:
     - kubernetes:
         cluster:
           show: true
-          cpu: true
-          memory: true
         nodes:
           show: true
-          cpu: true
-          memory: true
+        namespaces:
+          show: true
 
-  # --- Your Bookmarks ---
   bookmarks.yaml: |
     - Developer:
         - Github:
@@ -61,10 +82,23 @@ data:
         - QuinnFavo:
             - abbr: DevOps
               href: https://profile.quinnfavo.com/
-
-  # --- These files are required by Homepage but can be empty ---
+              
   docker.yaml: ""
-  kubernetes.yaml: ""
+  kubernetes.yaml: |
+    mode: cluster
+    cluster:
+      show: true
+      cpu: true
+      memory: true
+    nodes:
+      show: true
+      cpu: true
+      memory: true
+    namespaces:
+      show: true
+      displayedNamespaces:
+        - default
+        - kube-system
   custom.css: ""
   custom.js: ""
 ---
@@ -148,6 +182,17 @@ spec:
         app.kubernetes.io/name: homepage
     spec:
       serviceAccountName: homepage
+      # Node affinity to run only on non-ARM nodes is restored
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: NotIn
+                values:
+                - arm
+                - arm64
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
@@ -162,13 +207,13 @@ spec:
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
               value: "homepage.k8s.local"
-          # This volumeMounts block is now corrected
+          # Corrected volume mounts
           volumeMounts:
             - name: config
               mountPath: /app/config
             - name: logs
               mountPath: /app/config/logs
-      # This volumes block is now corrected
+      # Corrected volumes
       volumes:
         - name: config
           configMap:
@@ -183,7 +228,7 @@ metadata:
   name: homepage
   namespace: default
   annotations:
-    # Annotations for Homepage to discover itself
+    # These annotations are kept for when we re-enable discovery
     gethomepage.dev/enabled: "true"
     gethomepage.dev/group: "Cluster Tools"
     gethomepage.dev/name: "Homepage"
