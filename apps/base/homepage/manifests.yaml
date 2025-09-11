@@ -16,21 +16,40 @@ data:
     title: Homelab Dashboard
     providers:
       kubernetes:
-        mode: cluster
-        # Enable Ingress discovery
-        ingress:
-          enabled: true
-          # Specify our ingress class to watch
-          class: "nginx"
+        inCluster: true
 
-  # This services file now only contains items that are NOT discovered via Ingress.
   services.yaml: |
+    - "Cluster Tools":
+        - "Kubernetes Dashboard":
+            href: https://dashboard.k8s.local
+            icon: kubernetes-dashboard.png
+            description: Cluster management UI
+
+    - "Monitoring":
+        - "Grafana":
+            href: http://grafana.k8s.local
+            icon: grafana.png
+            description: Metrics and dashboards
+        - "Prometheus":
+            href: http://prometheus.k8s.local
+            icon: prometheus.png
+            description: Time-series database
+
     - "Media":
         - "Plex":
-            # This must remain a static entry as it doesn't use an Ingress
             href: http://192.168.1.221:32400/web
             icon: plex.png
             description: Media Server
+
+    - "Automation":
+        - "n8n":
+            href: http://n8n.k8s.local
+            icon: n8n.png
+            description: Automation Platform
+        - "Jenkins":
+            href: http://jenkins.k8s.local
+            icon: jenkins.png
+            description: CI/CD Platform
 
   widgets.yaml: |
     - search:
@@ -61,7 +80,7 @@ data:
   custom.css: ""
   custom.js: ""
 ---
-# --- 3. RBAC rules to allow Homepage to read Ingresses, nodes, pods, etc. ---
+# --- 3. RBAC rules to allow Homepage to read node/pod status ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -73,7 +92,7 @@ rules:
   - apiGroups: ["metrics.k8s.io"]
     resources: ["nodes", "pods"]
     verbs: ["get", "list", "watch"]
-  - apiGroups: ["networking.k8s.io"] # Added permission for Ingresses
+  - apiGroups: ["networking.k8s.io"]
     resources: ["ingresses"]
     verbs: ["get", "list", "watch"]
 ---
@@ -136,6 +155,9 @@ spec:
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
               value: "homepage.k8s.local"
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
       volumes:
         - name: config
           configMap:
@@ -148,7 +170,6 @@ metadata:
   name: homepage
   namespace: default
   annotations:
-    # Annotations for Homepage to discover itself
     gethomepage.dev/enabled: "true"
     gethomepage.dev/group: "Cluster Tools"
     gethomepage.dev/name: "Homepage"
@@ -167,3 +188,4 @@ spec:
             name: homepage
             port:
               number: 3000
+
