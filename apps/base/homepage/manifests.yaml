@@ -158,10 +158,16 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/config
+            # Add a new mount for the logs directory
+            - name: logs
+              mountPath: /app/config/logs
       volumes:
         - name: config
           configMap:
             name: homepage-config
+        # Add a new emptyDir volume for logs
+        - name: logs
+          emptyDir: {}
 ---
 # --- 6. The Ingress rule to expose Homepage to your network ---
 apiVersion: networking.k8s.io/v1
