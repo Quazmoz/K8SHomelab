@@ -14,6 +14,14 @@ data:
     # This tells Loki to run all components (ingester, querier, etc.) in one process.
     target: all
 
+    # --- THIS IS THE CRITICAL FIX ---
+    # This block tells the ingester where to store its Write-Ahead Log (WAL).
+    # We point it to a directory inside our writable persistent volume.
+    ingester:
+      wal:
+        enabled: true
+        dir: /data/loki/wal
+
     storage_config:
       boltdb_shipper:
         active_index_directory: /data/loki/boltdb-shipper-active
