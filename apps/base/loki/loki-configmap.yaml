@@ -15,9 +15,15 @@ data:
     target: all
 
     # --- THIS IS THE CRITICAL FIX ---
-    # This block tells the ingester where to store its Write-Ahead Log (WAL).
-    # We point it to a directory inside our writable persistent volume.
+    # This block configures the ring for a single-node setup, preventing
+    # it from trying to contact a non-existent Consul instance.
     ingester:
+      lifecycler:
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+      # This tells the ingester where to store its Write-Ahead Log (WAL).
       wal:
         enabled: true
         dir: /data/loki/wal
