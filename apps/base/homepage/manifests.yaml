@@ -17,29 +17,31 @@ data:
     title: Homelab Dashboard
     providers:
       kubernetes:
-        inCluster: true
-        # This block enables automatic discovery of services from Ingress annotations
+        mode: cluster
+        # Enable Ingress discovery
         ingress:
           enabled: true
-          namespace: "" # "" means scan all namespaces
+          # Specify our ingress class to watch
           class: "nginx"
 
-  # --- services.yaml ---
-  # This file is now much cleaner. We only list services that are NOT exposed via Ingress.
+  # This services file now only contains items that are NOT discovered via Ingress.
   services.yaml: |
     - "Media":
         - "Plex":
+            # This must remain a static entry as it doesn't use an Ingress
             href: http://192.168.1.221:32400/web
             icon: plex.png
             description: Media Server
 
-  # --- Widgets ---
-  # The kubernetes widget has been temporarily removed to resolve the API Error.
-  # We will add it back once the service discovery is confirmed to be working.
   widgets.yaml: |
     - search:
         provider: duckduckgo
         target: _blank
+    - kubernetes:
+        cluster:
+          show: true
+        nodes:
+          show: true
 
   # --- Your Bookmarks ---
   bookmarks.yaml: |
@@ -61,40 +63,21 @@ data:
   custom.css: ""
   custom.js: ""
 ---
-# --- 3. RBAC rules to allow Homepage to read node/pod status AND INGRESSES ---
+# --- 3. RBAC rules to allow Homepage to read Ingresses, nodes, pods, etc. ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: homepage
 rules:
   - apiGroups: [""]
-    resources:
-      - "nodes"
-      - "namespaces"
-      - "pods"
-      - "services"
-      - "endpoints"
-      - "configmaps"
-      - "secrets"
-    verbs:
-      - "get"
-      - "list"
-      - "watch"
+    resources: ["nodes", "namespaces", "pods", "services"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: ["metrics.k8s.io"]
-    resources:
-      - "nodes"
-      - "pods"
-    verbs:
-      - "get"
-      - "list"
-      - "watch"
-  - apiGroups: ["networking.k8s.io"]
-    resources:
-      - "ingresses"
-    verbs:
-      - "get"
-      - "list"
-      - "watch"
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"] # Added permission for Ingresses
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -155,11 +138,6 @@ spec:
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
               value: "homepage.k8s.local"
-          volumeMounts:
-            - name: config
-              mountPath: /app/config
-            - name: logs
-              mountPath: /app/config/logs
       volumes:
         - name: config
           configMap:
