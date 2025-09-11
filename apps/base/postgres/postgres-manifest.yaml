@@ -1,29 +1,5 @@
 # TODO: This deployment relies on an insecure plain-text secret for credentials.
 
-# --- Persistent Volume for Postgres Data ---
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: postgres-local-pv
-spec:
-  capacity:
-    storage: 10Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
-  local:
-    path: /mnt/k8s-data/postgres
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - quinn-hpprobook430g6
----
 # --- Internal Service for Postgres ---
 apiVersion: v1
 kind: Service
