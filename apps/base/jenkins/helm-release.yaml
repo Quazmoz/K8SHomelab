@@ -38,11 +38,6 @@ spec:
         - git:5.2.2
         - configuration-as-code:1782.v9b_3936650762
 
-      # Enforce non-root user and handle volume permissions
-      securityContext:
-        fsGroup: 1000
-        runAsUser: 1000
-
       # Define resource requests and limits for the Jenkins controller pod
       resources:
         requests:
