@@ -38,9 +38,9 @@ spec:
         runAsGroup: 1000
       containers:
         - name: loki
+          # The image has been upgraded to a newer, stable version
           image: grafana/loki:3.5.5
-          args:
-            - "-config.file=/etc/loki/config.yaml"
+          # The problematic 'args' section has been removed
           ports:
             - containerPort: 3100
               name: http
@@ -59,3 +59,4 @@ spec:
         - name: storage
           persistentVolumeClaim:
             claimName: loki-pvc
+
