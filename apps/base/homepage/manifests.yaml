@@ -81,6 +81,8 @@ rules:
       - "pods"
       - "services"
       - "endpoints"
+      - "configmaps"
+      - "secrets"
     verbs:
       - "get"
       - "list"
