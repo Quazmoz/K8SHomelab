@@ -1,0 +1,99 @@
+# The Service provides a stable internal DNS name for Jenkins.
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins
+  namespace: default
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: jenkins
+---
+# We use a StatefulSet because Jenkins is a stateful application.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: jenkins
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      # This ensures Jenkins runs on your powerful ProBook node.
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      # This security context ensures the Jenkins user (UID 1000) can write to the volume.
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: default # Using the default SA is fine for now
+      # This init container runs first to install the plugins we defined in our ConfigMap.
+      initContainers:
+        - name: jenkins-plugin-install
+          image: jenkins/jenkins:lts-jdk17 # Use an official Jenkins image
+          # This init container must run as root to install plugins
+          securityContext:
+            runAsUser: 0
+          command:
+            - /bin/sh
+            - -c
+            - "jenkins-plugin-cli --plugin-file /config/plugins.txt --plugin-download-directory /plugins"
+          volumeMounts:
+            - name: jenkins-plugins
+              mountPath: /plugins
+            - name: jenkins-config
+              mountPath: /config
+      # This is the main Jenkins application container.
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts-jdk17
+          ports:
+            - containerPort: 8080
+            - containerPort: 50000
+          # We tell Jenkins where to find the pre-installed plugins.
+          env:
+            - name: JENKINS_OPTS
+              value: --plugin-root=/var/jenkins_home/plugins
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: jenkins-plugins
+              mountPath: /var/jenkins_home/plugins
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins-home # Note: This chart uses a different default PVC name
+        - name: jenkins-plugins
+          emptyDir: {}
+        - name: jenkins-config
+          configMap:
+            name: jenkins-config
+---
+# The Ingress exposes Jenkins to your network.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jenkins
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: jenkins.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jenkins
+            port:
+              number: 8080
