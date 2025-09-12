@@ -25,28 +25,12 @@ spec:
   interval: 24h
   url: https://grafana.github.io/helm-charts
 ---
+# The official Pi-hole chart repository
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: mojo2600
+  name: pi-hole
   namespace: flux-system
 spec:
   interval: 24h
-  url: https://mojo2600.github.io/pihole-helm/
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: jenkins
-  namespace: flux-system
-spec:
-  interval: 24h
-  url: https://charts.jenkins.io
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: bitnami
-  namespace: flux-system
-spec:
-  interval: 24h
-  url: https://charts.bitnami.com/bitnami
+  url: https://pi-hole.github.io/pi-hole-helm-chart/
