@@ -1,18 +1,4 @@
-# This file defines the storage requests (PVCs) for WordPress and its database.
-# These will bind to the PersistentVolumes defined in the central storage file.
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: wordpress-db-pvc
-  namespace: default
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-storage
-  resources:
-    requests:
-      storage: 10Gi
----
+# This PVC is for the WordPress application data (themes, plugins, uploads)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -25,3 +11,22 @@ spec:
   resources:
     requests:
       storage: 25Gi
+  # This explicitly binds this PVC to the correct PV
+  volumeName: wordpress-data-pv
+---
+# This PVC is for the MariaDB database data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wordpress-db-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 10Gi
+  # This explicitly binds this PVC to the correct PV
+  volumeName: wordpress-db-pv
+
