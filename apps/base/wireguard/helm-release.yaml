@@ -31,17 +31,11 @@ spec:
         type: LoadBalancer
         port: 51821
         
-    # Set the password for the Web UI
-    # IMPORTANT: Change this to a secure password!
-    password: "YourSecurePasswordHere"
+    # This tells the pod to load its environment variables (including the password)
+    # from the Kubernetes secret you created, rather than from plain text.
+    extraEnvVarsSecret: wireguard-admin-password
     
-    # This is the hostname your clients will use to connect.
-    # It MUST be your public internet IP or a dynamic DNS hostname.
-    # Example: "my-home-vpn.no-ip.com"
-    # For now, we will use the MetalLB IP, but this will only work on your local network.
-    # You will need to edit this later for external access.
-    # To find the IP, run: kubectl get svc -n default wireguard-wg-easy-wg
-    host: 192.168.1.222 # Placeholder - will be assigned by MetalLB
+    host: quinnshomelab.ddns.net
 
     # Use persistence for the configuration
     persistence:

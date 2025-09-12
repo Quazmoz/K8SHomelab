@@ -20,4 +20,4 @@ resources:
   - ./jenkins
   - ./loki
   - ./wordpress
-  #- ./wireguard
+  - ./wireguard
