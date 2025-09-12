@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wireguard-ui
+  namespace: default
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "WireGuard VPN"
+    gethomepage.dev/group: "Networking"
+    gethomepage.dev/icon: "wireguard.png"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: wireguard.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: wireguard-ui-service
+            port:
+              number: 51821

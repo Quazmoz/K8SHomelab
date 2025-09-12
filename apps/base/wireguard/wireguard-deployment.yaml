@@ -1,0 +1,92 @@
+# This is the LoadBalancer service that exposes WireGuard's UDP port to your network.
+# MetalLB will assign it a dedicated IP address from your pool.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wireguard-udp-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  ports:
+    - name: wireguard
+      port: 51820
+      targetPort: 51820
+      protocol: UDP
+  selector:
+    app: wireguard
+---
+# This is the internal ClusterIP service for the Web UI.
+# The Ingress will route traffic to this service.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wireguard-ui-service
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 51821
+      targetPort: 51821
+      protocol: TCP
+  selector:
+    app: wireguard
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wireguard
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wireguard
+  template:
+    metadata:
+      labels:
+        app: wireguard
+    spec:
+      # This forces the pod to run on your ProBook node
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      containers:
+        - name: wireguard
+          image: lscr.io/linuxserver/wireguard:latest
+          ports:
+            - containerPort: 51820
+              protocol: UDP
+            - containerPort: 51821
+              protocol: TCP
+          env:
+            # This tells wg-easy what its public-facing UDP endpoint is.
+            # It is now set to your dynamic DNS hostname.
+            - name: WG_HOST
+              value: "quinnshomelab.ddns.net"
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wireguard-ui-password
+                  key: PASSWORD
+          # This is CRITICAL. WireGuard needs these kernel capabilities to manage the network.
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_MODULE
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            # This is required to load the wireguard kernel module from the host
+            - name: modules
+              mountPath: /lib/modules
+              readOnly: true
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: wireguard-config-pvc
+        - name: modules
+          hostPath:
+            path: /lib/modules
+
