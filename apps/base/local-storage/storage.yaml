@@ -1,60 +1,226 @@
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
+# A StorageClass to identify our local, manually-provisioned volumes
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
-  name: wordpress
-  namespace: default
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
+# The Persistent Volume for Prometheus data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prometheus-local-pv
 spec:
-  interval: 5m
-  chart:
-    spec:
-      chart: wordpress
-      # Using a known stable version range from the Bitnami repository
-      version: "26.0.0"
-      sourceRef:
-        kind: HelmRepository
-        name: bitnami
-        namespace: flux-system
-      interval: 1m
-  values:
-    # By removing the 'image' override, we will use the chart's default,
-    # stable, and optimized WordPress+Apache container.
+  capacity:
+    storage: 45Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/prometheus
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
+---
+# The Persistent Volume for Grafana data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana-local-pv
+spec:
+  capacity:
+    storage: 25Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/grafana
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
+---
+# The Persistent Volume for Plex Config data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: plex-config-local-pv
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/plex-config
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
+---
+# The Persistent Volume for Pi-hole config
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pihole-local-pv
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/pihole
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - raspberrypi3
+---
+# The Persistent Volume for Jenkins home directory
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-local-pv
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/jenkins
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
 
-    # Configure the MariaDB sub-chart that comes packaged with the WordPress chart
-    mariadb:
-      enabled: true
-      # Configure persistence for the database
-      primary:
-        persistence:
-          enabled: true
-          storageClass: "local-storage"
-          # This must match the wordpress-db-pv size we defined in storage.yaml
-          size: 10Gi
-      # Set credentials for the database
-      # IMPORTANT: Change these to secure, random passwords!
-      auth:
-        rootPassword: "YourDBRootPassword!"
-        database: "wordpress_db"
-        username: "wordpress_user"
-        password: "YourDBUserPassword!"
-
-    # Configure persistence for the WordPress application itself (themes, plugins, uploads)
-    persistence:
-      enabled: true
-      storageClass: "local-storage"
-      # This must match the wordpress-data-pv size we defined in storage.yaml
-      size: 25Gi
-
-    # Configure the Ingress to expose the site to your network
-    ingress:
-      enabled: true
-      ingressClassName: "nginx"
-      hostname: "wordpress.k8s.local"
-      path: /
-      pathType: Prefix
-      annotations:
-        # Homepage discovery annotations so your dashboard finds this site automatically
-        gethomepage.dev/enabled: "true"
-        gethomepage.dev/name: "WordPress Site"
-        gethomepage.dev/group: "Websites"
-        gethomepage.dev/icon: "wordpress.png"
+---
+# The Persistent Volume for Postgres data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-local-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/postgres
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
+---
+# The Persistent Volume for Loki data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: loki-local-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/loki
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
+---
+# --- NEW: Persistent Volume for WordPress application data ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: wordpress-data-pv
+spec:
+  capacity:
+    storage: 25Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/wordpress
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
+---
+# --- NEW: Persistent Volume for WordPress database data ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: wordpress-db-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/wordpress-db
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
 
