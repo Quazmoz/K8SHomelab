@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: wordpress
-      # Using a known stable version range
+      # Using a known stable version range from the Bitnami repository
       version: "26.0.0"
       sourceRef:
         kind: HelmRepository
@@ -16,11 +16,8 @@ spec:
         namespace: flux-system
       interval: 1m
   values:
-    # Use the OpenLiteSpeed container image instead of the default Apache
-    image:
-      registry: docker.io
-      repository: bitnami/openlitespeed
-      tag: 1.8.1-debian-12-r12
+    # By removing the 'image' override, we will use the chart's default,
+    # stable, and optimized WordPress+Apache container.
 
     # Configure the MariaDB sub-chart that comes packaged with the WordPress chart
     mariadb:
