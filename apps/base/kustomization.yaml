@@ -19,3 +19,4 @@ resources:
   - ./pihole
   - ./jenkins
   - ./loki
+  - ./wordpress

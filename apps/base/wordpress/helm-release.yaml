@@ -1,0 +1,59 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: wordpress
+  namespace: default
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: wordpress
+      version: "19.x.x"
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+      interval: 1m
+  values:
+    # Use the OpenLiteSpeed container image instead of the default Apache
+    image:
+      registry: docker.io
+      repository: bitnami/openlitespeed
+      tag: 1.8.1-debian-12-r12
+
+    # Configure the MariaDB sub-chart
+    mariadb:
+      enabled: true
+      # Configure persistence for the database
+      primary:
+        persistence:
+          enabled: true
+          storageClass: "local-storage"
+          size: 10Gi
+      # Set a root password for the database
+      # IMPORTANT: Change this to a secure, random password!
+      auth:
+        rootPassword: "YourDBRootPassword!"
+        database: "wordpress_db"
+        username: "wordpress_user"
+        password: "YourDBUserPassword!"
+
+    # Configure persistence for the WordPress application itself
+    persistence:
+      enabled: true
+      storageClass: "local-storage"
+      size: 25Gi
+
+    # Configure the Ingress to expose the site
+    ingress:
+      enabled: true
+      ingressClassName: "nginx"
+      hostname: "wordpress.k8s.local"
+      path: /
+      pathType: Prefix
+      annotations:
+        # Homepage discovery annotations
+        gethomepage.dev/enabled: "true"
+        gethomepage.dev/name: "WordPress Site"
+        gethomepage.dev/group: "Websites"
+        gethomepage.dev/icon: "wordpress.png"
