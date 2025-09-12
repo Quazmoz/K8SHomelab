@@ -16,7 +16,7 @@ resources:
 #  - ./nextcloud
 #  - ../../clusters/my-homelab/nextcloud-kustomization.yaml
   - ./postgres
-  - ./pihole
+ # - ./pihole
   - ./jenkins
   - ./loki
   - ./wordpress
