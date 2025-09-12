@@ -30,7 +30,7 @@ spec:
       containers:
       - name: wordpress
         # Using a specific, stable version tag that is known to exist
-        image: litespeedtech/openlitespeed-wordpress:6.6.1
+        image: litespeedtech/openlitespeed:1.8.4-lsphp81
         ports:
         - containerPort: 80
         env:
