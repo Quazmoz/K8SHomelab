@@ -29,7 +29,8 @@ spec:
         kubernetes.io/hostname: quinn-hpprobook430g6
       containers:
       - name: wordpress
-        image: litespeedtech/openlitespeed-wordpress:latest
+        # Using a specific, stable version tag instead of :latest
+        image: litespeedtech/openlitespeed-wordpress:6.1.2-ls-1.7.16
         ports:
         - containerPort: 80
         env:
@@ -75,3 +76,4 @@ spec:
             name: wordpress-service
             port:
               number: 80
+
