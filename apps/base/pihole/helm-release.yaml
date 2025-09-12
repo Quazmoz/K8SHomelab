@@ -7,37 +7,42 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: pihole
-      version: "2.20.0" # A recent stable version of this new chart
+      chart: pi-hole
+      version: "0.2.x" # A recent stable version of the new chart
       sourceRef:
-        # Point to our new repository source
         kind: HelmRepository
-        name: mojo2600
+        name: pi-hole # This points to the new repository we added
         namespace: flux-system
       interval: 1m
   values:
-    # This chart uses a slightly different structure for values
-    podDnsConfig:
-      enabled: true
-
-    # This is CRITICAL. It forces the pod to run only on your Pi 3.
+    # This is CRITICAL. It forces the pod to run only on your Pi 3 node.
     nodeSelector:
-      kubernetes.io/hostname: raspberrypi3 # IMPORTANT: Use your actual hostname
+      kubernetes.io/hostname: raspberrypi3 # IMPORTANT: Use the actual hostname of your Pi 3
 
-    # Use persistence to store the configuration
-    persistentVolumeClaim:
-      enabled: true
-      storageClass: "local-storage"
-      size: 5Gi
-
+    # Use persistence to store the Pi-hole configuration
+    persistence:
+      config:
+        enabled: true
+        storageClassName: "local-storage"
+        size: 5Gi
+    
     # Set the admin password for the web UI
-    # IMPORTANT: Change this to a secure password!
-    adminPassword: "Testingdontworry!"
+    adminPassword: "YourSecurePassword!"
 
-    # Expose the DNS service via a LoadBalancer
-    serviceDns:
+    # Expose the DNS service via a LoadBalancer so MetalLB gives it an IP
+    serviceTCP:
       type: LoadBalancer
+    serviceUDP:
+      type: LoadBalancer
+    
+    # Expose the Web UI service via an Ingress on pihole.k8s.local
+    ingress:
+      web:
+        enabled: true
+        ingressClassName: nginx
+        hosts:
+          - host: pihole.k8s.local
+            paths:
+              - path: /
+                pathType: Prefix
 
-    # Expose the Web UI service via a LoadBalancer
-    serviceWeb:
-      type: LoadBalancer
