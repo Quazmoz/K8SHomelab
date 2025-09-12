@@ -1,0 +1,51 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: wireguard
+  namespace: default
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: wg-easy
+      version: "5.3.x"
+      sourceRef:
+        kind: HelmRepository
+        name: wg-easy
+        namespace: flux-system
+      interval: 1m
+  values:
+    # This ensures the WireGuard server runs on your powerful ProBook node
+    nodeSelector:
+      kubernetes.io/hostname: quinn-hpprobook430g6
+    
+    # Configure the LoadBalancer service to expose the VPN port and Web UI
+    service:
+      # Exposes the main VPN port
+      wg:
+        type: LoadBalancer
+        # This is the standard WireGuard port
+        port: 51820
+      # Exposes the management Web UI
+      ui:
+        type: LoadBalancer
+        port: 51821
+        
+    # Set the password for the Web UI
+    # IMPORTANT: Change this to a secure password!
+    password: "YourSecurePasswordHere"
+    
+    # This is the hostname your clients will use to connect.
+    # It MUST be your public internet IP or a dynamic DNS hostname.
+    # Example: "my-home-vpn.no-ip.com"
+    # For now, we will use the MetalLB IP, but this will only work on your local network.
+    # You will need to edit this later for external access.
+    # To find the IP, run: kubectl get svc -n default wireguard-wg-easy-wg
+    host: 192.168.1.222 # Placeholder - will be assigned by MetalLB
+
+    # Use persistence for the configuration
+    persistence:
+      enabled: true
+      storageClassName: local-storage
+      size: 1Gi
+

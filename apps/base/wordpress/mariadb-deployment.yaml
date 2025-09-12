@@ -1,81 +1,58 @@
-# This file defines the main OpenLiteSpeed WordPress application, its service, and ingress.
+# This file defines the dedicated MariaDB database for your WordPress site.
 apiVersion: v1
 kind: Service
 metadata:
-  name: wordpress-service
+  name: wordpress-db-service
   namespace: default
 spec:
   ports:
-  - port: 80
-    targetPort: 80
+  - port: 3306
   selector:
-    app: wordpress
+    app: wordpress-db
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wordpress
+  name: wordpress-db
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wordpress
+      app: wordpress-db
   template:
     metadata:
       labels:
-        app: wordpress
+        app: wordpress-db
     spec:
-      # Ensure WordPress runs on the node with the fast local storage
+      # Ensure the database runs on the node with the fast local storage
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
       containers:
-      - name: wordpress
-        # Using the official OpenLiteSpeed WordPress image
-        image: litespeedtech/openlitespeed-wordpress:latest
+      - name: mariadb
+        image: mariadb:11.2 # Using a specific stable version
         ports:
-        - containerPort: 80
+        - containerPort: 3306
         env:
-        - name: WORDPRESS_DB_HOST
-          value: "wordpress-db-service"
-        - name: WORDPRESS_DB_NAME
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordpress-secrets
+              key: mariadb-root-password
+        - name: MARIADB_DATABASE
           value: "wordpress_db"
-        - name: WORDPRESS_DB_USER
+        - name: MARIADB_USER
           value: "wordpress_user"
-        - name: WORDPRESS_DB_PASSWORD
+        - name: MARIADB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: wordpress-secrets
               key: mariadb-password
         volumeMounts:
-        - name: wordpress-data
-          mountPath: /var/www/vhosts/localhost/html
+        - name: db-data
+          mountPath: /var/lib/mysql
       volumes:
-      - name: wordpress-data
+      - name: db-data
         persistentVolumeClaim:
-          claimName: wordpress-data-pvc
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: wordpress
-  namespace: default
-  annotations:
-    # Homepage discovery annotations
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "WordPress POC"
-    gethomepage.dev/group: "Websites"
-    gethomepage.dev/icon: "wordpress.png"
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: wordpress.k8s.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: wordpress-service
-            port:
-              number: 80
+          claimName: wordpress-db-pvc
+
