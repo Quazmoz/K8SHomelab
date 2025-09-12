@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: wordpress
-      version: "19.x.x"
+      version: "26.0.0"
       sourceRef:
         kind: HelmRepository
         name: bitnami
@@ -29,9 +29,10 @@ spec:
         persistence:
           enabled: true
           storageClass: "local-storage"
+          # This must match the wordpress-db-pv size
           size: 10Gi
-      # Set a root password for the database
-      # IMPORTANT: Change this to a secure, random password!
+      # Set credentials for the database
+      # IMPORTANT: Change these to secure, random passwords!
       auth:
         rootPassword: "YourDBRootPassword!"
         database: "wordpress_db"
@@ -42,6 +43,7 @@ spec:
     persistence:
       enabled: true
       storageClass: "local-storage"
+      # This must match the wordpress-data-pv size
       size: 25Gi
 
     # Configure the Ingress to expose the site
@@ -57,3 +59,4 @@ spec:
         gethomepage.dev/name: "WordPress Site"
         gethomepage.dev/group: "Websites"
         gethomepage.dev/icon: "wordpress.png"
+
