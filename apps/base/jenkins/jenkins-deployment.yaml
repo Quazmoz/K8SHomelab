@@ -37,7 +37,7 @@ spec:
       # This init container runs first to install the plugins we defined in our ConfigMap.
       initContainers:
         - name: jenkins-plugin-install
-          image: jenkins/jenkins:lts-jdk17 # Use an official Jenkins image
+          image: jenkins/jenkins:lts-jdk21 # Use an official Jenkins image
           # This init container must run as root to install plugins
           securityContext:
             runAsUser: 0
@@ -53,7 +53,7 @@ spec:
       # This is the main Jenkins application container.
       containers:
         - name: jenkins
-          image: jenkins/jenkins:lts-jdk17
+          image: jenkins/jenkins:lts-jdk21
           ports:
             - containerPort: 8080
             - containerPort: 50000

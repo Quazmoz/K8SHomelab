@@ -20,4 +20,5 @@ resources:
   - ./jenkins
   - ./loki
   - ./wordpress
+  - ./zionup
   #- ./wireguard

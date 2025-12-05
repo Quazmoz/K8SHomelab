@@ -1,0 +1,244 @@
+---
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: zionup-production
+  labels:
+    app: zionup
+    component: backend
+    environment: production
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zionup
+      component: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: zionup
+        component: backend
+    spec:
+      containers:
+      - name: backend
+        image: ${BACKEND_IMAGE}:${BACKEND_IMAGE_TAG}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        # Environment variables from ConfigMap
+        - name: POSTGRES_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: POSTGRES_SERVER
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: POSTGRES_PORT
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: POSTGRES_USER
+        - name: REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: REDIS_URL
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: DEBUG
+        - name: BACKEND_CORS_ORIGINS
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: BACKEND_CORS_ORIGINS
+        - name: DJANGO_LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: DJANGO_LOG_LEVEL
+        - name: WEBHOOK_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: WEBHOOK_TIMEOUT
+        - name: WEBHOOK_MAX_RETRIES
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: WEBHOOK_MAX_RETRIES
+        - name: WEBHOOK_RETRY_DELAY
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: WEBHOOK_RETRY_DELAY
+        - name: EMAIL_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: EMAIL_PROVIDER
+        - name: EMAIL_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: EMAIL_BACKEND
+        - name: EMAIL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: EMAIL_HOST
+        - name: EMAIL_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: EMAIL_PORT
+        - name: EMAIL_USE_TLS
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: EMAIL_USE_TLS
+        - name: DEFAULT_FROM_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: DEFAULT_FROM_EMAIL
+        - name: ALLOWED_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: ALLOWED_HOSTS
+        - name: AZURE_AD_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: AZURE_AD_ENABLED
+        - name: AZURE_AD_REDIRECT_URI
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: AZURE_AD_REDIRECT_URI
+        - name: AZURE_AD_SCOPES
+          valueFrom:
+            configMapKeyRef:
+              name: zionup-config
+              key: AZURE_AD_SCOPES
+        
+        # Sensitive environment variables from Secrets
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: POSTGRES_PASSWORD
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: DATABASE_URL
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: SECRET_KEY
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: GEMINI_API_KEY
+        - name: EMAIL_HOST_USER
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: EMAIL_HOST_USER
+        - name: EMAIL_HOST_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: EMAIL_HOST_PASSWORD
+        - name: AZURE_AD_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: AZURE_AD_TENANT_ID
+        - name: AZURE_AD_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: AZURE_AD_CLIENT_ID
+        - name: AZURE_AD_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: zionup-secrets
+              key: AZURE_AD_CLIENT_SECRET
+        
+        volumeMounts:
+        - name: media-storage
+          mountPath: /app/media
+        
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      volumes:
+      - name: media-storage
+        persistentVolumeClaim:
+          claimName: media-storage
+
+---
+# Backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: zionup-production
+  labels:
+    app: zionup
+    component: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: zionup
+    component: backend
