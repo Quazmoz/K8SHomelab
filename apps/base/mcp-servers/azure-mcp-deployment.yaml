@@ -135,22 +135,3 @@ spec:
         volumeMounts:
         - name: azure-mcp-source
           mountPath: /app
-
----
-# Azure MCP Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: azure-mcp
-  namespace: mcp-servers
-  labels:
-    app: azure-mcp
-spec:
-  type: ClusterIP
-  selector:
-    app: azure-mcp
-  ports:
-  - name: mcp
-    port: 3001
-    targetPort: 3001
-    protocol: TCP
