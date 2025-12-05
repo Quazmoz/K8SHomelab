@@ -103,6 +103,55 @@ new File(jobsPath).eachFile { file ->
 }
 ```
 
+## Job Execution Issues
+
+### Pipeline Failed - "MissingContextVariableException" or "FilePath is missing"
+
+**Status:** ✅ **This is GOOD news!** It means:
+- Jenkins job created successfully ✓
+- Pipeline started and ran ✓
+- Error is in the Jenkinsfile itself, not Jenkins setup
+
+**What happened:**
+- Jenkins executed the zionup-homelab-deploy job
+- Job cloned the zionup repository successfully
+- Jenkinsfile from `deploy/homelab/Jenkinsfile` was executed
+- **Jenkinsfile has a syntax error in its post-condition cleanup step**
+
+**Error example:**
+```
+org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: 
+Required context class hudson.FilePath is missing
+```
+
+**Root cause:** The Jenkinsfile's post-condition `sh` step is outside a `node` block
+
+**Fix needed in zionup repo's Jenkinsfile:**
+```groovy
+// ❌ WRONG - sh outside node block
+post {
+  always {
+    sh 'cleanup commands'  // <-- ERROR
+  }
+}
+
+// ✅ CORRECT - sh inside node block
+post {
+  always {
+    node {
+      sh 'cleanup commands'  // <-- OK
+    }
+  }
+}
+```
+
+**Next steps:**
+1. Fix the Jenkinsfile in your zionup repository
+2. Push to main branch
+3. Jenkins will auto-trigger and run successfully
+
+---
+
 ## Troubleshooting
 
 ### Check if ConfigMap is Mounted
