@@ -63,6 +63,8 @@ spec:
               mountPath: /var/jenkins_home
             - name: jenkins-plugins
               mountPath: /var/jenkins_home/plugins
+            - name: jenkins-jobs
+              mountPath: /var/jenkins_home/jobs-config
       volumes:
         - name: jenkins-home
           persistentVolumeClaim:
@@ -72,6 +74,9 @@ spec:
         - name: jenkins-config
           configMap:
             name: jenkins-config
+        - name: jenkins-jobs
+          configMap:
+            name: jenkins-jobs
 ---
 # The Ingress exposes Jenkins to your network.
 apiVersion: networking.k8s.io/v1

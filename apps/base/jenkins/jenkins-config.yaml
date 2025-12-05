@@ -13,3 +13,35 @@ data:
     workflow-aggregator
     git
     configuration-as-code
+    job-dsl
+    pipeline-model-definition
+    pipeline-stage-view
+
+  # Job DSL seed job configuration - creates ZionUp deployment job
+  seed-job.groovy: |-
+    pipelineJob('zionup-homelab-deploy') {
+      description('Deploy ZionUp to Homelab Kubernetes Cluster')
+      
+      properties {
+        pipelineTriggers {
+          triggers {
+            githubPush()
+          }
+        }
+      }
+      
+      definition {
+        cpsScm {
+          scm {
+            git {
+              remote {
+                url('https://github.com/Quazmoz/zionup.git')
+              }
+              branches('*/main')
+            }
+          }
+          scriptPath('deploy/homelab/Jenkinsfile')
+          lightweight(true)
+        }
+      }
+    }

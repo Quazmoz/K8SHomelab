@@ -1,0 +1,156 @@
+---
+# Azure MCP Server Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azure-mcp
+  namespace: mcp-servers
+  labels:
+    app: azure-mcp
+    component: mcp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-mcp
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: azure-mcp
+        component: mcp-server
+    spec:
+      containers:
+      - name: azure-mcp
+        image: node:20-alpine
+        imagePullPolicy: IfNotPresent
+        working_dir: /app
+        command:
+          - sh
+          - -c
+          - |
+            npm install && npm start
+        ports:
+        - containerPort: 3001
+          name: mcp
+          protocol: TCP
+        env:
+        - name: MCP_SERVER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: azure-mcp-config
+              key: MCP_SERVER_PORT
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: azure-mcp-config
+              key: NODE_ENV
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: azure-mcp-config
+              key: LOG_LEVEL
+        - name: AZURE_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: azure-mcp-config
+              key: AZURE_TIMEOUT
+        - name: MAX_QUERY_RESULTS
+          valueFrom:
+            configMapKeyRef:
+              name: azure-mcp-config
+              key: MAX_QUERY_RESULTS
+        # Azure credentials from Kubernetes secrets
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: tenant-id
+              optional: true
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: client-id
+              optional: true
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: client-secret
+              optional: true
+        - name: AZURE_SUBSCRIPTION_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: subscription-id
+              optional: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 2
+        volumeMounts:
+        - name: azure-mcp-source
+          mountPath: /app
+        - name: node-modules
+          mountPath: /app/node_modules
+      volumes:
+      - name: azure-mcp-source
+        emptyDir: {}
+      - name: node-modules
+        emptyDir: {}
+      initContainers:
+      - name: azure-mcp-init
+        image: alpine/git
+        command:
+          - sh
+          - -c
+          - |
+            cd /app && \
+            git clone https://github.com/haris-musa/azure-mcp-server.git . && \
+            git checkout main
+        volumeMounts:
+        - name: azure-mcp-source
+          mountPath: /app
+
+---
+# Azure MCP Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: azure-mcp
+  namespace: mcp-servers
+  labels:
+    app: azure-mcp
+spec:
+  type: ClusterIP
+  selector:
+    app: azure-mcp
+  ports:
+  - name: mcp
+    port: 3001
+    targetPort: 3001
+    protocol: TCP

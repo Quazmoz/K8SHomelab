@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: mcp-servers
+resources:
+  - namespace.yaml
+  #- excel-mcp-deployment.yaml
+  #- excel-mcp-service.yaml
+  #- excel-mcp-configmap.yaml
+  - azure-mcp-deployment.yaml
+  - azure-mcp-service.yaml
+  - azure-mcp-configmap.yaml
+  - ingress.yaml

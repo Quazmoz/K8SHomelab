@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jenkins-jobs
+  namespace: default
+  labels:
+    app: jenkins
+    component: job-config
+data:
+  # Job DSL seed job - manages all other jobs defined in this ConfigMap
+  # This seed job will be executed and create the jobs defined below
+  
+  # ZionUp Homelab Deployment Job
+  zionup-homelab-deploy.groovy: |-
+    pipelineJob('zionup-homelab-deploy') {
+      description('Deploy ZionUp to Homelab Kubernetes Cluster')
+      keepBuilds {
+        strategy {
+          buildDiscarderStrategy {
+            daysToKeepStr: '30'
+            numToKeepStr: '10'
+            artifactDaysToKeepStr: '-1'
+            artifactNumToKeepStr: '-1'
+          }
+        }
+      }
+      
+      triggers {
+        githubPush()
+      }
+      
+      definition {
+        cpsScm {
+          scm {
+            git {
+              remote {
+                url('https://github.com/Quazmoz/zionup.git')
+              }
+              branches('*/main')
+            }
+          }
+          scriptPath('deploy/homelab/Jenkinsfile')
+          lightweight(true)
+        }
+      }
+    }
+  
+  # Master seed job - generates other jobs from this ConfigMap
+  # This job uses Job DSL to read all .groovy files and create Jenkins jobs
+  generate-jobs.groovy: |-
+    // This is the master seed job that generates all other jobs
+    // It will be run as a Jenkins job and create jobs from the Groovy scripts in this ConfigMap
+    
+    def jobsDir = '/var/jenkins_home/jobs-config'
+    def groovyFiles = []
+    
+    // Read all .groovy files from the volume
+    new File(jobsDir).eachFile { file ->
+      if (file.name.endsWith('.groovy') && file.name != 'generate-jobs.groovy') {
+        groovyFiles << file
+      }
+    }
+    
+    // Execute each job definition
+    groovyFiles.each { file ->
+      println("Processing job definition: ${file.name}")
+      evaluate(file.text)
+    }
+    
+    println("Successfully generated all Jenkins jobs from configuration")

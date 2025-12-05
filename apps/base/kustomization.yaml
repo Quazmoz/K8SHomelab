@@ -20,4 +20,5 @@ resources:
   - ./jenkins
   - ./loki
   - ./zionup
+  - ./mcp-servers
   #- ./wireguard
