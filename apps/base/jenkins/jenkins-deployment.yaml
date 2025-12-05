@@ -65,6 +65,8 @@ spec:
               mountPath: /var/jenkins_home/plugins
             - name: jenkins-jobs
               mountPath: /var/jenkins_home/jobs-config
+            - name: jenkins-init-scripts
+              mountPath: /var/jenkins_home/init.groovy.d
       volumes:
         - name: jenkins-home
           persistentVolumeClaim:
@@ -77,6 +79,12 @@ spec:
         - name: jenkins-jobs
           configMap:
             name: jenkins-jobs
+        - name: jenkins-init-scripts
+          configMap:
+            name: jenkins-config
+            items:
+              - key: auto-create-jobs.groovy
+                path: auto-create-jobs.groovy
 ---
 # The Ingress exposes Jenkins to your network.
 apiVersion: networking.k8s.io/v1

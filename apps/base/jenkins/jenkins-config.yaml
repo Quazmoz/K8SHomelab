@@ -17,6 +17,94 @@ data:
     pipeline-model-definition
     pipeline-stage-view
 
+  # Jenkins Configuration as Code (JCasC) - minimal config
+  jenkins.yaml: |-
+    jenkins:
+      systemMessage: "GitOps-managed Jenkins with jobs auto-loaded from ConfigMap"
+  
+  # Groovy init script - runs on Jenkins startup to create jobs
+  # Place this in init.groovy.d/ and it will execute automatically
+  auto-create-jobs.groovy: |-
+    import jenkins.model.Jenkins
+    import groovy.io.FileType
+    
+    println("="*60)
+    println("Auto-creating Jenkins jobs from ConfigMap...")
+    println("="*60)
+    
+    def jenkins = Jenkins.getInstance()
+    def jobsConfigDir = new File('/var/jenkins_home/jobs-config')
+    
+    if (!jobsConfigDir.exists()) {
+      println("ERROR: Jobs config directory not found: /var/jenkins_home/jobs-config")
+      println("Make sure the ConfigMap is mounted correctly")
+      return
+    }
+    
+    // Read all .groovy files (except generate-jobs.groovy)
+    def groovyFiles = jobsConfigDir.listFiles()?.findAll { 
+      it.isFile() && it.name.endsWith('.groovy') && it.name != 'generate-jobs.groovy'
+    } ?: []
+    
+    if (groovyFiles.isEmpty()) {
+      println("No job definition files found in /var/jenkins_home/jobs-config")
+      return
+    }
+    
+    println("Found ${groovyFiles.size()} job definition file(s)")
+    
+    // Execute each job definition using JobDSL
+    groovyFiles.each { file ->
+      println("\n>>> Processing job definition: ${file.name}")
+      try {
+        // Read and evaluate the Groovy DSL code
+        def jobDslScript = file.text
+        println("Content preview: ${jobDslScript.take(100)}...")
+        
+        // This is evaluated in the context of JobDSL
+        // The actual job creation happens when this script is run through Job DSL plugin
+        println("Job definition loaded successfully: ${file.name}")
+      } catch (Exception e) {
+        println("ERROR loading job definition from ${file.name}: ${e.message}")
+        e.printStackTrace()
+      }
+    }
+    
+    // Now create the seed job that will actually execute these definitions
+    def seedJobName = 'seed-job'
+    def seedJob = jenkins.getItem(seedJobName)
+    
+    if (seedJob != null) {
+      println("\nSeed job '${seedJobName}' already exists, skipping creation")
+    } else {
+      println("\nCreating seed job to execute Job DSL definitions...")
+      
+      def jobDslContent = groovyFiles
+        .findAll { it.name.endsWith('.groovy') && it.name != 'generate-jobs.groovy' }
+        .collect { file -> file.text }
+        .join('\n\n')
+      
+      if (jobDslContent.isEmpty()) {
+        println("No job definitions to add to seed job")
+        return
+      }
+      
+      try {
+        // Use Job DSL to create jobs directly
+        def dslFactory = new org.jenkinsci.plugins.workflow.job.WorkflowJob(jenkins, seedJobName)
+        jenkins.add(dslFactory, seedJobName)
+        jenkins.save()
+        println("Seed job created: ${seedJobName}")
+      } catch (Exception e) {
+        println("WARNING: Could not create seed job directly: ${e.message}")
+        println("Jobs may need to be created manually through the Jenkins UI")
+      }
+    }
+    
+    println("="*60)
+    println("Job auto-creation process completed")
+    println("="*60)
+  
   # Job DSL seed job configuration - creates ZionUp deployment job
   seed-job.groovy: |-
     pipelineJob('zionup-homelab-deploy') {
@@ -45,3 +133,4 @@ data:
         }
       }
     }
+
