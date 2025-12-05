@@ -126,7 +126,6 @@ resources:
   # ... other resources ...
   - ./jenkins
   - ./loki
-  - ./wordpress
   - ./zionup        # ← NEW
   #- ./wireguard
 ```
