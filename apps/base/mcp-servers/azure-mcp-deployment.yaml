@@ -24,16 +24,13 @@ spec:
         app: azure-mcp
         component: mcp-server
     spec:
+      # Pull from private Docker Hub registry
+      imagePullSecrets:
+        - name: dockerhub-regcred
       containers:
       - name: azure-mcp
-        image: node:20-alpine
-        imagePullPolicy: IfNotPresent
-        working_dir: /app
-        command:
-          - sh
-          - -c
-          - |
-            npm install && npm start
+        image: quazmoz/azure-mcp:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 3001
           name: mcp
@@ -100,7 +97,7 @@ spec:
           httpGet:
             path: /health
             port: 3001
-          initialDelaySeconds: 60
+          initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
@@ -108,30 +105,7 @@ spec:
           httpGet:
             path: /health
             port: 3001
-          initialDelaySeconds: 30
+          initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 2
-        volumeMounts:
-        - name: azure-mcp-source
-          mountPath: /app
-        - name: node-modules
-          mountPath: /app/node_modules
-      volumes:
-      - name: azure-mcp-source
-        emptyDir: {}
-      - name: node-modules
-        emptyDir: {}
-      initContainers:
-      - name: azure-mcp-init
-        image: alpine/git
-        command:
-          - sh
-          - -c
-          - |
-            cd /app && \
-            git clone https://github.com/haris-musa/azure-mcp-server.git . && \
-            git checkout main
-        volumeMounts:
-        - name: azure-mcp-source
-          mountPath: /app

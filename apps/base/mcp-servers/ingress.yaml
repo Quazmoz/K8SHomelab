@@ -14,25 +14,56 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
+    # Homepage annotations for MCP Gateway
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "AI & Automation"
+    gethomepage.dev/name: "MCP Gateway"
+    gethomepage.dev/icon: "mdi-robot"
+    gethomepage.dev/description: "Model Context Protocol Gateway"
 spec:
+  ingressClassName: nginx
   rules:
-  - host: azure-mcp.k8s.local
+  # MCP Gateway Web UI
+  - host: mcp-gateway.k8s.local
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: azure-mcp
+            name: mcp-gateway
             port:
-              number: 3001
-  - host: excel-mcp.k8s.local
+              number: 80
+  # MCP Gateway SSE/HTTP endpoints for MCP clients
+  - host: mcp.k8s.local
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: excel-mcp
+            name: mcp-gateway
             port:
-              number: 3000
+              number: 5235
+  # Azure MCP Server - uncomment after enabling in kustomization.yaml
+  #- host: azure-mcp.k8s.local
+  #  http:
+  #    paths:
+  #    - path: /
+  #      pathType: Prefix
+  #      backend:
+  #        service:
+  #          name: azure-mcp
+  #          port:
+  #            number: 3001
+  # Excel MCP Server - uncomment after enabling in kustomization.yaml
+  #- host: excel-mcp.k8s.local
+  #  http:
+  #    paths:
+  #    - path: /
+  #      pathType: Prefix
+  #      backend:
+  #        service:
+  #          name: excel-mcp
+  #            port:
+  #            number: 3000

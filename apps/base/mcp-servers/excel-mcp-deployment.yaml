@@ -1,5 +1,5 @@
 ---
-# Excel MCP Deployment
+# Excel MCP Server Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,16 +24,13 @@ spec:
         app: excel-mcp
         component: mcp-server
     spec:
+      # Pull from private Docker Hub registry
+      imagePullSecrets:
+        - name: dockerhub-regcred
       containers:
       - name: excel-mcp
-        image: node:20-alpine
-        imagePullPolicy: IfNotPresent
-        working_dir: /app
-        command:
-          - sh
-          - -c
-          - |
-            npm install && npm start
+        image: quazmoz/excel-mcp:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 3000
           name: mcp
@@ -65,7 +62,7 @@ spec:
           httpGet:
             path: /health
             port: 3000
-          initialDelaySeconds: 60
+          initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
@@ -73,49 +70,7 @@ spec:
           httpGet:
             path: /health
             port: 3000
-          initialDelaySeconds: 30
+          initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 2
-        volumeMounts:
-        - name: excel-mcp-source
-          mountPath: /app
-        - name: node-modules
-          mountPath: /app/node_modules
-      volumes:
-      - name: excel-mcp-source
-        emptyDir: {}
-      - name: node-modules
-        emptyDir: {}
-      initContainers:
-      - name: excel-mcp-init
-        image: alpine/git
-        command:
-          - sh
-          - -c
-          - |
-            cd /app && \
-            git clone https://github.com/haris-musa/excel-mcp-server.git . && \
-            git checkout main
-        volumeMounts:
-        - name: excel-mcp-source
-          mountPath: /app
-
----
-# Excel MCP Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: excel-mcp
-  namespace: mcp-servers
-  labels:
-    app: excel-mcp
-spec:
-  type: ClusterIP
-  selector:
-    app: excel-mcp
-  ports:
-  - name: mcp
-    port: 3000
-    targetPort: 3000
-    protocol: TCP

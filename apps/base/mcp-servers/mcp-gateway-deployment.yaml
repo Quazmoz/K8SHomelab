@@ -1,0 +1,98 @@
+---
+# MCP Gateway (Unla) Deployment
+# A lightweight gateway service that manages MCP servers with a Web UI
+# Image: ghcr.io/amoylab/unla/allinone:latest
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-gateway
+  namespace: mcp-servers
+  labels:
+    app: mcp-gateway
+    component: mcp-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: mcp-gateway
+        component: mcp-gateway
+    spec:
+      containers:
+      - name: mcp-gateway
+        image: ghcr.io/amoylab/unla/allinone:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: web
+          protocol: TCP
+        - containerPort: 5234
+          name: api
+          protocol: TCP
+        - containerPort: 5235
+          name: mcp-sse
+          protocol: TCP
+        - containerPort: 5335
+          name: mcp-http
+          protocol: TCP
+        - containerPort: 5236
+          name: mcp-ws
+          protocol: TCP
+        env:
+        - name: ENV
+          value: "production"
+        - name: TZ
+          value: "America/New_York"
+        - name: APISERVER_JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mcp-gateway-secrets
+              key: jwt-secret-key
+        - name: SUPER_ADMIN_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: mcp-gateway-config
+              key: SUPER_ADMIN_USERNAME
+        - name: SUPER_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mcp-gateway-secrets
+              key: admin-password
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 2
+        volumeMounts:
+        - name: mcp-gateway-data
+          mountPath: /app/data
+      volumes:
+      - name: mcp-gateway-data
+        persistentVolumeClaim:
+          claimName: mcp-gateway-pvc

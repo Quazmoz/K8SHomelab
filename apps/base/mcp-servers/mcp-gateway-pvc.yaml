@@ -1,0 +1,16 @@
+---
+# MCP Gateway Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mcp-gateway-pvc
+  namespace: mcp-servers
+  labels:
+    app: mcp-gateway
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
