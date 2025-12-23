@@ -4,7 +4,6 @@ namespace: mcp-servers
 resources:
   - namespace.yaml
   # MCP Gateway (Unla) - Central management UI
-  # Uses public image, no secrets required
   - mcp-gateway-deployment.yaml
   - mcp-gateway-service.yaml
   - mcp-gateway-configmap.yaml

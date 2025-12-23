@@ -10,7 +10,8 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-path
+  # Must match the storageClassName in local-storage/storage.yaml
+  storageClassName: local-storage
   resources:
     requests:
       storage: 1Gi
