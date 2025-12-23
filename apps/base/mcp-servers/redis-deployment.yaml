@@ -1,25 +1,24 @@
 ---
-# Redis Deployment
+# Redis Deployment for MCP Servers
+# Used for caching in custom MCP servers
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  namespace: zionup-production
+  namespace: mcp-servers
   labels:
-    app: zionup
-    component: redis
-    environment: production
+    app: redis
+    component: cache
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: zionup
-      component: redis
+      app: redis
   template:
     metadata:
       labels:
-        app: zionup
-        component: redis
+        app: redis
+        component: cache
     spec:
       containers:
       - name: redis
@@ -27,12 +26,16 @@ spec:
         ports:
         - containerPort: 6379
           name: redis
+        command:
+          - redis-server
+          - --appendonly
+          - "yes"
         livenessProbe:
           exec:
             command:
             - redis-cli
             - ping
-          initialDelaySeconds: 30
+          initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
@@ -45,11 +48,17 @@ spec:
           timeoutSeconds: 3
         resources:
           requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
             memory: "128Mi"
             cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        emptyDir: {}
 
 ---
 # Redis Service
@@ -57,10 +66,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis
-  namespace: zionup-production
+  namespace: mcp-servers
   labels:
-    app: zionup
-    component: redis
+    app: redis
 spec:
   type: ClusterIP
   ports:
@@ -69,5 +77,4 @@ spec:
     protocol: TCP
     name: redis
   selector:
-    app: zionup
-    component: redis
+    app: redis

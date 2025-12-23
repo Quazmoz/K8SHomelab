@@ -1,12 +1,7 @@
 local.txt
 
 # Kubernetes Secrets - NEVER commit real credentials
-apps/base/*/azure-mcp-secrets.yaml
-apps/base/mcp-servers/azure-mcp-secrets.yaml
-apps/base/*/zionup-secrets.yaml
-apps/base/zionup/zionup-secrets.yaml
 apps/base/mcp-servers/mcp-gateway-secrets.yaml
-apps/base/mcp-servers/dockerhub-regcred-secret.yaml
 
 # Use .template files instead - they contain placeholders only
 # Template files ARE committed to git for easy setup documentation

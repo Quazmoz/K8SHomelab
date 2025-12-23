@@ -8,15 +8,9 @@ resources:
   - mcp-gateway-service.yaml
   - mcp-gateway-configmap.yaml
   - mcp-gateway-pvc.yaml
-  # Azure MCP Server - DISABLED until Docker Hub images are built
-  # Enable after running: ./build/build-and-push.sh
-  # And creating: kubectl create secret docker-registry dockerhub-regcred ...
-  #- azure-mcp-deployment.yaml
-  #- azure-mcp-service.yaml
-  #- azure-mcp-configmap.yaml
-  # Excel MCP Server - DISABLED until ready
-  #- excel-mcp-deployment.yaml
-  #- excel-mcp-service.yaml
-  #- excel-mcp-configmap.yaml
-  # Ingress (Gateway routes only for now)
+  # Web Search MCP Server - Free Google search, no API keys
+  - websearch-mcp-deployment.yaml
+  # Redis - For MCP server caching
+  - redis-deployment.yaml
+  # Ingress
   - ingress.yaml

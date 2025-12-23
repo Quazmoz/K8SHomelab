@@ -45,25 +45,14 @@ spec:
             name: mcp-gateway
             port:
               number: 5235
-  # Azure MCP Server - uncomment after enabling in kustomization.yaml
-  #- host: azure-mcp.k8s.local
-  #  http:
-  #    paths:
-  #    - path: /
-  #      pathType: Prefix
-  #      backend:
-  #        service:
-  #          name: azure-mcp
-  #          port:
-  #            number: 3001
-  # Excel MCP Server - uncomment after enabling in kustomization.yaml
-  #- host: excel-mcp.k8s.local
-  #  http:
-  #    paths:
-  #    - path: /
-  #      pathType: Prefix
-  #      backend:
-  #        service:
-  #          name: excel-mcp
-  #            port:
-  #            number: 3000
+  # Web Search MCP Server
+  - host: websearch-mcp.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: websearch-mcp
+            port:
+              number: 3002
