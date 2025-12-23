@@ -8,8 +8,6 @@ resources:
   - mcp-gateway-service.yaml
   - mcp-gateway-configmap.yaml
   - mcp-gateway-pvc.yaml
-  # Web Search MCP Server - Free Google search, no API keys
-  - websearch-mcp-deployment.yaml
   # Redis - For MCP server caching
   - redis-deployment.yaml
   - redisinsight-deployment.yaml
