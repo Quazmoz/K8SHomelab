@@ -1,0 +1,74 @@
+---
+# RedisInsight Deployment
+# Official Redis GUI for browsing, querying, and monitoring
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redisinsight
+  namespace: mcp-servers
+  labels:
+    app: redisinsight
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redisinsight
+  template:
+    metadata:
+      labels:
+        app: redisinsight
+    spec:
+      containers:
+      - name: redisinsight
+        image: redis/redisinsight:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5540
+          name: web
+        env:
+        - name: RI_APP_PORT
+          value: "5540"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 5540
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 5540
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+        - name: redisinsight-data
+          mountPath: /data
+      volumes:
+      - name: redisinsight-data
+        emptyDir: {}
+
+---
+# RedisInsight Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redisinsight
+  namespace: mcp-servers
+  labels:
+    app: redisinsight
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5540
+    targetPort: 5540
+    protocol: TCP
+    name: web
+  selector:
+    app: redisinsight

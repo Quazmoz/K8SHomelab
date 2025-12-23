@@ -12,5 +12,6 @@ resources:
   - websearch-mcp-deployment.yaml
   # Redis - For MCP server caching
   - redis-deployment.yaml
+  - redisinsight-deployment.yaml
   # Ingress
   - ingress.yaml

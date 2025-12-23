@@ -56,3 +56,14 @@ spec:
             name: websearch-mcp
             port:
               number: 3002
+  # RedisInsight - Redis GUI
+  - host: redisinsight.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: redisinsight
+            port:
+              number: 5540
