@@ -21,4 +21,3 @@ resources:
   - ./loki
   - ./mcp-servers
   - ./openwebui
-  #- ./wireguard
