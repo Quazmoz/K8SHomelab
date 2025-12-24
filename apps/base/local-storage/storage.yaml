@@ -7,6 +7,70 @@ provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Retain
 ---
+# USB Storage Class for slow/cheap storage on Raspberry Pi 3
+# Use for: logs, archives, backups - NOT for databases or real-time data
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: usb-slow-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
+# USB Drive 1 on Raspberry Pi 3 (7.5GB - sda1)
+# Mount point: /mnt/usb-logs-1
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: usb-logs-1-pv
+  labels:
+    type: usb-slow
+spec:
+  capacity:
+    storage: 7Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: usb-slow-storage
+  local:
+    path: /mnt/usb-logs-1
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - raspberrypi3
+---
+# USB Drive 2 on Raspberry Pi 3 (3.8GB - sdb)
+# Mount point: /mnt/usb-logs-2
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: usb-logs-2-pv
+  labels:
+    type: usb-slow
+spec:
+  capacity:
+    storage: 3Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: usb-slow-storage
+  local:
+    path: /mnt/usb-logs-2
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - raspberrypi3
+---
 # The Persistent Volume for Prometheus data
 apiVersion: v1
 kind: PersistentVolume
