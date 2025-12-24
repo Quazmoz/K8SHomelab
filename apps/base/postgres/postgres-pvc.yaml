@@ -6,6 +6,7 @@ metadata:
 spec:
   # This must match the storage class of our PV
   storageClassName: local-storage
+  volumeName: postgres-local-pv
   
   # This must match the access mode of our PV
   accessModes:
