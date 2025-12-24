@@ -12,6 +12,7 @@ spec:
     - ReadWriteOnce
   # Must match the storageClassName in local-storage/storage.yaml
   storageClassName: local-storage
+  volumeName: mcp-gateway-local-pv
   resources:
     requests:
       storage: 1Gi

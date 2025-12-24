@@ -25,7 +25,7 @@ spec:
         enabled: true
         storageClass: "local-storage"
         size: 45Gi
-        existingClaim: ""
+        existingClaim: "prometheus-server"
       resources:
         requests:
           memory: "512Mi"

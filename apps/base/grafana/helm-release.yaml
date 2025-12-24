@@ -51,6 +51,7 @@ spec:
       type: pvc
       storageClassName: "local-storage"
       size: 25Gi
+      existingClaim: "grafana"
 
     # --- Secret Mounting ---
     # This securely mounts the postgres password into the Grafana pod
