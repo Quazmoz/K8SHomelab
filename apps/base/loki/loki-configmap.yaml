@@ -50,5 +50,5 @@ data:
             period: 24h
     
     ruler:
-      alertmanager_url: http://prometheus-alertmanager.default.svc:9093
+      alertmanager_url: http://prometheus-alertmanager.apps.svc:9093
 

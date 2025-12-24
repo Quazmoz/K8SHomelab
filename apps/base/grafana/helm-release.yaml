@@ -30,7 +30,7 @@ spec:
         - name: Prometheus
           type: prometheus
           uid: prometheus
-          url: http://prometheus-server.default.svc.cluster.local
+          url: http://prometheus-server.apps.svc.cluster.local
           access: proxy
           isDefault: true
         # TODO: This datasource uses a password from an insecure, plain-text secret.

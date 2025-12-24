@@ -29,7 +29,7 @@ spec:
               ARCHIVE_DIR="/archives/loki"
               TIMESTAMP=$(date +%Y%m%d_%H%M%S)
               ARCHIVE_FILE="${ARCHIVE_DIR}/loki_logs_${TIMESTAMP}.json.gz"
-              LOKI_URL="http://loki.default.svc:3100"
+              LOKI_URL="http://loki.apps.svc:3100"
               
               # Calculate time range: from 14 days ago to 7 days ago
               # This archives logs between 7-14 days old
