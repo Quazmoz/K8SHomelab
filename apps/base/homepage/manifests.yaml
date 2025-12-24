@@ -14,11 +14,28 @@ metadata:
 data:
   settings.yaml: |
     title: Homelab Dashboard
-    debug: true
-    providers:
-      kubernetes:
-        inCluster: true
-        refreshInterval: 10
+    background: 
+      image: https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920
+      opacity: 15
+    theme: dark
+    color: slate
+    headerStyle: clean
+    layout:
+      Monitoring:
+        style: row
+        columns: 3
+      Automation:
+        style: row
+        columns: 2
+      AI & Tools:
+        style: row
+        columns: 2
+      Admin:
+        style: row
+        columns: 2
+      Media:
+        style: row
+        columns: 1
 
   services.yaml: |-
     - Monitoring:
