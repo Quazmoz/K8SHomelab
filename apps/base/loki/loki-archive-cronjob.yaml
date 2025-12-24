@@ -1,0 +1,82 @@
+# Weekly Loki log archival CronJob
+# Runs every Sunday at 3 AM EST (8 AM UTC) and archives old logs to USB storage
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: loki-archive
+  namespace: default
+spec:
+  schedule: "0 8 * * 0"  # 8 AM UTC every Sunday = 3 AM EST
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          # Run on raspberrypi3 where USB storage is mounted
+          nodeSelector:
+            kubernetes.io/hostname: raspberrypi3
+          restartPolicy: OnFailure
+          containers:
+          - name: loki-archive
+            image: curlimages/curl:8.5.0
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              ARCHIVE_DIR="/archives/loki"
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              ARCHIVE_FILE="${ARCHIVE_DIR}/loki_logs_${TIMESTAMP}.json.gz"
+              LOKI_URL="http://loki.default.svc:3100"
+              
+              # Calculate time range: from 14 days ago to 7 days ago
+              # This archives logs between 7-14 days old
+              END_TIME=$(date -d "7 days ago" +%s)000000000
+              START_TIME=$(date -d "14 days ago" +%s)000000000
+              
+              echo "Starting Loki archive at $(date)"
+              echo "Archiving logs from $(date -d '14 days ago') to $(date -d '7 days ago')"
+              mkdir -p ${ARCHIVE_DIR}
+              
+              # Query Loki for logs in the time range
+              # Using stream selector to get all logs
+              echo "Querying Loki for logs..."
+              curl -s -G "${LOKI_URL}/loki/api/v1/query_range" \
+                --data-urlencode "query={job=~\".+\"}" \
+                --data-urlencode "start=${START_TIME}" \
+                --data-urlencode "end=${END_TIME}" \
+                --data-urlencode "limit=10000" \
+                | gzip > ${ARCHIVE_FILE}
+              
+              if [ -s ${ARCHIVE_FILE} ]; then
+                echo "Archive successful: ${ARCHIVE_FILE}"
+                ls -lh ${ARCHIVE_FILE}
+                
+                # Cleanup old archives (keep last 4 weeks)
+                echo "Cleaning up archives older than 28 days..."
+                find ${ARCHIVE_DIR} -name "loki_logs_*.json.gz" -mtime +28 -delete
+                
+                echo "Current archives:"
+                ls -lah ${ARCHIVE_DIR}
+              else
+                echo "Archive may be empty (no logs in time range)"
+                rm -f ${ARCHIVE_FILE}
+              fi
+              
+              echo "Archive job completed at $(date)"
+            volumeMounts:
+            - name: archive-storage
+              mountPath: /archives
+            resources:
+              requests:
+                memory: "32Mi"
+                cpu: "25m"
+              limits:
+                memory: "128Mi"
+                cpu: "100m"
+          volumes:
+          - name: archive-storage
+            persistentVolumeClaim:
+              claimName: loki-archive-pvc

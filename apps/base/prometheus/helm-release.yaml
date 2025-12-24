@@ -18,10 +18,19 @@ spec:
     alertmanager:
       enabled: false
     pushgateway:
-      enabled: false
+      enabled: true
 
     server:
       persistentVolume:
         enabled: true
-        storageClass: "usb-slow-storage"
-        size: 7Gi
+        storageClass: "local-storage"
+        size: 45Gi
+        existingClaim: ""
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "250m"
+        limits:
+          memory: "2Gi"
+          cpu: "1000m"
+      retention: "15d"

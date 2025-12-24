@@ -4,3 +4,5 @@ resources:
   - postgres-secret.yaml
   - postgres-manifest.yaml
   - postgres-pvc.yaml
+  - postgres-backup-pvc.yaml
+  - postgres-backup-cronjob.yaml

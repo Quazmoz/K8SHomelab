@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-archive-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: usb-slow-storage
+  resources:
+    requests:
+      storage: 3Gi
+  selector:
+    matchLabels:
+      type: usb-slow
