@@ -219,8 +219,8 @@ spec:
             name: homepage-config
         - name: logs
           emptyDir: {}
-
-# --- 6. The Ingress rule to expose Homepage to your network ---
+---
+# --- 7. The Ingress rule to expose Homepage to your network ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
