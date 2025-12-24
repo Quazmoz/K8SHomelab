@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin
+  namespace: pgadmin
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: pgadmin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+  namespace: pgadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgadmin
+  template:
+    metadata:
+      labels:
+        app: pgadmin
+    spec:
+      # Run on workstation only (not Raspberry Pis or Oracle Cloud)
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      securityContext:
+        fsGroup: 5050
+        runAsUser: 5050
+        runAsGroup: 5050
+      containers:
+        - name: pgadmin
+          image: dpage/pgadmin4:8.14
+          ports:
+            - containerPort: 80
+          env:
+            - name: PGADMIN_DEFAULT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: pgadmin-credentials
+                  key: PGADMIN_DEFAULT_EMAIL
+            - name: PGADMIN_DEFAULT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgadmin-credentials
+                  key: PGADMIN_DEFAULT_PASSWORD
+            - name: PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION
+              value: "False"
+            - name: PGADMIN_CONFIG_LOGIN_BANNER
+              value: '"Homelab PostgreSQL Admin"'
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /misc/ping
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /misc/ping
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 30
