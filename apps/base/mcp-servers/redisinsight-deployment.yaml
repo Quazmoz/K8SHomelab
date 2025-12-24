@@ -18,6 +18,8 @@ spec:
       labels:
         app: redisinsight
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
       containers:
       - name: redisinsight
         image: redis/redisinsight:latest

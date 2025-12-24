@@ -20,6 +20,8 @@ spec:
         app: redis
         component: cache
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
       containers:
       - name: redis
         image: redis:7-alpine
