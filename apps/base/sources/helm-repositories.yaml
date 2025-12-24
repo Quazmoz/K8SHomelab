@@ -25,12 +25,15 @@ spec:
   interval: 24h
   url: https://grafana.github.io/helm-charts
 ---
-# The official Pi-hole chart repository
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
-  name: pi-hole
-  namespace: flux-system
-spec:
-  interval: 24h
-  url: https://pi-hole.github.io/pi-hole-helm-chart/
+# Pi-hole Helm repository - DISABLED (URL returns 404)
+# If you want Pi-hole, use the mojo2600 community chart instead:
+# https://mojo2600.github.io/pihole-kubernetes/
+# ---
+# apiVersion: source.toolkit.fluxcd.io/v1
+# kind: HelmRepository
+# metadata:
+#   name: pi-hole
+#   namespace: flux-system
+# spec:
+#   interval: 24h
+#   url: https://pi-hole.github.io/pi-hole-helm-chart/
