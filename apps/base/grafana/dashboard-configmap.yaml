@@ -161,7 +161,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "label_replace(100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100), \"node\", \"raspberrypi-4\", \"instance\", \"192.168.1.21:9100\") or label_replace(100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100), \"node\", \"raspberrypi-3\", \"instance\", \"192.168.1.58:9100\") or label_replace(100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100), \"node\", \"hp-probook\", \"instance\", \"192.168.1.15:9100\")",
+              "expr": "label_replace(label_replace(label_replace(100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100), \"node\", \"raspberrypi-4\", \"instance\", \"192.168.1.21:9100\"), \"node\", \"raspberrypi-3\", \"instance\", \"192.168.1.58:9100\"), \"node\", \"hp-probook\", \"instance\", \"192.168.1.15:9100\")",
               "instant": true,
               "legendFormat": "{{node}}"
             }
