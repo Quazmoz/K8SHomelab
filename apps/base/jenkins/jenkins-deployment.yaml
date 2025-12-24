@@ -94,7 +94,7 @@ metadata:
   namespace: apps
   annotations:
     # Homepage Annotations
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "Automation"
     gethomepage.dev/name: "Jenkins"
     gethomepage.dev/icon: "jenkins.png"

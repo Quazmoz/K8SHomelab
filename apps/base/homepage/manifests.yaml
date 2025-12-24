@@ -71,21 +71,21 @@ data:
     - AI & Tools:
         - OpenWebUI:
             href: http://openwebui.k8s.local
-            icon: open-webui.png
+            icon: si-openai
             description: LLM Chat Interface
         - MCP Gateway:
             href: http://mcp-gateway.k8s.local
-            icon: mcp.png
+            icon: mdi-chip
             description: Model Context Protocol
 
     - Admin:
         - pgAdmin:
             href: http://pgadmin.k8s.local
-            icon: pgadmin.png
+            icon: si-postgresql
             description: PostgreSQL Admin
         - RedisInsight:
             href: http://redisinsight.k8s.local
-            icon: redis.png
+            icon: si-redis
             description: Redis Admin
 
   widgets.yaml: |
@@ -265,7 +265,7 @@ metadata:
   name: homepage
   namespace: apps
   annotations:
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "Cluster Tools"
     gethomepage.dev/name: "Homepage"
     gethomepage.dev/icon: "homepage.png"

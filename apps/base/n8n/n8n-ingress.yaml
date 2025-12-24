@@ -5,7 +5,7 @@ metadata:
   namespace: apps
   annotations:
     # Annotations for Homepage Service Discovery
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "Automation"
     gethomepage.dev/name: "n8n"
     gethomepage.dev/icon: "n8n.png"

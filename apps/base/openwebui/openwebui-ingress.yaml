@@ -12,7 +12,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     # Homepage integration
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "AI & Automation"
     gethomepage.dev/name: "OpenWebUI"
     gethomepage.dev/icon: "mdi-robot-outline"
