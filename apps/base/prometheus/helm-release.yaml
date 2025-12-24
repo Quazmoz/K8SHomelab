@@ -23,5 +23,5 @@ spec:
     server:
       persistentVolume:
         enabled: true
-        storageClass: "local-storage"
-        size: 45Gi
+        storageClass: "usb-slow-storage"
+        size: 7Gi
