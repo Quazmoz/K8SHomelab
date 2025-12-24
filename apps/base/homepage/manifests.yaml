@@ -21,22 +21,42 @@ data:
         inCluster: true
         refreshInterval: 10
 
-  services.yaml: |
-    - "Cluster Tools":
+  services.yaml: |-
+    - Cluster Tools:
+        - Kubernetes Dashboard:
+            href: http://dashboard.k8s.local
+            icon: kubernetes-dashboard.png
+            description: K8s Management
+        - Prometheus:
+            href: http://prometheus.k8s.local
+            icon: prometheus.png
+            description: Metrics
 
-    - "Monitoring":
+    - Monitoring:
+        - Grafana:
+            href: http://grafana.k8s.local
+            icon: grafana.png
+            description: Dashboards
+        - Loki:
+            href: http://loki.k8s.local
+            icon: loki.png
+            description: Logs
 
-    - "Media":
-        - "Plex":
+    - Media:
+        - Plex:
             href: http://192.168.1.221:32400/web
             icon: plex.png
             description: Media Server
-        - "Nextcloud":
-            href: http://nextcloud.k8s.local
-            icon: nextcloud.png
-            description: Storage
 
-    - "Automation":
+    - Automation:
+        - Jenkins:
+            href: http://jenkins.k8s.local
+            icon: jenkins.png
+            description: CI/CD
+        - n8n:
+            href: http://n8n.k8s.local
+            icon: n8n.png
+            description: Workflow Automation
 
   widgets.yaml: |
     - search:
