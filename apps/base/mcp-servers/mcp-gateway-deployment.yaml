@@ -6,7 +6,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mcp-gateway
-  namespace: mcp-servers
+  namespace: apps
   labels:
     app: mcp-gateway
     component: mcp-gateway

@@ -4,7 +4,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: loki-archive
-  namespace: default
+  namespace: apps
 spec:
   schedule: "0 8 * * 0"  # 8 AM UTC every Sunday = 3 AM EST
   concurrencyPolicy: Forbid

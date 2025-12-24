@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: prometheus-server
-  namespace: default
+  namespace: apps
   annotations:
     # Annotations for Homepage Service Discovery
     gethomepage.dev/enabled: "true"

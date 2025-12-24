@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-dashboards
-  namespace: default
+  namespace: apps
   labels:
     # This label is CRITICAL. It tells the Grafana sidecar to load this file.
     grafana_dashboard: "1"

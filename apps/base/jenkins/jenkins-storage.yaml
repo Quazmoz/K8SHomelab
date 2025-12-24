@@ -3,7 +3,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jenkins-home
-  namespace: default
+  namespace: apps
 spec:
   # This must match the storage class of our PV
   storageClassName: local-storage

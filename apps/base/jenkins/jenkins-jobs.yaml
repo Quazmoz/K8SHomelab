@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: jenkins-jobs
-  namespace: default
+  namespace: apps
   labels:
     app: jenkins
     component: job-config

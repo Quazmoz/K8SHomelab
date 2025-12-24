@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: jenkins-config
-  namespace: default
+  namespace: apps
 data:
   # A list of plugins to be installed by the init container.
   # We provide only the names, and Jenkins will fetch the latest compatible versions.

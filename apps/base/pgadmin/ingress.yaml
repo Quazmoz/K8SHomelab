@@ -2,13 +2,13 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: pgadmin-ingress
-  namespace: pgadmin
+  namespace: apps
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 spec:
   ingressClassName: nginx
   rules:
-    - host: pgadmin.homelab.local
+    - host: pgadmin.k8s.local
       http:
         paths:
           - path: /

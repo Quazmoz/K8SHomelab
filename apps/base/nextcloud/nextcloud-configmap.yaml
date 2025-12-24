@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nextcloud-config
-  namespace: default
+  namespace: apps
 data:
   MYSQL_DATABASE: nextcloud
   MYSQL_USER: nextcloud
