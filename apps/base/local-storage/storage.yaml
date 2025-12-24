@@ -200,3 +200,28 @@ spec:
           operator: In
           values:
           - quinn-hpprobook430g6
+
+---
+# The Persistent Volume for Homepage config
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: homepage-local-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/homepage
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6

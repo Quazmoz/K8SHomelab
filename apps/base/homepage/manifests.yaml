@@ -126,7 +126,23 @@ spec:
   selector:
     app.kubernetes.io/name: homepage
 ---
-# --- 5. The Deployment to run the Homepage application ---
+# --- 5. The PVC for Homepage config ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: homepage-config-pvc
+  namespace: default
+  labels:
+    app.kubernetes.io/name: homepage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 1Gi
+---
+# --- 6. The Deployment to run the Homepage application ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -143,7 +159,7 @@ spec:
         app.kubernetes.io/name: homepage
     spec:
       serviceAccountName: homepage
-      # Node affinity to run only on non-ARM nodes is restored
+      # Node affinity to run only on non-ARM nodes
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -159,6 +175,27 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: "OnRootMismatch"
+      # Init container copies config from ConfigMap to PVC on first run
+      initContainers:
+        - name: init-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              # Only copy if config doesn't exist yet (first run)
+              if [ ! -f /config/settings.yaml ]; then
+                echo "First run - copying config files..."
+                cp /configmap/* /config/
+                echo "Config files copied."
+              else
+                echo "Config already exists, skipping copy."
+              fi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: configmap
+              mountPath: /configmap
       containers:
         - name: homepage
           image: "ghcr.io/gethomepage/homepage:v1.8.0"
@@ -168,20 +205,21 @@ spec:
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
               value: "homepage.k8s.local"
-          # Corrected volume mounts
           volumeMounts:
             - name: config
               mountPath: /app/config
             - name: logs
               mountPath: /app/config/logs
-      # Corrected volumes
       volumes:
         - name: config
+          persistentVolumeClaim:
+            claimName: homepage-config-pvc
+        - name: configmap
           configMap:
             name: homepage-config
         - name: logs
           emptyDir: {}
----
+
 # --- 6. The Ingress rule to expose Homepage to your network ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
