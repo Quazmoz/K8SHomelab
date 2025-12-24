@@ -222,3 +222,287 @@ data:
       "weekStart": ""
     }
 
+  # Homelab Architecture Diagram Dashboard
+  homelab-architecture.json: |-
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #73bf69;'>🏠 Quinn's Homelab Architecture</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>Network: 192.168.1.0/24 | Router: 192.168.1.1 | K8s Cluster: 192.168.1.221</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "HP ProBook 430 G6",
+          "description": "Primary compute node - x86_64",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "up{instance=~\".*192.168.1.15.*\"}",
+              "instant": true
+            }
+          ],
+          "options": {
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+            "orientation": "horizontal",
+            "textMode": "name",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "1": { "text": "🟢 ONLINE", "color": "green" } } },
+                { "type": "value", "options": { "0": { "text": "🔴 OFFLINE", "color": "red" } } }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }]
+              }
+            }
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 3 },
+          "type": "stat",
+          "title": "Raspberry Pi 4",
+          "description": "K8s control plane - ARM64",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "up{instance=~\".*raspberrypi.*|.*192.168.1.221.*\"}",
+              "instant": true
+            }
+          ],
+          "options": {
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+            "orientation": "horizontal",
+            "textMode": "name",
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "1": { "text": "🟢 ONLINE", "color": "green" } } },
+                { "type": "value", "options": { "0": { "text": "🔴 OFFLINE", "color": "red" } } }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }]
+              }
+            }
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 3 },
+          "type": "stat",
+          "title": "Cluster Total Pods",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(kube_pod_status_phase{phase=\"Running\"})",
+              "instant": true
+            }
+          ],
+          "options": {
+            "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "center"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "green", "value": null }]
+              }
+            }
+          }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+          "type": "text",
+          "title": "Services on HP ProBook (x86)",
+          "options": {
+            "mode": "html",
+            "content": "<div style='font-family: monospace; padding: 10px; background: #1a1a1a; border-radius: 8px;'><h3 style='color: #73bf69; margin-top: 0;'>💻 quinn-hpprobook430g6</h3><table style='width: 100%; color: #d8d9da;'><tr><td>🔧 Jenkins</td><td style='color: #73bf69;'>CI/CD</td></tr><tr><td>📊 Grafana</td><td style='color: #73bf69;'>Monitoring</td></tr><tr><td>📈 Prometheus</td><td style='color: #73bf69;'>Metrics</td></tr><tr><td>📝 Loki</td><td style='color: #73bf69;'>Logs</td></tr><tr><td>🎬 Plex</td><td style='color: #73bf69;'>Media</td></tr><tr><td>⚡ n8n</td><td style='color: #73bf69;'>Automation</td></tr><tr><td>🐘 PostgreSQL</td><td style='color: #73bf69;'>Database</td></tr><tr><td>🏠 Homepage</td><td style='color: #73bf69;'>Dashboard</td></tr><tr><td>🤖 MCP Gateway</td><td style='color: #73bf69;'>AI Tools</td></tr><tr><td>🔴 Redis + RedisInsight</td><td style='color: #73bf69;'>Cache</td></tr></table></div>"
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+          "type": "text",
+          "title": "Services on Raspberry Pis (ARM64)",
+          "options": {
+            "mode": "html",
+            "content": "<div style='font-family: monospace; padding: 10px; background: #1a1a1a; border-radius: 8px;'><h3 style='color: #ff9830; margin-top: 0;'>🍓 Raspberry Pi Cluster</h3><table style='width: 100%; color: #d8d9da;'><tr><td>🎛️ K8s Control Plane</td><td style='color: #ff9830;'>Orchestration</td></tr><tr><td>🌐 Ingress Nginx</td><td style='color: #ff9830;'>Load Balancer</td></tr><tr><td>⚖️ MetalLB</td><td style='color: #ff9830;'>L2 LB</td></tr><tr><td>📊 Metrics Server</td><td style='color: #ff9830;'>Cluster Metrics</td></tr><tr><td>📋 K8s Dashboard</td><td style='color: #ff9830;'>Cluster UI</td></tr></table><br/><p style='color: #8e8e8e; font-size: 12px;'>ARM nodes handle lightweight infrastructure services while x86 runs compute-heavy workloads.</p></div>"
+          }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 6, "w": 24, "x": 0, "y": 15 },
+          "type": "text",
+          "title": "Network Topology",
+          "options": {
+            "mode": "html",
+            "content": "<div style='font-family: monospace; padding: 20px; background: #1a1a1a; border-radius: 8px; text-align: center;'><pre style='color: #73bf69; font-size: 14px; margin: 0;'>                    ┌─────────────────────────────────────────────────────────────────┐\n                    │                      🌐 INTERNET                                │\n                    └────────────────────────────┬────────────────────────────────────┘\n                                                 │\n                                     ┌───────────┴───────────┐\n                                     │   🔒 Router/Firewall  │\n                                     │     192.168.1.1       │\n                                     └───────────┬───────────┘\n                                                 │\n              ┌──────────────────────────────────┼──────────────────────────────────┐\n              │                                  │                                  │\n    ┌─────────┴─────────┐              ┌─────────┴─────────┐              ┌─────────┴─────────┐\n    │  💻 HP ProBook    │              │  🍓 Raspberry Pi  │              │  🍓 Raspberry Pi  │\n    │  192.168.1.15     │              │  192.168.1.221    │              │  192.168.1.x      │\n    │  (Worker Node)    │              │  (Control Plane)  │              │  (Worker Node)    │\n    └───────────────────┘              └───────────────────┘              └───────────────────┘</pre></div>"
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 21 },
+          "type": "gauge",
+          "title": "ProBook CPU",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\".*192.168.1.15.*\"}[5m])) * 100)",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 70 }, { "color": "red", "value": 90 }]
+              }
+            }
+          }
+        },
+        {
+          "id": 9,
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 21 },
+          "type": "gauge",
+          "title": "ProBook Memory",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "(1 - (node_memory_MemAvailable_bytes{instance=~\".*192.168.1.15.*\"} / node_memory_MemTotal_bytes{instance=~\".*192.168.1.15.*\"})) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 70 }, { "color": "red", "value": 90 }]
+              }
+            }
+          }
+        },
+        {
+          "id": 10,
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 21 },
+          "type": "gauge",
+          "title": "Pi Cluster CPU",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\".*raspberrypi.*|.*192.168.1.221.*\"}[5m])) * 100)",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 70 }, { "color": "red", "value": 90 }]
+              }
+            }
+          }
+        },
+        {
+          "id": 11,
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 21 },
+          "type": "gauge",
+          "title": "Pi Cluster Memory",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "(1 - (avg(node_memory_MemAvailable_bytes{instance=~\".*raspberrypi.*|.*192.168.1.221.*\"}) / avg(node_memory_MemTotal_bytes{instance=~\".*raspberrypi.*|.*192.168.1.221.*\"}))) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 70 }, { "color": "red", "value": 90 }]
+              }
+            }
+          }
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "style": "dark",
+      "tags": ["homelab", "architecture"],
+      "templating": { "list": [] },
+      "time": { "from": "now-5m", "to": "now" },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Homelab Architecture",
+      "uid": "homelab-arch",
+      "version": 1,
+      "weekStart": ""
+    }
+

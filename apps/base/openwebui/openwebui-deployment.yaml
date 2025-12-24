@@ -1,0 +1,115 @@
+---
+# OpenWebUI Deployment
+# Self-hosted web UI for LLM interactions
+# Docs: https://docs.openwebui.com/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openwebui
+  namespace: default
+  labels:
+    app: openwebui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openwebui
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: openwebui
+    spec:
+      # Run on x86 node for better performance
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: NotIn
+                values:
+                - arm
+                - arm64
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+      - name: openwebui
+        image: ghcr.io/open-webui/open-webui:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        # Disable authentication for homelab use (enable if needed)
+        - name: WEBUI_AUTH
+          value: "true"
+        # Default admin email (change this)
+        - name: WEBUI_SECRET_KEY
+          value: "your-secret-key-change-me"
+        # OpenAI API configuration (placeholder - user will update)
+        - name: OPENAI_API_BASE_URL
+          value: ""
+        - name: OPENAI_API_KEY
+          value: ""
+        # Ollama configuration (if using local Ollama)
+        - name: OLLAMA_BASE_URL
+          value: ""
+        # General settings
+        - name: ENV
+          value: "prod"
+        - name: ENABLE_SIGNUP
+          value: "true"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: openwebui-data
+          mountPath: /app/backend/data
+      volumes:
+      - name: openwebui-data
+        persistentVolumeClaim:
+          claimName: openwebui-pvc
+
+---
+# OpenWebUI Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: openwebui
+  namespace: default
+  labels:
+    app: openwebui
+spec:
+  type: ClusterIP
+  selector:
+    app: openwebui
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP

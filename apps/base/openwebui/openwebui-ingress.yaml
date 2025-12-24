@@ -1,0 +1,32 @@
+---
+# OpenWebUI Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: openwebui
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # Increase timeouts for LLM streaming responses
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # Homepage integration
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "AI & Automation"
+    gethomepage.dev/name: "OpenWebUI"
+    gethomepage.dev/icon: "mdi-robot-outline"
+    gethomepage.dev/description: "LLM Chat Interface"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: openwebui.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: openwebui
+            port:
+              number: 8080

@@ -20,4 +20,5 @@ resources:
   - ./jenkins
   - ./loki
   - ./mcp-servers
+  - ./openwebui
   #- ./wireguard
