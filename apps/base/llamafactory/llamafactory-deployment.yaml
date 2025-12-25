@@ -1,0 +1,117 @@
+---
+# LLaMA Factory Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llamafactory
+  namespace: apps
+  labels:
+    app: llamafactory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llamafactory
+  template:
+    metadata:
+      labels:
+        app: llamafactory
+    spec:
+      # Run on workstation for x86 + more resources
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: llamafactory
+          image: hiyouga/llamafactory:latest
+          imagePullPolicy: IfNotPresent
+          command: ["llamafactory-cli", "webui"]
+          ports:
+            - name: webui
+              containerPort: 7860
+              protocol: TCP
+            - name: api
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: GRADIO_SERVER_NAME
+              value: "0.0.0.0"
+            - name: GRADIO_SERVER_PORT
+              value: "7860"
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "1000m"
+            limits:
+              memory: "12Gi"
+              cpu: "4000m"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: cache
+              mountPath: /root/.cache
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 7860
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7860
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: llamafactory-data
+        - name: cache
+          emptyDir: {}
+---
+# LLaMA Factory Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: llamafactory
+  namespace: apps
+  labels:
+    app: llamafactory
+spec:
+  type: ClusterIP
+  ports:
+    - name: webui
+      port: 7860
+      targetPort: 7860
+      protocol: TCP
+    - name: api
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+  selector:
+    app: llamafactory
+---
+# LLaMA Factory Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: llamafactory
+  namespace: apps
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "500m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: llamafactory.k8s.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: llamafactory
+                port:
+                  number: 7860

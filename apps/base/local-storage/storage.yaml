@@ -314,3 +314,28 @@ spec:
           operator: In
           values:
           - quinn-hpprobook430g6
+
+---
+# The Persistent Volume for LLaMA Factory data (models, datasets, outputs)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: llamafactory-local-pv
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/llamafactory
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
