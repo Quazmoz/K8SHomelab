@@ -23,8 +23,7 @@ spec:
     persistence:
       config:
         enabled: true
-        storageClassName: "local-storage"
-        size: 5Gi
+        existingClaim: "pihole-config"
     
     # Set the admin password for the web UI
     adminPassword: "YourSecurePassword!"
