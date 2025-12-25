@@ -87,6 +87,10 @@ data:
             href: http://redisinsight.k8s.local
             icon: si-redis
             description: Redis Admin
+        - Pi-hole:
+            href: http://pihole.k8s.local/admin
+            icon: pi-hole.png
+            description: DNS Ad Blocking
 
   widgets.yaml: |
     - search:
