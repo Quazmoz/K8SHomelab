@@ -7,41 +7,38 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: pi-hole
-      version: "0.2.x" # A recent stable version of the new chart
+      chart: pihole
+      version: "2.x"
       sourceRef:
         kind: HelmRepository
-        name: pi-hole # This points to the new repository we added
+        name: mojo2600-pihole
         namespace: flux-system
       interval: 1m
   values:
-    # This is CRITICAL. It forces the pod to run only on your Pi 3 node.
+    # Force the pod to run on Pi 3 where the local storage is
     nodeSelector:
-      kubernetes.io/hostname: raspberrypi3 # IMPORTANT: Use the actual hostname of your Pi 3
+      kubernetes.io/hostname: raspberrypi3
 
-    # Use persistence to store the Pi-hole configuration
-    persistence:
-      config:
-        enabled: true
-        existingClaim: "pihole-config"
-    
     # Set the admin password for the web UI
-    adminPassword: "YourSecurePassword!"
+    admin:
+      password: "YourSecurePassword!"
 
-    # Expose the DNS service via a LoadBalancer so MetalLB gives it an IP
-    serviceTCP:
+    # Use existing PVC for persistence
+    persistentVolumeClaim:
+      enabled: true
+      existingClaim: "pihole-config"
+
+    # DNS service configuration
+    serviceDns:
       type: LoadBalancer
-    serviceUDP:
-      type: LoadBalancer
-    
-    # Expose the Web UI service via an Ingress on pihole.k8s.local
+
+    # Web service configuration  
+    serviceWeb:
+      type: ClusterIP
+
+    # Ingress for Web UI
     ingress:
-      web:
-        enabled: true
-        ingressClassName: nginx
-        hosts:
-          - host: pihole.k8s.local
-            paths:
-              - path: /
-                pathType: Prefix
-
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - pihole.k8s.local
