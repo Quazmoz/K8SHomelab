@@ -48,4 +48,15 @@ No credentials are stored in the repository.
 ---
 
 **Status:** ✅ Ready to Setup  
-**Last Updated:** 2025-12-05
+**Last Updated:** 2025-12-26
+
+---
+
+## 🌐 Networking
+
+- 📡 **[docs/NETWORK.md](docs/NETWORK.md)** - Network architecture overview
+- 🔧 **[docs/NETWORK_TROUBLESHOOTING.md](docs/NETWORK_TROUBLESHOOTING.md)** - Common issues and fixes
+
+## 🤖 AI Agent Resources
+
+- 🧠 **[AGENT_CONTEXT.md](AGENT_CONTEXT.md)** - Context document for AI agents working in this repo
