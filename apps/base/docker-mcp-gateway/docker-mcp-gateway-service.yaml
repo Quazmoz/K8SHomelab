@@ -1,0 +1,18 @@
+---
+# Docker MCP Gateway Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker-mcp-gateway
+  namespace: apps
+  labels:
+    app: docker-mcp-gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: docker-mcp-gateway
+  ports:
+  - name: gateway
+    port: 8811
+    targetPort: 8811
+    protocol: TCP

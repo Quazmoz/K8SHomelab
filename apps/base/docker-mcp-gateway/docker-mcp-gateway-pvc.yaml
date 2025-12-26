@@ -1,0 +1,17 @@
+---
+# Docker MCP Gateway Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: docker-mcp-gateway-pvc
+  namespace: apps
+  labels:
+    app: docker-mcp-gateway
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  volumeName: docker-mcp-gateway-local-pv
+  resources:
+    requests:
+      storage: 20Gi
