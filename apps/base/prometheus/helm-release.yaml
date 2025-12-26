@@ -34,6 +34,16 @@ spec:
           memory: "2Gi"
           cpu: "1000m"
       retention: "15d"
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+
+    kube-state-metrics:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+
+    pushgateway:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
 
     # Static scrape configs for Oracle VMs via WireGuard IPs
     extraScrapeConfigs: |
