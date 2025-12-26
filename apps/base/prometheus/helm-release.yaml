@@ -34,3 +34,18 @@ spec:
           memory: "2Gi"
           cpu: "1000m"
       retention: "15d"
+
+    # Static scrape configs for Oracle VMs via WireGuard IPs
+    extraScrapeConfigs: |
+      - job_name: 'oracle-wireguard-node'
+        static_configs:
+          - targets: ['10.49.104.1:9100']
+            labels:
+              instance: 'oracle-wireguard'
+              node: 'oracle-wireguard'
+      - job_name: 'oracle-groupmebot-node'
+        static_configs:
+          - targets: ['10.49.104.4:9100']
+            labels:
+              instance: 'oracle-groupmebot'
+              node: 'oracle-groupmebot'
