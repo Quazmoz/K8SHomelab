@@ -77,6 +77,10 @@ data:
             href: http://mcp-gateway.k8s.local
             icon: mdi-chip
             description: Model Context Protocol
+        - LLaMA Factory:
+            href: http://llamafactory.k8s.local
+            icon: mdi-brain
+            description: LLM Fine-Tuning
 
     - Admin:
         - pgAdmin:
