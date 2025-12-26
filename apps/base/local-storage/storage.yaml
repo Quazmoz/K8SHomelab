@@ -341,21 +341,21 @@ spec:
           - quinn-hpprobook430g6
 
 ---
-# The Persistent Volume for Docker MCP Gateway data
+# The Persistent Volume for Azure MCP Server data
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: docker-mcp-gateway-local-pv
+  name: azure-mcp-server-local-pv
 spec:
   capacity:
-    storage: 20Gi
+    storage: 5Gi
   volumeMode: Filesystem
   accessModes:
   - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /mnt/k8s-data/docker-mcp-gateway
+    path: /mnt/k8s-data/azure-mcp-server
   nodeAffinity:
     required:
       nodeSelectorTerms:

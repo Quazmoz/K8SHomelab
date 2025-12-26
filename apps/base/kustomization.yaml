@@ -24,4 +24,3 @@ resources:
   - ./openwebui
   - ./pgadmin
   - ./llamafactory
-  - ./docker-mcp-gateway

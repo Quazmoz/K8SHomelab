@@ -7,6 +7,8 @@ resources:
   - mcp-gateway-service.yaml
   - mcp-gateway-configmap.yaml
   - mcp-gateway-pvc.yaml
+  # Azure MCP Server - Microsoft's official Azure AI tools
+  - azure-mcp-server-deployment.yaml
   # Redis - For MCP server caching
   - redis-deployment.yaml
   - redisinsight-deployment.yaml
