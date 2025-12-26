@@ -1,0 +1,171 @@
+# Redis Dashboard
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-redis
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  redis.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #DC382D;'>🔴 Redis Dashboard</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>Memory usage, commands, and hit ratios</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "Memory Used",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "redis_memory_used_bytes",
+              "instant": true
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 3 },
+          "type": "stat",
+          "title": "Connected Clients",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "redis_connected_clients",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 3 },
+          "type": "stat",
+          "title": "Commands/sec",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "rate(redis_commands_processed_total[5m])",
+              "instant": true
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "ops" } }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 3 },
+          "type": "gauge",
+          "title": "Hit Ratio",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 80 }, { "color": "green", "value": 95 }]
+              }
+            }
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+          "type": "timeseries",
+          "title": "Memory Usage Over Time",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "redis_memory_used_bytes",
+              "legendFormat": "Used"
+            },
+            {
+              "refId": "B",
+              "expr": "redis_memory_max_bytes",
+              "legendFormat": "Max"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+          "type": "timeseries",
+          "title": "Commands per Second",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "rate(redis_commands_processed_total[5m])",
+              "legendFormat": "Commands/sec"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "ops" } }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 6, "w": 12, "x": 0, "y": 15 },
+          "type": "stat",
+          "title": "Total Keys",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(redis_db_keys)",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 15 },
+          "type": "stat",
+          "title": "Uptime",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "redis_uptime_in_seconds",
+              "instant": true
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "s" } }
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["database", "redis", "cache"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Redis",
+      "uid": "redis",
+      "version": 1
+    }

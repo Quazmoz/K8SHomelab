@@ -1,0 +1,151 @@
+# PostgreSQL Dashboard
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-postgresql
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  postgresql.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #336791;'>🐘 PostgreSQL Dashboard</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>Database connections, queries, and performance</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "Active Connections",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "pg_stat_activity_count{state=\"active\"}",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 3 },
+          "type": "stat",
+          "title": "Idle Connections",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "pg_stat_activity_count{state=\"idle\"}",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 3 },
+          "type": "stat",
+          "title": "Database Size",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(pg_database_size_bytes)",
+              "instant": true
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 3 },
+          "type": "stat",
+          "title": "Uptime",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "time() - pg_postmaster_start_time_seconds",
+              "instant": true
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "s" } }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+          "type": "timeseries",
+          "title": "Transactions per Second",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "rate(pg_stat_database_xact_commit[5m]) + rate(pg_stat_database_xact_rollback[5m])",
+              "legendFormat": "{{datname}}"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "ops" } }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+          "type": "timeseries",
+          "title": "Cache Hit Ratio",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read) * 100",
+              "legendFormat": "{{datname}}"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 6, "w": 24, "x": 0, "y": 15 },
+          "type": "table",
+          "title": "Database Sizes",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "pg_database_size_bytes",
+              "format": "table",
+              "instant": true
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": { "Time": true, "__name__": true, "instance": true, "job": true },
+                "renameByName": { "datname": "Database", "Value": "Size" }
+              }
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["database", "postgresql"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "PostgreSQL",
+      "uid": "postgresql",
+      "version": 1
+    }

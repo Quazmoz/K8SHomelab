@@ -1,0 +1,130 @@
+# Pod Resources Dashboard - CPU/Memory by pod
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-pod-resources
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  pod-resources.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #FF9830;'>📦 Pod Resources Dashboard</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>CPU and Memory usage by pod</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 3 },
+          "type": "timeseries",
+          "title": "Top 10 CPU Usage (cores)",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "topk(10, sum by (pod, namespace) (rate(container_cpu_usage_seconds_total{container!=\"\", container!=\"POD\"}[5m])))",
+              "legendFormat": "{{namespace}}/{{pod}}"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "short" } }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 3 },
+          "type": "timeseries",
+          "title": "Top 10 Memory Usage",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "topk(10, sum by (pod, namespace) (container_memory_working_set_bytes{container!=\"\", container!=\"POD\"}))",
+              "legendFormat": "{{namespace}}/{{pod}}"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 11 },
+          "type": "table",
+          "title": "All Pods Resource Usage",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (pod, namespace) (container_memory_working_set_bytes{container!=\"\", container!=\"POD\", namespace=\"apps\"})",
+              "format": "table",
+              "instant": true
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": { "Time": true },
+                "renameByName": { "namespace": "Namespace", "pod": "Pod", "Value": "Memory" }
+              }
+            },
+            { "id": "sortBy", "options": { "fields": {}, "sort": [{ "field": "Memory", "desc": true }] } }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
+          "type": "timeseries",
+          "title": "Container Restarts",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "increase(kube_pod_container_status_restarts_total[1h])",
+              "legendFormat": "{{namespace}}/{{pod}}"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
+          "type": "stat",
+          "title": "Pods Not Running",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(kube_pod_status_phase{phase!=\"Running\", phase!=\"Succeeded\"})",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 3 }]
+              }
+            }
+          }
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["pods", "resources"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Pod Resources",
+      "uid": "pod-resources",
+      "version": 1
+    }

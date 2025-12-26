@@ -1,0 +1,127 @@
+# Loki Logs Dashboard
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-loki
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  loki-logs.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #F2CC0C;'>📝 Loki Logs Dashboard</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>Log volume, errors, and recent activity</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "Loki Status",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "up{job=~\".*loki.*\"}",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "1": { "text": "🟢 ONLINE", "color": "green" } } },
+                { "type": "value", "options": { "0": { "text": "🔴 OFFLINE", "color": "red" } } }
+              ]
+            }
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 3 },
+          "type": "stat",
+          "title": "Ingester Memory",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(container_memory_working_set_bytes{pod=~\"loki.*\"})",
+              "instant": true
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "bytes" } }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 3 },
+          "type": "stat",
+          "title": "Active Streams",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "loki_ingester_memory_streams",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 7 },
+          "type": "timeseries",
+          "title": "Log Bytes Ingested/sec",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "rate(loki_distributor_bytes_received_total[5m])",
+              "legendFormat": "Bytes/sec"
+            }
+          ],
+          "fieldConfig": { "defaults": { "unit": "Bps" } }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 15 },
+          "type": "logs",
+          "title": "Recent Error Logs",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "{namespace=\"apps\"} |~ \"(?i)(error|fail|exception|panic)\"",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": true,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending"
+          }
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["logs", "loki"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Loki Logs",
+      "uid": "loki-logs",
+      "version": 1
+    }
