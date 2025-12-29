@@ -34,10 +34,13 @@ spec:
         args:
           - |
             echo "Starting mcpo with Azure credentials..."
-            echo "AZURE_TENANT_ID: ${AZURE_TENANT_ID:0:8}..."
-            echo "AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:0:8}..."
+            echo "AZURE_TENANT_ID is set: ${AZURE_TENANT_ID:+yes}"
+            echo "AZURE_CLIENT_ID is set: ${AZURE_CLIENT_ID:+yes}"
             exec mcpo --host 0.0.0.0 --port 8000 -- npx -y @azure/mcp@latest server start
         env:
+        # .NET globalization invariant mode - fixes libicu dependency
+        - name: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
+          value: "true"
         - name: AZURE_TENANT_ID
           valueFrom:
             secretKeyRef:
