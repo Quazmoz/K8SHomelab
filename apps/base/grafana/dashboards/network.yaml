@@ -35,7 +35,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "up{instance=~\".*10.49.104.1.*\"}",
+              "expr": "up{instance=~\".*10.49.104.1.*\", job=\"prometheus-prometheus-node-exporter\"}",
               "instant": true
             }
           ],
@@ -57,7 +57,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "up{instance=~\".*10.49.104.4.*\"}",
+              "expr": "up{instance=~\".*10.49.104.4.*\", job=\"prometheus-prometheus-node-exporter\"}",
               "instant": true
             }
           ],
@@ -79,7 +79,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "up{instance=~\".*192.168.1.15.*\"}",
+              "expr": "up{instance=~\".*192.168.1.15.*\", job=\"prometheus-prometheus-node-exporter\"}",
               "instant": true
             }
           ],
@@ -101,7 +101,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "up{instance=~\".*192.168.1.58.*\"}",
+              "expr": "up{instance=~\".*192.168.1.58.*\", job=\"prometheus-prometheus-node-exporter\"}",
               "instant": true
             }
           ],

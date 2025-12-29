@@ -47,10 +47,6 @@ data:
             href: http://prometheus.k8s.local
             icon: prometheus.png
             description: Metrics Collection
-        - Loki:
-            href: http://loki.k8s.local
-            icon: loki.png
-            description: Log Aggregation
 
     - Media:
         - Plex:
