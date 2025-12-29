@@ -47,6 +47,10 @@ data:
             href: http://prometheus.k8s.local
             icon: prometheus.png
             description: Metrics Collection
+        - Uptime Kuma:
+            href: http://status.k8s.local
+            icon: uptime-kuma
+            description: Service Status Page
 
     - Media:
         - Plex:
@@ -91,6 +95,10 @@ data:
             href: http://pihole.k8s.local/admin
             icon: pi-hole.png
             description: DNS Ad Blocking
+        - Authentik:
+            href: http://auth.k8s.local
+            icon: authentik
+            description: SSO Identity Provider
 
   widgets.yaml: |
     - search:

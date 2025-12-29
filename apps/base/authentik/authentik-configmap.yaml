@@ -1,0 +1,26 @@
+---
+# Authentik Configuration
+# Non-sensitive configuration values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authentik-config
+  namespace: apps
+  labels:
+    app: authentik
+data:
+  # Database - uses existing postgres
+  AUTHENTIK_POSTGRESQL__HOST: "postgres.apps.svc.cluster.local"
+  AUTHENTIK_POSTGRESQL__PORT: "5432"
+  AUTHENTIK_POSTGRESQL__NAME: "authentik"
+  AUTHENTIK_POSTGRESQL__USER: "authentik"
+  # Redis - uses existing redis
+  AUTHENTIK_REDIS__HOST: "redis.apps.svc.cluster.local"
+  AUTHENTIK_REDIS__PORT: "6379"
+  # General
+  AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+  AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
+  AUTHENTIK_DISABLE_STARTUP_ANALYTICS: "true"
+  # Email (optional - configure if needed)
+  # AUTHENTIK_EMAIL__HOST: "smtp.example.com"
+  # AUTHENTIK_EMAIL__PORT: "587"

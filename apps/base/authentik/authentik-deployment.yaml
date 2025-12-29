@@ -1,0 +1,176 @@
+---
+# Authentik - Open-source Identity Provider
+# Provides SSO, OAuth2, SAML for all homelab services
+# Docs: https://goauthentik.io/docs
+# 
+# This deployment uses the embedded outpost mode for simplicity
+
+# Authentik Server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authentik-server
+  namespace: apps
+  labels:
+    app: authentik
+    component: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentik
+      component: server
+  template:
+    metadata:
+      labels:
+        app: authentik
+        component: server
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      containers:
+      - name: authentik
+        image: ghcr.io/goauthentik/server:2024.10.5
+        args: ["server"]
+        ports:
+        - containerPort: 9000
+          name: http
+        - containerPort: 9443
+          name: https
+        envFrom:
+        - secretRef:
+            name: authentik-secrets
+        - configMapRef:
+            name: authentik-config
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1500m"
+        livenessProbe:
+          httpGet:
+            path: /-/health/live/
+            port: 9000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /-/health/ready/
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: media
+          mountPath: /media
+        - name: templates
+          mountPath: /templates
+      volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: authentik-media-pvc
+      - name: templates
+        emptyDir: {}
+
+---
+# Authentik Worker
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authentik-worker
+  namespace: apps
+  labels:
+    app: authentik
+    component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentik
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: authentik
+        component: worker
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      containers:
+      - name: authentik
+        image: ghcr.io/goauthentik/server:2024.10.5
+        args: ["worker"]
+        envFrom:
+        - secretRef:
+            name: authentik-secrets
+        - configMapRef:
+            name: authentik-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: media
+          mountPath: /media
+      volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: authentik-media-pvc
+
+---
+# Authentik Server Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentik
+  namespace: apps
+  labels:
+    app: authentik
+spec:
+  type: ClusterIP
+  selector:
+    app: authentik
+    component: server
+  ports:
+  - name: http
+    port: 9000
+    targetPort: 9000
+  - name: https
+    port: 9443
+    targetPort: 9443
+
+---
+# Authentik Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: authentik
+  namespace: apps
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # Homepage annotations
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "Admin"
+    gethomepage.dev/name: "Authentik"
+    gethomepage.dev/icon: "authentik"
+    gethomepage.dev/description: "Identity Provider (SSO)"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: auth.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: authentik
+            port:
+              number: 9000

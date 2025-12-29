@@ -22,3 +22,5 @@ resources:
   - ./openwebui
   - ./pgadmin
   - ./llamafactory
+  - ./uptime-kuma
+  - ./authentik

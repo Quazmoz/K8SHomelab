@@ -1,0 +1,16 @@
+---
+# PVC for Uptime Kuma data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uptime-kuma-pvc
+  namespace: apps
+  labels:
+    app: uptime-kuma
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 1Gi

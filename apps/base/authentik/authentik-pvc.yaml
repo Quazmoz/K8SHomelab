@@ -1,0 +1,16 @@
+---
+# PVC for Authentik media files
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: authentik-media-pvc
+  namespace: apps
+  labels:
+    app: authentik
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 2Gi
