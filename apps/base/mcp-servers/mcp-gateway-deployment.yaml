@@ -1,7 +1,7 @@
 ---
-# MCP Gateway (Unla) Multi-Container Deployment
-# Split into separate services: apiserver, mcp-gateway, web
-# This fixes the issue where allinone image doesn't start MCP gateway process
+# MCP Gateway (Unla) Deployment
+# Uses allinone for web/api + standalone mcp-gateway sidecar
+# This fixes the issue where allinone's internal mcp-gateway doesn't start
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,16 +29,13 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
       
-      # Shared volume for SQLite database between containers
       volumes:
-      - name: shared-data
-        emptyDir: {}
       - name: mcp-gateway-data
         persistentVolumeClaim:
           claimName: mcp-gateway-pvc
 
       initContainers:
-      # Init container to set up shared data directory permissions
+      # Init container to set up data directory
       - name: init-data
         image: busybox:latest
         command: ['sh', '-c', 'mkdir -p /app/data && chmod 777 /app/data']
@@ -47,11 +44,14 @@ spec:
           mountPath: /app/data
 
       containers:
-      # API Server - REST API backend
-      - name: apiserver
-        image: ghcr.io/amoylab/unla/apiserver:latest
+      # Web UI + API Server (allinone)
+      - name: allinone
+        image: ghcr.io/amoylab/unla/allinone:latest
         imagePullPolicy: Always
         ports:
+        - containerPort: 80
+          name: web
+          protocol: TCP
         - containerPort: 5234
           name: api
           protocol: TCP
@@ -60,14 +60,6 @@ spec:
           value: "production"
         - name: TZ
           value: "America/New_York"
-        - name: DB_TYPE
-          value: "sqlite"
-        - name: SQLITE_PATH
-          value: "/app/data/unla.db"
-        - name: REDIS_HOST
-          value: "redis.apps.svc.cluster.local"
-        - name: REDIS_PORT
-          value: "6379"
         - name: APISERVER_JWT_SECRET_KEY
           valueFrom:
             secretKeyRef:
@@ -85,23 +77,23 @@ spec:
               key: admin-password
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "256Mi"
+            cpu: "250m"
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "1Gi"
+            cpu: "1000m"
         livenessProbe:
           httpGet:
-            path: /api/runtime-config
-            port: 5234
+            path: /
+            port: 80
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /api/runtime-config
-            port: 5234
+            path: /
+            port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 3
@@ -110,7 +102,8 @@ spec:
         - name: mcp-gateway-data
           mountPath: /app/data
 
-      # MCP Gateway - MCP protocol proxy
+      # Standalone MCP Gateway sidecar
+      # This listens on 5235 and handles MCP protocol
       - name: mcp-gateway
         image: ghcr.io/amoylab/unla/mcp-gateway:latest
         imagePullPolicy: Always
@@ -134,7 +127,7 @@ spec:
           value: "redis.apps.svc.cluster.local"
         - name: REDIS_PORT
           value: "6379"
-        # Azure MCP Server credentials (for stdio subprocess)
+        # Azure MCP Server credentials
         - name: AZURE_TENANT_ID
           valueFrom:
             secretKeyRef:
@@ -177,40 +170,3 @@ spec:
         volumeMounts:
         - name: mcp-gateway-data
           mountPath: /app/data
-
-      # Web UI - Frontend
-      - name: web
-        image: ghcr.io/amoylab/unla/web:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-          name: web
-          protocol: TCP
-        env:
-        - name: APISERVER_URL
-          value: "http://localhost:5234"
-        - name: MCP_GATEWAY_URL
-          value: "http://localhost:5235"
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 2

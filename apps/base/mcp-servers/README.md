@@ -51,7 +51,7 @@ flux reconcile kustomization apps --with-source
 
 ## Connecting OpenWebUI to MCP
 
-OpenWebUI v0.6.31+ has native MCP support.
+OpenWebUI v0.6.31+ has native MCP support for **Streamable HTTP** servers.
 
 ### Step 1: Add MCP Server in Unla
 
@@ -80,15 +80,30 @@ mcpServers:
 ### Step 2: Configure OpenWebUI
 
 1. Go to `http://openwebui.k8s.local`
-2. Navigate to **Admin Settings** → **External Tools** → **MCP**
-3. Add new MCP server:
-   - **URL**: `http://mcp-gateway.apps.svc.cluster.local:5235/gateway/azure/mcp`
-   - **Name**: Azure MCP
-4. Save and test
+2. Navigate to **Admin Settings** (gear icon or profile menu)
+3. Click **External Tools** in the left sidebar
+4. Click the **"+"** button to add a new server
+5. **IMPORTANT**: Click the "OpenAPI" dropdown and change it to **"MCP (Streamable HTTP)"**
+6. Enter the URL: `http://mcp-gateway.apps.svc.cluster.local:5235/gateway/azure/mcp`
+7. Give it a name like "Azure MCP"
+8. Click Save
 
-### Step 3: Use MCP Tools
+### Step 3: Enable Tools in Your Model
 
-When chatting in OpenWebUI, the Azure MCP tools will be available if your LLM provider supports tool calling (e.g., OpenAI, Anthropic).
+1. Go to **Workspace** → **Models**
+2. Select the model you want to use with MCP tools
+3. In advanced settings, ensure:
+   - **Tool Use**: Enabled
+   - **Function Calling**: Native
+4. Save the model settings
+
+### Troubleshooting
+
+If the MCP connection fails:
+- Make sure Unla's MCP Gateway is running: `kubectl get pods -n apps -l app=mcp-gateway`
+- Check the mcp-gateway container logs: `kubectl logs -n apps -l app=mcp-gateway -c mcp-gateway`
+- Test the endpoint directly: `curl http://mcp.k8s.local/gateway/azure/mcp`
+
 
 ---
 
