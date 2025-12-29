@@ -29,18 +29,14 @@ spec:
         - containerPort: 8000
           name: http
           protocol: TCP
-        command:
-          - "mcpo"
-          - "--host"
-          - "0.0.0.0"
-          - "--port"
-          - "8000"
-          - "--"
-          - "npx"
-          - "-y"
-          - "@azure/mcp@latest"
-          - "server"
-          - "start"
+        # Use shell to ensure env vars are inherited by subprocess
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Starting mcpo with Azure credentials..."
+            echo "AZURE_TENANT_ID: ${AZURE_TENANT_ID:0:8}..."
+            echo "AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:0:8}..."
+            exec mcpo --host 0.0.0.0 --port 8000 -- npx -y @azure/mcp@latest server start
         env:
         - name: AZURE_TENANT_ID
           valueFrom:
@@ -57,29 +53,37 @@ spec:
             secretKeyRef:
               name: azure-mcp-credentials
               key: AZURE_CLIENT_SECRET
+        # Also try AZURE_SUBSCRIPTION_ID if available
+        - name: AZURE_SUBSCRIPTION_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_SUBSCRIPTION_ID
+              optional: true
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
+            memory: "512Mi"
+            cpu: "200m"
           limits:
-            memory: "1Gi"
-            cpu: "500m"
+            memory: "2Gi"
+            cpu: "1000m"
+        # Increase startup time for npx install
         livenessProbe:
           httpGet:
             path: /openapi.json
             port: 8000
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           periodSeconds: 30
           timeoutSeconds: 10
-          failureThreshold: 3
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /openapi.json
             port: 8000
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 3
+          failureThreshold: 5
 
 ---
 # mcpo Service
