@@ -68,13 +68,32 @@ spec:
             secretKeyRef:
               name: mcp-gateway-secrets
               key: admin-password
+        # Azure MCP Server credentials (for stdio subprocess)
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_TENANT_ID
+              optional: true
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_ID
+              optional: true
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_SECRET
+              optional: true
         resources:
           requests:
             memory: "256Mi"
             cpu: "250m"
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "1Gi"
+            cpu: "1000m"
         livenessProbe:
           httpGet:
             path: /
@@ -94,7 +113,13 @@ spec:
         volumeMounts:
         - name: mcp-gateway-data
           mountPath: /app/data
+        - name: mcp-servers-config
+          mountPath: /app/configs
+          readOnly: true
       volumes:
       - name: mcp-gateway-data
         persistentVolumeClaim:
           claimName: mcp-gateway-pvc
+      - name: mcp-servers-config
+        configMap:
+          name: mcp-servers-config

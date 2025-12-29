@@ -7,10 +7,17 @@ resources:
   - mcp-gateway-service.yaml
   - mcp-gateway-configmap.yaml
   - mcp-gateway-pvc.yaml
-  # NOTE: Azure MCP Server removed - it only supports stdio transport (local CLI), 
-  # not http server mode for K8s. Use it locally with VS Code/Claude instead.
   # Redis - For MCP server caching
   - redis-deployment.yaml
   - redisinsight-deployment.yaml
   # Ingress
   - ingress.yaml
+
+# Generate ConfigMap from MCP servers config file
+# This allows GitOps management of MCP server definitions
+configMapGenerator:
+  - name: mcp-servers-config
+    files:
+      - homelab-mcp-servers.yaml=mcp-servers-config.yaml
+    options:
+      disableNameSuffixHash: true

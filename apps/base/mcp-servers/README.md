@@ -6,8 +6,8 @@ Model Context Protocol (MCP) servers for AI tools.
 
 | Component | Description | Port | Ingress Host |
 |-----------|-------------|------|--------------|
-| **MCP Gateway (Unla)** | Central management UI for MCP servers | 80 (Web), 5235 (MCP) | `mcp-gateway.k8s.local`, `mcp.k8s.local` |
-| **Azure MCP Server** | Microsoft's official Azure AI tools | 5010 | Internal service |
+| **MCP Gateway (Unla)** | Central management UI for MCP servers | 80 (Web), 5235 (SSE) | `mcp-gateway.k8s.local`, `mcp.k8s.local` |
+| **Azure MCP** | Azure tools via Unla subprocess | stdio | Via MCP Gateway |
 | **RedisInsight** | Redis GUI | 5540 | `redisinsight.k8s.local` |
 
 ## Quick Start
@@ -20,7 +20,7 @@ kubectl create secret generic mcp-gateway-secrets -n apps \
   --from-literal=admin-password=<YOUR_PASSWORD>
 ```
 
-### 2. Create Azure MCP Credentials
+### 2. Create Azure MCP Credentials (Optional)
 
 Create an Azure Service Principal:
 ```bash
@@ -35,48 +35,82 @@ kubectl create secret generic azure-mcp-credentials -n apps \
   --from-literal=AZURE_CLIENT_SECRET=<password>
 ```
 
-### 3. Create Storage Directory
-
-```bash
-ssh quinn-hpprobook430g6 "sudo mkdir -p /mnt/k8s-data/azure-mcp-server && sudo chmod 755 /mnt/k8s-data/azure-mcp-server"
-```
-
-### 4. Access
+### 3. Access
 
 | URL | Purpose |
-|-----|---------| 
+|-----|---------|
 | `http://mcp-gateway.k8s.local` | MCP Gateway Web UI (login: admin) |
 | `http://mcp.k8s.local` | MCP SSE/HTTP endpoints for clients |
 | `http://redisinsight.k8s.local` | Redis database GUI |
 
-## Azure MCP Server
+## Adding MCP Servers via GitOps
 
-The Azure MCP Server (`mcr.microsoft.com/azure-sdk/azure-mcp`) provides AI-powered access to Azure services:
+MCP servers can be managed through GitOps by editing `mcp-servers-config.yaml`:
 
-- Azure Resource Management
-- Azure AI Search, AI Services, Foundry
-- Azure App Service, Container Apps, AKS
-- Azure Cosmos DB, SQL Database, Storage
-- Azure Key Vault, Monitor
-- And many more...
+### Supported Server Types
 
-### Connecting to Azure MCP Server
+1. **stdio** - Runs as a subprocess (e.g., npx commands)
+2. **sse** - Connects to remote SSE MCP server  
+3. **streamable-http** - Connects to remote HTTP MCP server
 
-Configure your MCP client to connect to:
+### Example: Adding a New MCP Server
+
+Edit `mcp-servers-config.yaml`:
+
+```yaml
+mcpServers:
+  # Existing servers...
+  
+  # Add new stdio server
+  - type: "stdio"
+    name: "my-custom-server"
+    command: "npx"
+    args:
+      - "-y"
+      - "@example/mcp-server"
+    env:
+      API_KEY: "{{ env \"MY_API_KEY\" }}"
+
+routers:
+  # Add router for new server
+  - server: "my-custom-server"
+    prefix: "/gateway/custom"
+    cors:
+      allowOrigins: ["*"]
+      allowMethods: ["GET", "POST", "OPTIONS"]
+      allowHeaders: ["Content-Type", "Authorization", "Mcp-Session-Id"]
+      exposeHeaders: ["Mcp-Session-Id"]
+      allowCredentials: true
 ```
-http://azure-mcp-server.apps.svc.cluster.local:5010
+
+Then commit and push - Flux will apply the changes.
+
+## Connecting MCP Clients
+
+### Claude Desktop / Cursor
+
+Configure your client to use the SSE endpoint:
 ```
+http://mcp.k8s.local/gateway/azure/sse
+```
+
+### Available Endpoints
+
+| Server | SSE Endpoint |
+|--------|--------------|
+| Azure MCP | `http://mcp.k8s.local/gateway/azure/sse` |
+| Filesystem | `http://mcp.k8s.local/gateway/filesystem/sse` |
 
 ## File Structure
 
 ```
 mcp-servers/
-├── mcp-gateway-deployment.yaml      # Unla MCP Gateway
+├── mcp-gateway-deployment.yaml       # Unla MCP Gateway
 ├── mcp-gateway-service.yaml
 ├── mcp-gateway-configmap.yaml
 ├── mcp-gateway-pvc.yaml
 ├── mcp-gateway-secrets.yaml.template
-├── azure-mcp-server-deployment.yaml # Azure MCP Server
+├── mcp-servers-config.yaml           # GitOps MCP server definitions
 ├── azure-mcp-credentials.yaml.template
 ├── redis-deployment.yaml
 ├── redisinsight-deployment.yaml
@@ -86,7 +120,7 @@ mcp-servers/
 
 ## References
 
-- [MCP Gateway (Unla)](https://docs.unla.amoylab.com/)
+- [MCP Gateway (Unla) Docs](https://docs.unla.amoylab.com/)
+- [Unla Gateway Configuration](https://docs.unla.amoylab.com/en/configuration/gateways)
 - [Azure MCP Server](https://github.com/microsoft/mcp/tree/main/servers/Azure.Mcp.Server)
-- [Azure MCP Documentation](https://learn.microsoft.com/azure/developer/azure-mcp-server/)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
