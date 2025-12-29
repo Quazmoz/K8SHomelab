@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: apps
 resources:
-  # MCP Gateway (Unla) - Central management UI
+  # MCP Gateway (Unla) - Multi-container deployment
   - mcp-gateway-deployment.yaml
   - mcp-gateway-service.yaml
   - mcp-gateway-configmap.yaml
@@ -12,12 +12,3 @@ resources:
   - redisinsight-deployment.yaml
   # Ingress
   - ingress.yaml
-
-# Generate ConfigMap from MCP servers config file
-# This allows GitOps management of MCP server definitions
-configMapGenerator:
-  - name: mcp-servers-config
-    files:
-      - homelab-mcp-servers.yaml=mcp-servers-config.yaml
-    options:
-      disableNameSuffixHash: true

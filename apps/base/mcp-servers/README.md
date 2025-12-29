@@ -6,8 +6,7 @@ Model Context Protocol (MCP) servers for AI tools.
 
 | Component | Description | Port | Ingress Host |
 |-----------|-------------|------|--------------|
-| **MCP Gateway (Unla)** | Central management UI for MCP servers | 80 (Web), 5235 (SSE) | `mcp-gateway.k8s.local`, `mcp.k8s.local` |
-| **Azure MCP** | Azure tools via Unla subprocess | stdio | Via MCP Gateway |
+| **MCP Gateway (Unla)** | Multi-container MCP management | 80 (Web), 5235 (MCP) | `mcp-gateway.k8s.local`, `mcp.k8s.local` |
 | **RedisInsight** | Redis GUI | 5540 | `redisinsight.k8s.local` |
 
 ## Quick Start
@@ -20,98 +19,106 @@ kubectl create secret generic mcp-gateway-secrets -n apps \
   --from-literal=admin-password=<YOUR_PASSWORD>
 ```
 
-### 2. Create Azure MCP Credentials (Optional)
+### 2. Create Azure MCP Credentials
 
-Create an Azure Service Principal:
 ```bash
-az ad sp create-for-rbac --name "azure-mcp-k8s" --role contributor
-```
+# Create Azure Service Principal (if not done)
+az ad sp create-for-rbac --name "azure-mcp-homelab" --role contributor
 
-Then create the secret with the output values:
-```bash
+# Create secret with the output values
 kubectl create secret generic azure-mcp-credentials -n apps \
   --from-literal=AZURE_TENANT_ID=<tenant> \
   --from-literal=AZURE_CLIENT_ID=<appId> \
   --from-literal=AZURE_CLIENT_SECRET=<password>
 ```
 
-### 3. Access
+### 3. Deploy
+
+```bash
+git add -A && git commit -m "Deploy multi-container Unla" && git push
+flux reconcile kustomization apps --with-source
+```
+
+### 4. Access
 
 | URL | Purpose |
 |-----|---------|
 | `http://mcp-gateway.k8s.local` | MCP Gateway Web UI (login: admin) |
-| `http://mcp.k8s.local` | MCP SSE/HTTP endpoints for clients |
+| `http://mcp.k8s.local` | MCP SSE/HTTP endpoints |
 | `http://redisinsight.k8s.local` | Redis database GUI |
 
-## Adding MCP Servers via GitOps
+---
 
-MCP servers can be managed through GitOps by editing `mcp-servers-config.yaml`:
+## Connecting OpenWebUI to MCP
 
-### Supported Server Types
+OpenWebUI v0.6.31+ has native MCP support.
 
-1. **stdio** - Runs as a subprocess (e.g., npx commands)
-2. **sse** - Connects to remote SSE MCP server  
-3. **streamable-http** - Connects to remote HTTP MCP server
+### Step 1: Add MCP Server in Unla
 
-### Example: Adding a New MCP Server
-
-Edit `mcp-servers-config.yaml`:
+1. Go to `http://mcp-gateway.k8s.local`
+2. Login as admin
+3. Click "Create" → Add new MCP server
+4. Use Form Mode or YAML:
 
 ```yaml
-mcpServers:
-  # Existing servers...
-  
-  # Add new stdio server
-  - type: "stdio"
-    name: "my-custom-server"
-    command: "npx"
-    args:
-      - "-y"
-      - "@example/mcp-server"
-    env:
-      API_KEY: "{{ env \"MY_API_KEY\" }}"
-
+name: "azure-mcp"
+tenant: "default"
 routers:
-  # Add router for new server
-  - server: "my-custom-server"
-    prefix: "/gateway/custom"
-    cors:
-      allowOrigins: ["*"]
-      allowMethods: ["GET", "POST", "OPTIONS"]
-      allowHeaders: ["Content-Type", "Authorization", "Mcp-Session-Id"]
-      exposeHeaders: ["Mcp-Session-Id"]
-      allowCredentials: true
+  - server: "azure-mcp"
+    prefix: "/gateway/azure"
+mcpServers:
+  - type: "stdio"
+    name: "azure-mcp"
+    command: "npx"
+    args: ["-y", "@azure/mcp@latest", "server", "start"]
+    env:
+      AZURE_TENANT_ID: '{{ env "AZURE_TENANT_ID" }}'
+      AZURE_CLIENT_ID: '{{ env "AZURE_CLIENT_ID" }}'
+      AZURE_CLIENT_SECRET: '{{ env "AZURE_CLIENT_SECRET" }}'
 ```
 
-Then commit and push - Flux will apply the changes.
+### Step 2: Configure OpenWebUI
 
-## Connecting MCP Clients
+1. Go to `http://openwebui.k8s.local`
+2. Navigate to **Admin Settings** → **External Tools** → **MCP**
+3. Add new MCP server:
+   - **URL**: `http://mcp-gateway.apps.svc.cluster.local:5235/gateway/azure/mcp`
+   - **Name**: Azure MCP
+4. Save and test
 
-### Claude Desktop / Cursor
+### Step 3: Use MCP Tools
 
-Configure your client to use the SSE endpoint:
+When chatting in OpenWebUI, the Azure MCP tools will be available if your LLM provider supports tool calling (e.g., OpenAI, Anthropic).
+
+---
+
+## Architecture
+
 ```
-http://mcp.k8s.local/gateway/azure/sse
+┌─────────────────────────────────────────────────────────────┐
+│                    MCP Gateway Pod                          │
+├───────────────┬───────────────┬─────────────────────────────┤
+│   apiserver   │  mcp-gateway  │           web               │
+│   (5234)      │  (5235/5335)  │           (80)              │
+├───────────────┴───────────────┴─────────────────────────────┤
+│                    Shared SQLite (PVC)                      │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+                  ┌─────────────────┐
+                  │     Redis       │
+                  │     (6379)      │
+                  └─────────────────┘
 ```
-
-### Available Endpoints
-
-| Server | SSE Endpoint |
-|--------|--------------|
-| Azure MCP | `http://mcp.k8s.local/gateway/azure/sse` |
-| Filesystem | `http://mcp.k8s.local/gateway/filesystem/sse` |
 
 ## File Structure
 
 ```
 mcp-servers/
-├── mcp-gateway-deployment.yaml       # Unla MCP Gateway
+├── mcp-gateway-deployment.yaml   # Multi-container deployment
 ├── mcp-gateway-service.yaml
 ├── mcp-gateway-configmap.yaml
 ├── mcp-gateway-pvc.yaml
-├── mcp-gateway-secrets.yaml.template
-├── mcp-servers-config.yaml           # GitOps MCP server definitions
-├── azure-mcp-credentials.yaml.template
 ├── redis-deployment.yaml
 ├── redisinsight-deployment.yaml
 ├── ingress.yaml
@@ -120,7 +127,7 @@ mcp-servers/
 
 ## References
 
-- [MCP Gateway (Unla) Docs](https://docs.unla.amoylab.com/)
-- [Unla Gateway Configuration](https://docs.unla.amoylab.com/en/configuration/gateways)
-- [Azure MCP Server](https://github.com/microsoft/mcp/tree/main/servers/Azure.Mcp.Server)
+- [MCP Gateway (Unla)](https://docs.unla.amoylab.com/)
+- [OpenWebUI MCP Support](https://docs.openwebui.com/features/mcp)
+- [Azure MCP Server](https://github.com/microsoft/mcp)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
