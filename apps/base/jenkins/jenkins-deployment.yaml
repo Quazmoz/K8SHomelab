@@ -67,6 +67,13 @@ spec:
               mountPath: /var/jenkins_home/jobs-config
             - name: jenkins-init-scripts
               mountPath: /var/jenkins_home/init.groovy.d
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1500m"
       volumes:
         - name: jenkins-home
           persistentVolumeClaim:

@@ -79,6 +79,17 @@ flux reconcile kustomization apps --with-source
 | Grafana | quinn-hpprobook430g6 | Needs local storage |
 | Loki | quinn-hpprobook430g6 | Needs local storage |
 | Pi-hole | raspberrypi3 | DNS server for network |
+| metrics-server | Non-Oracle nodes | API server connectivity |
+| MetalLB speaker | Non-Oracle nodes | Network announcement |
+
+> **Oracle Node Policy**: Oracle VMs are excluded from scheduling for most workloads due to WireGuard stability issues. See `apps/base/ORACLE_NODE_POLICY.md`.
+
+## MCP Integration
+
+Azure MCP is available via **mcpo** (MCP-to-OpenAPI proxy):
+- URL: `http://mcpo.apps.svc.cluster.local:8000`
+- Swagger: `http://mcpo.k8s.local/docs`
+- OpenWebUI integration: Admin Settings → External Tools → OpenAPI
 
 ## Important Configuration Details
 
