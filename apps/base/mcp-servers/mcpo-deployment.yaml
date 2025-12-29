@@ -1,0 +1,101 @@
+---
+# mcpo - MCP-to-OpenAPI Proxy
+# Exposes Azure MCP as OpenAPI endpoints for OpenWebUI
+# Docs: https://github.com/open-webui/mcpo
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcpo
+  namespace: apps
+  labels:
+    app: mcpo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcpo
+  template:
+    metadata:
+      labels:
+        app: mcpo
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      containers:
+      - name: mcpo
+        image: ghcr.io/open-webui/mcpo:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        command:
+          - "mcpo"
+          - "--host"
+          - "0.0.0.0"
+          - "--port"
+          - "8000"
+          - "--"
+          - "npx"
+          - "-y"
+          - "@azure/mcp@latest"
+          - "server"
+          - "start"
+        env:
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_TENANT_ID
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_ID
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_SECRET
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /openapi.json
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /openapi.json
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+---
+# mcpo Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcpo
+  namespace: apps
+  labels:
+    app: mcpo
+spec:
+  type: ClusterIP
+  selector:
+    app: mcpo
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP

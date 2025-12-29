@@ -1,12 +1,12 @@
 ---
-# Ingress for MCP Gateway
+# Ingress for mcpo (Azure MCP OpenAPI endpoint)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: mcp-gateway-ingress
+  name: mcpo-ingress
   namespace: apps
   labels:
-    app: mcp-gateway
+    app: mcpo
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/enable-cors: "true"
@@ -16,34 +16,22 @@ metadata:
     # Homepage annotations
     gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "AI & Automation"
-    gethomepage.dev/name: "MCP Gateway"
-    gethomepage.dev/icon: "mdi-robot"
-    gethomepage.dev/description: "Model Context Protocol Gateway"
+    gethomepage.dev/name: "Azure MCP"
+    gethomepage.dev/icon: "azure"
+    gethomepage.dev/description: "Azure MCP Tools via OpenAPI"
 spec:
   ingressClassName: nginx
   rules:
-  # MCP Gateway Web UI
-  - host: mcp-gateway.k8s.local
+  - host: mcpo.k8s.local
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: mcp-gateway
+            name: mcpo
             port:
-              number: 80
-  # MCP Gateway SSE/HTTP endpoints for MCP clients
-  - host: mcp.k8s.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: mcp-gateway
-            port:
-              number: 5235
+              number: 8000
 
 ---
 # Ingress for RedisInsight
