@@ -5,3 +5,28 @@ resources:
   - https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
   # Our local configuration file
   - ./config.yaml
+
+patches:
+  # Exclude Oracle VMs from MetalLB speaker DaemonSet
+  # They use WireGuard which doesn't support UDP memberlist gossip properly
+  - patch: |-
+      apiVersion: apps/v1
+      kind: DaemonSet
+      metadata:
+        name: speaker
+        namespace: metallb-system
+      spec:
+        template:
+          spec:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                  - matchExpressions:
+                    # Only run speakers on nodes with local IPs (192.168.x.x)
+                    # Excludes Oracle VMs which are on WireGuard (10.49.x.x)
+                    - key: kubernetes.io/hostname
+                      operator: NotIn
+                      values:
+                      - oracle-wireguard
+                      - oracle-groupmebot
