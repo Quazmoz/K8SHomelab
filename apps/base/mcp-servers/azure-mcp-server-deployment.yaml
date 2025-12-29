@@ -36,6 +36,7 @@ spec:
         # Run in HTTP server mode for network access
         # Note: --dangerously-disable-http-incoming-auth is needed for internal cluster access
         # In production, use proper auth with --outgoing-auth-strategy
+        command: ["azmcp"]
         args: 
           - "server"
           - "start"
