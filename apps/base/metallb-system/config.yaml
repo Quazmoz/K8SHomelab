@@ -15,3 +15,8 @@ metadata:
 spec:
   ipAddressPools:
   - first-pool
+  # Only advertise from nodes on the local 192.168.1.x network
+  # Excludes Oracle VMs which are on WireGuard (10.49.104.x) - UDP gossip doesn't work through WireGuard
+  nodeSelectors:
+  - matchLabels:
+      metallb.universe.tf/advertise: "true"

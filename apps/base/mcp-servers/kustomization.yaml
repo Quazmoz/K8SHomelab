@@ -7,8 +7,8 @@ resources:
   - mcp-gateway-service.yaml
   - mcp-gateway-configmap.yaml
   - mcp-gateway-pvc.yaml
-  # Azure MCP Server - Microsoft's official Azure AI tools
-  - azure-mcp-server-deployment.yaml
+  # NOTE: Azure MCP Server removed - it only supports stdio transport (local CLI), 
+  # not http server mode for K8s. Use it locally with VS Code/Claude instead.
   # Redis - For MCP server caching
   - redis-deployment.yaml
   - redisinsight-deployment.yaml
