@@ -69,10 +69,10 @@ data:
             href: http://openwebui.k8s.local
             icon: si-openai
             description: LLM Chat Interface
-        - MCP Gateway:
-            href: http://mcp-gateway.k8s.local
-            icon: mdi-chip
-            description: Model Context Protocol
+        - Azure MCP Tools:
+            href: http://mcpo.k8s.local/docs
+            icon: azure
+            description: Azure MCP via OpenAPI
         - LLaMA Factory:
             href: http://llamafactory.k8s.local
             icon: mdi-brain
