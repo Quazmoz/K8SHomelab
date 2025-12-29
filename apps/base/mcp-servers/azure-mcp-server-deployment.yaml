@@ -34,10 +34,17 @@ spec:
         image: mcr.microsoft.com/azure-sdk/azure-mcp:latest
         imagePullPolicy: Always
         # Run in HTTP server mode for network access
-        args: ["server", "start", "--transport", "sse"]
+        # Note: --dangerously-disable-http-incoming-auth is needed for internal cluster access
+        # In production, use proper auth with --outgoing-auth-strategy
+        args: 
+          - "server"
+          - "start"
+          - "--transport"
+          - "http"
+          - "--dangerously-disable-http-incoming-auth"
         ports:
-        - containerPort: 5010
-          name: mcp-sse
+        - containerPort: 3000
+          name: mcp-http
           protocol: TCP
         env:
         - name: TZ
@@ -67,14 +74,14 @@ spec:
             cpu: "500m"
         livenessProbe:
           tcpSocket:
-            port: 5010
+            port: 3000
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
           tcpSocket:
-            port: 5010
+            port: 3000
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 3
@@ -94,7 +101,7 @@ spec:
   selector:
     app: azure-mcp-server
   ports:
-  - name: mcp-sse
-    port: 5010
-    targetPort: 5010
+  - name: mcp-http
+    port: 3000
+    targetPort: 3000
     protocol: TCP
