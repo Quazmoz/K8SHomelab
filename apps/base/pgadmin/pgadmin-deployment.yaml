@@ -36,7 +36,7 @@ spec:
         runAsGroup: 5050
       containers:
         - name: pgadmin
-          image: dpage/pgadmin4:9.1
+          image: dpage/pgadmin4:9.11
           ports:
             - containerPort: 80
           env:
