@@ -6,3 +6,4 @@ resources:
   - postgres-pvc.yaml
   - postgres-backup-pvc.yaml
   - postgres-backup-cronjob.yaml
+  - postgres-init-scripts.yaml

@@ -9,7 +9,7 @@ metadata:
   labels:
     app: authentik
 data:
-  # Database - uses existing postgres
+  # Database - uses postgres
   AUTHENTIK_POSTGRESQL__HOST: "postgres.apps.svc.cluster.local"
   AUTHENTIK_POSTGRESQL__PORT: "5432"
   AUTHENTIK_POSTGRESQL__NAME: "authentik"

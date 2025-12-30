@@ -12,6 +12,18 @@ spec:
   selector:
     app: postgres
 ---
+# Also expose as 'postgres' for easier service discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: apps
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app: postgres
+---
 # --- The main Postgres Deployment (as a StatefulSet) ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -36,20 +48,33 @@ spec:
         ports:
         - containerPort: 5432
         env:
-        - name: POSTGRES_DB
-          value: "grafana_db"
+        # Use standard postgres superuser
         - name: POSTGRES_USER
-          value: "grafana_user"
+          value: "postgres"
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: postgres-credentials
               key: POSTGRES_PASSWORD
+        # Default database
+        - name: POSTGRES_DB
+          value: "postgres"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
         volumeMounts:
         - name: postgres-storage
           mountPath: /var/lib/postgresql/data
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
       volumes:
       - name: postgres-storage
         persistentVolumeClaim:
           claimName: postgres-pvc
-
+      - name: init-scripts
+        configMap:
+          name: postgres-init-scripts

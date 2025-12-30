@@ -1,0 +1,26 @@
+# Postgres Init Scripts ConfigMap
+# Creates databases and users on first startup
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: apps
+data:
+  01-create-databases.sql: |
+    -- Create Grafana database and user
+    CREATE DATABASE grafana_db;
+    CREATE USER grafana_user WITH PASSWORD 'passwordfortesting123';
+    GRANT ALL PRIVILEGES ON DATABASE grafana_db TO grafana_user;
+    ALTER DATABASE grafana_db OWNER TO grafana_user;
+    
+    -- Create Authentik database and user  
+    CREATE DATABASE authentik;
+    CREATE USER authentik WITH PASSWORD 'authentik123';
+    GRANT ALL PRIVILEGES ON DATABASE authentik TO authentik;
+    ALTER DATABASE authentik OWNER TO authentik;
+    
+    -- Create n8n database and user (for future use)
+    CREATE DATABASE n8n;
+    CREATE USER n8n WITH PASSWORD 'n8n123';
+    GRANT ALL PRIVILEGES ON DATABASE n8n TO n8n;
+    ALTER DATABASE n8n OWNER TO n8n;
