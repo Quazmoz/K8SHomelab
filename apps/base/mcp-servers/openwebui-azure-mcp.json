@@ -1,0 +1,14 @@
+{
+    "type": "openapi",
+    "url": "http://mcpo.apps.svc.cluster.local:8000/azure",
+    "path": "/openapi.json",
+    "auth_type": "",
+    "key": "",
+    "config": {
+        "enable": true
+    },
+    "info": {
+        "name": "Azure MCP",
+        "description": "Azure resource management tools via MCP"
+    }
+}

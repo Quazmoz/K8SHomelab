@@ -1,0 +1,14 @@
+{
+    "type": "openapi",
+    "url": "http://mcpo.apps.svc.cluster.local:8000/postgres",
+    "path": "/openapi.json",
+    "auth_type": "",
+    "key": "",
+    "config": {
+        "enable": true
+    },
+    "info": {
+        "name": "Postgres MCP",
+        "description": "PostgreSQL database inspection and query tools"
+    }
+}

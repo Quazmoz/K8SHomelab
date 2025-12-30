@@ -48,6 +48,15 @@ flux reconcile kustomization apps --with-source
 
 ### 3. Configure OpenWebUI
 
+**Option A: Import from JSON files**
+
+1. Go to `http://openwebui.k8s.local`
+2. Navigate to **Admin Settings** → **External Tools**
+3. Click **Import** → upload `openwebui-azure-mcp.json`
+4. Click **Import** → upload `openwebui-postgres-mcp.json`
+
+**Option B: Manual configuration**
+
 1. Go to `http://openwebui.k8s.local`
 2. Navigate to **Admin Settings** → **External Tools**
 3. Click **"+"** to add a new tool server
@@ -55,6 +64,9 @@ flux reconcile kustomization apps --with-source
 5. Add **Azure MCP**: `http://mcpo.apps.svc.cluster.local:8000/azure`
 6. Add **Postgres MCP**: `http://mcpo.apps.svc.cluster.local:8000/postgres`
 7. Save
+
+> **Note:** With the config file setup, each MCP server has its own route (`/azure`, `/postgres`).
+> The old URL without a path will no longer work.
 
 ### 4. Test
 
