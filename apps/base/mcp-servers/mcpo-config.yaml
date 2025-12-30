@@ -1,0 +1,22 @@
+# mcpo ConfigMap
+# Contains config.json for multiple MCP servers (Azure + Postgres)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcpo-config
+  namespace: apps
+data:
+  config.json: |
+    {
+      "mcpServers": {
+        "azure": {
+          "command": "npx",
+          "args": ["-y", "@azure/mcp@latest", "server", "start"]
+        },
+        "postgres": {
+          "command": "npx",
+          "args": ["-y", "@modelcontextprotocol/server-postgres", 
+                   "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/postgres"]
+        }
+      }
+    }

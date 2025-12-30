@@ -1,6 +1,6 @@
 ---
 # mcpo - MCP-to-OpenAPI Proxy
-# Exposes Azure MCP as OpenAPI endpoints for OpenWebUI
+# Exposes multiple MCP servers as OpenAPI endpoints for OpenWebUI
 # Docs: https://github.com/open-webui/mcpo
 apiVersion: apps/v1
 kind: Deployment
@@ -29,18 +29,19 @@ spec:
         - containerPort: 8000
           name: http
           protocol: TCP
-        # Use shell to ensure env vars are inherited by subprocess
-        command: ["/bin/sh", "-c"]
+        command: ["mcpo"]
         args:
-          - |
-            echo "Starting mcpo with Azure credentials..."
-            echo "AZURE_TENANT_ID is set: ${AZURE_TENANT_ID:+yes}"
-            echo "AZURE_CLIENT_ID is set: ${AZURE_CLIENT_ID:+yes}"
-            exec mcpo --host 0.0.0.0 --port 8000 -- npx -y @azure/mcp@latest server start
+          - "--host"
+          - "0.0.0.0"
+          - "--port"
+          - "8000"
+          - "--config"
+          - "/config/config.json"
         env:
         # .NET globalization invariant mode - fixes libicu dependency
         - name: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
           value: "true"
+        # Azure credentials for Azure MCP
         - name: AZURE_TENANT_ID
           valueFrom:
             secretKeyRef:
@@ -56,13 +57,16 @@ spec:
             secretKeyRef:
               name: azure-mcp-credentials
               key: AZURE_CLIENT_SECRET
-        # Also try AZURE_SUBSCRIPTION_ID if available
         - name: AZURE_SUBSCRIPTION_ID
           valueFrom:
             secretKeyRef:
               name: azure-mcp-credentials
               key: AZURE_SUBSCRIPTION_ID
               optional: true
+        volumeMounts:
+        - name: mcpo-config
+          mountPath: /config
+          readOnly: true
         resources:
           requests:
             memory: "512Mi"
@@ -73,7 +77,7 @@ spec:
         # Increase startup time for npx install
         livenessProbe:
           httpGet:
-            path: /openapi.json
+            path: /
             port: 8000
           initialDelaySeconds: 120
           periodSeconds: 30
@@ -81,12 +85,16 @@ spec:
           failureThreshold: 5
         readinessProbe:
           httpGet:
-            path: /openapi.json
+            path: /
             port: 8000
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 5
+      volumes:
+      - name: mcpo-config
+        configMap:
+          name: mcpo-config
 
 ---
 # mcpo Service
