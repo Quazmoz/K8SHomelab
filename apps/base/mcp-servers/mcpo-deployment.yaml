@@ -80,6 +80,13 @@ spec:
               name: azure-mcp-credentials
               key: AZURE_SUBSCRIPTION_ID
               optional: true
+        # n8n API credentials
+        - name: N8N_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: n8n-mcp-credentials
+              key: N8N_API_KEY
+              optional: true
         volumeMounts:
         - name: mcpo-config
           mountPath: /config
