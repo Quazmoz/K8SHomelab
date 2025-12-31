@@ -94,7 +94,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     # Homepage annotations
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "Monitoring"
     gethomepage.dev/name: "Uptime Kuma"
     gethomepage.dev/icon: "uptime-kuma"

@@ -156,7 +156,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     # Homepage annotations
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "Admin"
     gethomepage.dev/name: "Authentik"
     gethomepage.dev/icon: "authentik"
