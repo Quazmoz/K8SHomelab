@@ -15,8 +15,14 @@ data:
         },
         "postgres": {
           "command": "npx",
-          "args": ["-y", "@modelcontextprotocol/server-postgres", 
-                   "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/postgres"]
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+            "POSTGRES_HOST": "postgres.apps.svc.cluster.local",
+            "POSTGRES_PORT": "5432",
+            "POSTGRES_DATABASE": "postgres",
+            "POSTGRES_USER": "grafana_user",
+            "POSTGRES_PASSWORD": "passwordfortesting123"
+          }
         },
         "kubernetes": {
           "command": "npx",
