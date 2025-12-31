@@ -1,0 +1,14 @@
+{
+    "type": "openapi",
+    "url": "http://mcpo.apps.svc.cluster.local:8000/n8n",
+    "path": "/openapi.json",
+    "auth_type": "",
+    "key": "",
+    "config": {
+        "enable": true
+    },
+    "info": {
+        "name": "n8n MCP",
+        "description": "Manage n8n workflows and executions"
+    }
+}

@@ -15,6 +15,9 @@ Model Context Protocol (MCP) tools for OpenWebUI integration.
 |--------|-------|-------------|
 | **Azure MCP** | `/azure` | Azure resource management tools |
 | **Postgres MCP** | `/postgres` | Database inspection and query tools |
+| **Kubernetes MCP** | `/kubernetes` | Query and manage cluster resources |
+| **Prometheus MCP** | `/prometheus` | Query metrics and alerts |
+| **n8n MCP** | `/n8n` | Manage workflows and executions |
 
 ### Postgres MCP Tools
 
