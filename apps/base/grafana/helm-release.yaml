@@ -60,3 +60,9 @@ spec:
         secretName: postgres-credentials
         mountPath: /etc/secrets/postgres-credentials
         readOnly: true
+
+    # --- Resources (best-effort) ---
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi

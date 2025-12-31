@@ -46,3 +46,9 @@ spec:
         mountPath: /media
         accessMode: ReadWriteMany
         size: 4Gi
+
+    # --- Resources (best-effort) ---
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4Gi
