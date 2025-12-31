@@ -6,8 +6,6 @@ resources:
   - mcpo-config.yaml
   # mcpo RBAC for Kubernetes API access
   - mcpo-rbac.yaml
-  # n8n MCP credentials
-  - n8n-mcp-credentials.yaml
   # mcpo - MCP-to-OpenAPI proxy
   - mcpo-deployment.yaml
   # Ingress for mcpo
