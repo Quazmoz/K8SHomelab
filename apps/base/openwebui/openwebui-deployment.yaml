@@ -47,7 +47,17 @@ spec:
         - containerPort: 8080
           name: http
         env:
-        # Disable authentication for homelab use (enable if needed)
+        # PostgreSQL Database Backend (instead of SQLite)
+        - name: DATABASE_URL
+          value: "postgresql://grafana_user:passwordfortesting123@postgres-service:5432/openwebui_db"
+        
+        # Audit Logging - log all user activity
+        - name: AUDIT_EXCLUDED_PATHS
+          value: ""
+        - name: AUDIT_LOG_LEVEL
+          value: "REQUEST_RESPONSE"
+        
+        # Authentication settings
         - name: WEBUI_AUTH
           value: "true"
         # Default admin email (change this)

@@ -24,3 +24,9 @@ data:
     CREATE USER n8n WITH PASSWORD 'n8n123';
     GRANT ALL PRIVILEGES ON DATABASE n8n TO n8n;
     ALTER DATABASE n8n OWNER TO n8n;
+    
+    -- Create OpenWebUI database (uses grafana_user for simplicity)
+    CREATE DATABASE openwebui_db;
+    GRANT ALL PRIVILEGES ON DATABASE openwebui_db TO grafana_user;
+    ALTER DATABASE openwebui_db OWNER TO grafana_user;
+

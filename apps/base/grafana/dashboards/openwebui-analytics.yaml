@@ -1,0 +1,240 @@
+# OpenWebUI Analytics Dashboard
+# Queries the OpenWebUI PostgreSQL database for user activity, chat metrics, and model usage
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-openwebui-analytics
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  openwebui-analytics.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #7C3AED;'>🤖 OpenWebUI Analytics</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>User activity, chat metrics, and model usage</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "Total Users",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM \"user\"",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "blue", "value": null }]
+              }
+            }
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 3 },
+          "type": "stat",
+          "title": "Total Chats",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM chat",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "green", "value": null }]
+              }
+            }
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 3 },
+          "type": "stat",
+          "title": "Chats Today",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE created_at > NOW() - INTERVAL '24 hours'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "yellow", "value": null }]
+              }
+            }
+          }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 3 },
+          "type": "stat",
+          "title": "Active Users (24h)",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(DISTINCT user_id) FROM chat WHERE created_at > NOW() - INTERVAL '24 hours'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "purple", "value": null }]
+              }
+            }
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
+          "type": "timeseries",
+          "title": "Chats Over Time",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT date_trunc('hour', created_at) as time, COUNT(*) as chats FROM chat WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY date_trunc('hour', created_at) ORDER BY time",
+              "format": "time_series"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "fillOpacity": 20 }
+            }
+          }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
+          "type": "piechart",
+          "title": "Top Users by Chat Count",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT u.name, COUNT(c.id) as chats FROM chat c JOIN \"user\" u ON c.user_id = u.id GROUP BY u.name ORDER BY chats DESC LIMIT 10",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right" }
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 15 },
+          "type": "table",
+          "title": "Recent Chats",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT c.title, u.name as user_name, c.created_at, c.updated_at FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 20",
+              "format": "table"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "renameByName": {
+                  "title": "Chat Title",
+                  "user_name": "User",
+                  "created_at": "Created",
+                  "updated_at": "Last Updated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "gridPos": { "h": 6, "w": 12, "x": 0, "y": 23 },
+          "type": "table",
+          "title": "User List",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT name, email, role, created_at, last_active_at FROM \"user\" ORDER BY last_active_at DESC NULLS LAST LIMIT 20",
+              "format": "table"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "renameByName": {
+                  "name": "Name",
+                  "email": "Email",
+                  "role": "Role",
+                  "created_at": "Registered",
+                  "last_active_at": "Last Active"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 23 },
+          "type": "barchart",
+          "title": "Chats by Day of Week",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT to_char(created_at, 'Day') as day, COUNT(*) as chats FROM chat GROUP BY to_char(created_at, 'Day'), EXTRACT(DOW FROM created_at) ORDER BY EXTRACT(DOW FROM created_at)",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "orientation": "horizontal"
+          }
+        }
+      ],
+      "refresh": "1m",
+      "schemaVersion": 39,
+      "tags": ["openwebui", "ai", "analytics"],
+      "templating": { "list": [] },
+      "time": { "from": "now-7d", "to": "now" },
+      "title": "OpenWebUI Analytics",
+      "uid": "openwebui-analytics",
+      "version": 1
+    }
