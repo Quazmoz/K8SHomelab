@@ -4,11 +4,7 @@ namespace: apps
 resources:
   # mcpo config for multiple MCP servers
   - mcpo-config.yaml
-  # mcpo - MCP-to-OpenAPI proxy for Azure MCP + Postgres MCP
+  # mcpo - MCP-to-OpenAPI proxy
   - mcpo-deployment.yaml
-  # Redis - For caching (still useful for other services)
-  - redis-deployment.yaml
-  - redisinsight-deployment.yaml
-  # Ingress for mcpo and RedisInsight
+  # Ingress for mcpo
   - ingress.yaml
-

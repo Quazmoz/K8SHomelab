@@ -1,6 +1,6 @@
 ---
-# Redis Deployment for MCP Servers
-# Used for caching in custom MCP servers
+# Redis Deployment
+# In-memory data store for caching
 apiVersion: apps/v1
 kind: Deployment
 metadata:

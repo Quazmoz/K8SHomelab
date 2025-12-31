@@ -18,9 +18,11 @@ resources:
   - ./pihole
   - ./jenkins
   - ./loki
+  - ./redis
   - ./mcp-servers
   - ./openwebui
   - ./pgadmin
   - ./llamafactory
   - ./uptime-kuma
   - ./authentik
+

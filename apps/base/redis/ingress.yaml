@@ -1,0 +1,30 @@
+---
+# Ingress for RedisInsight
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: redisinsight-ingress
+  namespace: apps
+  labels:
+    app: redisinsight
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # Homepage annotations
+    gethomepage.dev/enabled: "false"
+    gethomepage.dev/group: "Monitoring"
+    gethomepage.dev/name: "RedisInsight"
+    gethomepage.dev/icon: "redis"
+    gethomepage.dev/description: "Redis Database GUI"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: redisinsight.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: redisinsight
+            port:
+              number: 5540
