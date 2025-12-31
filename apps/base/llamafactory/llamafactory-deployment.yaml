@@ -40,12 +40,9 @@ spec:
             - name: GRADIO_SERVER_PORT
               value: "7860"
           resources:
-            requests:
-              memory: "4Gi"
-              cpu: "1000m"
             limits:
-              memory: "12Gi"
-              cpu: "4000m"
+              memory: "16Gi"
+              cpu: "8000m"
           volumeMounts:
             - name: data
               mountPath: /app/data

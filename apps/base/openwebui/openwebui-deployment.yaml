@@ -77,12 +77,9 @@ spec:
         - name: ENABLE_SIGNUP
           value: "true"
         resources:
-          requests:
-            memory: "1Gi"
-            cpu: "500m"
           limits:
             memory: "4Gi"
-            cpu: "2000m"
+            cpu: "4000m"
         livenessProbe:
           httpGet:
             path: /health

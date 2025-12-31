@@ -55,12 +55,9 @@ spec:
             - name: PGADMIN_CONFIG_LOGIN_BANNER
               value: '"Homelab PostgreSQL Admin"'
           resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1Gi"
+              cpu: "1000m"
           readinessProbe:
             httpGet:
               path: /misc/ping

@@ -68,12 +68,9 @@ spec:
           mountPath: /config
           readOnly: true
         resources:
-          requests:
-            memory: "512Mi"
-            cpu: "200m"
           limits:
             memory: "2Gi"
-            cpu: "1000m"
+            cpu: "2000m"
         # Increase startup time for npx install
         livenessProbe:
           httpGet:

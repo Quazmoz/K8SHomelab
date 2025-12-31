@@ -43,12 +43,9 @@ spec:
         - configMapRef:
             name: authentik-config
         resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
           limits:
             memory: "2Gi"
-            cpu: "1500m"
+            cpu: "2000m"
         livenessProbe:
           httpGet:
             path: /-/health/live/
@@ -109,12 +106,9 @@ spec:
         - configMapRef:
             name: authentik-config
         resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
           limits:
             memory: "1Gi"
-            cpu: "1000m"
+            cpu: "2000m"
         volumeMounts:
         - name: media
           mountPath: /media
