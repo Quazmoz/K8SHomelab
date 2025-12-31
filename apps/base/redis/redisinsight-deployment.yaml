@@ -31,6 +31,9 @@ spec:
         - name: RI_APP_PORT
           value: "5540"
         resources:
+          requests:
+            memory: "64Mi"
+            cpu: "10m"
           limits:
             memory: "1Gi"
             cpu: "1000m"

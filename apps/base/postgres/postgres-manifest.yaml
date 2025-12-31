@@ -60,6 +60,9 @@ spec:
         - name: POSTGRES_DB
           value: "postgres"
         resources:
+          requests:
+            memory: "64Mi"
+            cpu: "10m"
           limits:
             memory: "2Gi"
             cpu: "1000m"

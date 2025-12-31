@@ -68,6 +68,9 @@ spec:
             - name: jenkins-init-scripts
               mountPath: /var/jenkins_home/init.groovy.d
           resources:
+            requests:
+              memory: "64Mi"
+              cpu: "10m"
             limits:
               memory: "2Gi"
               cpu: "2000m"

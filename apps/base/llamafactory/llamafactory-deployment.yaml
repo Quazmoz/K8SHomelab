@@ -40,6 +40,9 @@ spec:
             - name: GRADIO_SERVER_PORT
               value: "7860"
           resources:
+            requests:
+              memory: "128Mi"
+              cpu: "10m"
             limits:
               memory: "16Gi"
               cpu: "8000m"

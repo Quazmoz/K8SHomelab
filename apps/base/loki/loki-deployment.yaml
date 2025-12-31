@@ -51,6 +51,9 @@ spec:
             - name: storage
               mountPath: /data
           resources:
+            requests:
+              memory: "64Mi"
+              cpu: "10m"
             limits:
               memory: "1Gi"
               cpu: "1000m"

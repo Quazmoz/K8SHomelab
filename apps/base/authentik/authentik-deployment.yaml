@@ -43,6 +43,9 @@ spec:
         - configMapRef:
             name: authentik-config
         resources:
+          requests:
+            memory: "64Mi"
+            cpu: "10m"
           limits:
             memory: "2Gi"
             cpu: "2000m"
@@ -106,6 +109,9 @@ spec:
         - configMapRef:
             name: authentik-config
         resources:
+          requests:
+            memory: "64Mi"
+            cpu: "10m"
           limits:
             memory: "1Gi"
             cpu: "2000m"

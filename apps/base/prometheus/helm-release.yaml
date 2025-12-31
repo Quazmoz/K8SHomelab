@@ -29,6 +29,9 @@ spec:
         size: 45Gi
         existingClaim: "prometheus-server"
       resources:
+        requests:
+          memory: "64Mi"
+          cpu: "10m"
         limits:
           memory: "2Gi"
           cpu: "2000m"

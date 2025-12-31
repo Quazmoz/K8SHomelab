@@ -37,6 +37,9 @@ spec:
         - name: UPTIME_KUMA_PORT
           value: "3001"
         resources:
+          requests:
+            memory: "64Mi"
+            cpu: "10m"
           limits:
             memory: "512Mi"
             cpu: "1000m"

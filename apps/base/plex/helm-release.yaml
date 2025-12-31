@@ -49,6 +49,9 @@ spec:
 
     # --- Resources (best-effort) ---
     resources:
+      requests:
+        memory: "64Mi"
+        cpu: "10m"
       limits:
         cpu: 4000m
         memory: 4Gi
