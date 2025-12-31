@@ -29,12 +29,9 @@ spec:
         size: 45Gi
         existingClaim: "prometheus-server"
       resources:
-        requests:
-          memory: "512Mi"
-          cpu: "250m"
         limits:
           memory: "2Gi"
-          cpu: "1000m"
+          cpu: "2000m"
       retention: "15d"
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
