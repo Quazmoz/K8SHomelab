@@ -4,6 +4,8 @@ namespace: apps
 resources:
   # mcpo config for multiple MCP servers
   - mcpo-config.yaml
+  # mcpo RBAC for Kubernetes API access
+  - mcpo-rbac.yaml
   # mcpo - MCP-to-OpenAPI proxy
   - mcpo-deployment.yaml
   # Ingress for mcpo

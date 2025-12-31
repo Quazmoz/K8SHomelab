@@ -21,6 +21,20 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
+      serviceAccountName: mcpo
+      # Init container to download kubectl
+      initContainers:
+      - name: install-kubectl
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          cp /opt/bitnami/kubectl/bin/kubectl /tools/kubectl
+          chmod +x /tools/kubectl
+        volumeMounts:
+        - name: tools
+          mountPath: /tools
       containers:
       - name: mcpo
         image: ghcr.io/open-webui/mcpo:latest
@@ -38,6 +52,9 @@ spec:
           - "--config"
           - "/config/config.json"
         env:
+        # Add kubectl to PATH
+        - name: PATH
+          value: "/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         # .NET globalization invariant mode - fixes libicu dependency
         - name: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
           value: "true"
@@ -67,6 +84,8 @@ spec:
         - name: mcpo-config
           mountPath: /config
           readOnly: true
+        - name: tools
+          mountPath: /tools
         resources:
           requests:
             memory: "64Mi"
@@ -95,6 +114,8 @@ spec:
       - name: mcpo-config
         configMap:
           name: mcpo-config
+      - name: tools
+        emptyDir: {}
 
 ---
 # mcpo Service
