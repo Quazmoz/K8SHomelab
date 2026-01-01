@@ -13,27 +13,36 @@ metadata:
   namespace: apps
 data:
   settings.yaml: |
-    title: Homelab Dashboard
-    background: 
-      image: https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920
-      opacity: 15
+    title: Quinn's Homelab
+    favicon: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/png/kubernetes.png
+    background:
+      image: https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920
+      blur: sm
+      opacity: 20
     theme: dark
-    color: slate
+    color: zinc
     headerStyle: clean
+    statusStyle: dot
+    hideVersion: true
     layout:
       Monitoring:
+        icon: mdi-chart-line
         style: row
         columns: 3
       Automation:
+        icon: mdi-robot
         style: row
         columns: 2
       AI & Tools:
+        icon: mdi-brain
         style: row
-        columns: 2
+        columns: 3
       Admin:
+        icon: mdi-shield-key
         style: row
         columns: 2
       Media:
+        icon: mdi-play-circle
         style: row
         columns: 1
 
@@ -43,87 +52,144 @@ data:
             href: http://grafana.k8s.local
             icon: grafana.png
             description: Dashboards & Visualization
+            siteMonitor: http://grafana.apps.svc.cluster.local:80
+            statusStyle: dot
         - Prometheus:
             href: http://prometheus.k8s.local
             icon: prometheus.png
             description: Metrics Collection
+            siteMonitor: http://prometheus-server.apps.svc.cluster.local:80
+            statusStyle: dot
+            widget:
+              type: prometheus
+              url: http://prometheus-server.apps.svc.cluster.local
         - Uptime Kuma:
             href: http://status.k8s.local
             icon: uptime-kuma
             description: Service Status Page
-
-    - Media:
-        - Plex:
-            href: http://192.168.1.221:32400/web
-            icon: plex.png
-            description: Media Server
+            siteMonitor: http://uptime-kuma.apps.svc.cluster.local:3001
+            statusStyle: dot
+            # Uncomment and add API key to enable widget:
+            # widget:
+            #   type: uptimekuma
+            #   url: http://uptime-kuma.apps.svc.cluster.local:3001
+            #   slug: homelab  # Your status page slug
 
     - Automation:
         - Jenkins:
             href: http://jenkins.k8s.local
             icon: jenkins.png
             description: CI/CD Pipelines
+            siteMonitor: http://jenkins.apps.svc.cluster.local:8080
+            statusStyle: dot
         - n8n:
             href: http://n8n.k8s.local
             icon: n8n.png
             description: Workflow Automation
+            siteMonitor: http://n8n.apps.svc.cluster.local:5678
+            statusStyle: dot
 
     - AI & Tools:
         - OpenWebUI:
             href: http://openwebui.k8s.local
             icon: si-openai
             description: LLM Chat Interface
+            siteMonitor: http://openwebui.apps.svc.cluster.local:8080
+            statusStyle: dot
         - Azure MCP Tools:
             href: http://mcpo.k8s.local/docs
             icon: azure
             description: Azure MCP via OpenAPI
+            siteMonitor: http://mcpo.apps.svc.cluster.local:8000
+            statusStyle: dot
         - LLaMA Factory:
             href: http://llamafactory.k8s.local
             icon: mdi-brain
             description: LLM Fine-Tuning
+            siteMonitor: http://llamafactory.apps.svc.cluster.local:7860
+            statusStyle: dot
 
     - Admin:
         - pgAdmin:
             href: http://pgadmin.k8s.local
             icon: si-postgresql
             description: PostgreSQL Admin
+            siteMonitor: http://pgadmin.apps.svc.cluster.local:80
+            statusStyle: dot
         - RedisInsight:
             href: http://redisinsight.k8s.local
             icon: si-redis
             description: Redis Admin
+            siteMonitor: http://redis-insight.apps.svc.cluster.local:5540
+            statusStyle: dot
         - Pi-hole:
             href: http://pihole.k8s.local/admin
             icon: pi-hole.png
             description: DNS Ad Blocking
+            siteMonitor: http://pihole.apps.svc.cluster.local:80
+            statusStyle: dot
+            # Uncomment and add API key to enable widget:
+            # widget:
+            #   type: pihole
+            #   url: http://pihole.apps.svc.cluster.local
+            #   key: YOUR_API_KEY  # Get from Pi-hole settings
         - Authentik:
             href: http://auth.k8s.local
             icon: authentik
             description: SSO Identity Provider
+            siteMonitor: http://authentik-server.apps.svc.cluster.local:80
+            statusStyle: dot
+
+    - Media:
+        - Plex:
+            href: http://192.168.1.221:32400/web
+            icon: plex.png
+            description: Media Server
+            statusStyle: dot
+            # Uncomment to enable Plex widget:
+            # widget:
+            #   type: plex
+            #   url: http://192.168.1.221:32400
+            #   key: YOUR_PLEX_TOKEN
 
   widgets.yaml: |
     - search:
         provider: duckduckgo
         target: _blank
+        focus: false
+    - datetime:
+        text_size: xl
+        format:
+          timeStyle: short
+          dateStyle: short
+          hourCycle: h12
     - kubernetes:
         cluster:
           show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "k8s-homelab"
         nodes:
           show: true
-        namespaces:
-          show: true
+          cpu: true
+          memory: true
 
   bookmarks.yaml: |
     - Developer:
         - Github:
             - abbr: GH
               href: https://github.com/quazmoz
+              icon: si-github
     - Profiles:
         - LinkedIn:
             - abbr: LI
               href: https://www.linkedin.com/in/quinnfavo/
+              icon: si-linkedin
         - QuinnFavo:
-            - abbr: DevOps
+            - abbr: QF
               href: https://profile.quinnfavo.com/
+              icon: mdi-account-circle
               
   docker.yaml: ""
   kubernetes.yaml: |
@@ -141,7 +207,58 @@ data:
       displayedNamespaces:
         - apps
         - kube-system
-  custom.css: ""
+  custom.css: |
+    /* Glassmorphism effect for service cards */
+    .service {
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      background: rgba(30, 41, 59, 0.65) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 16px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    .service:hover {
+      transform: translateY(-4px) !important;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      background: rgba(30, 41, 59, 0.8) !important;
+    }
+    
+    /* Smooth transitions for all interactive elements */
+    .bookmark, .widget {
+      transition: all 0.2s ease !important;
+    }
+    
+    .bookmark:hover {
+      transform: scale(1.05) !important;
+    }
+    
+    /* Status dot glow effect */
+    .status-dot {
+      box-shadow: 0 0 8px currentColor !important;
+    }
+    
+    /* Group headers styling */
+    .group-header {
+      text-transform: uppercase !important;
+      letter-spacing: 0.1em !important;
+      font-weight: 600 !important;
+    }
+    
+    /* Subtle gradient on search bar */
+    input[type="text"] {
+      background: linear-gradient(135deg, rgba(39, 39, 42, 0.8), rgba(24, 24, 27, 0.9)) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+    }
+    
+    /* Widget cards */
+    .widget-container {
+      backdrop-filter: blur(8px) !important;
+      background: rgba(39, 39, 42, 0.6) !important;
+      border-radius: 12px !important;
+    }
   custom.js: ""
 ---
 # --- 3. RBAC rules to allow Homepage to read Ingresses, nodes, pods, etc. ---
@@ -211,15 +328,24 @@ kind: Deployment
 metadata:
   name: homepage
   namespace: apps
+  labels:
+    app.kubernetes.io/name: homepage
+    app.kubernetes.io/component: dashboard
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: homepage
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
         app.kubernetes.io/name: homepage
+      annotations:
+        # Force pod restart when ConfigMap changes
+        checksum/config: "v2-enhanced"
     spec:
       serviceAccountName: homepage
       nodeSelector:
@@ -246,15 +372,49 @@ spec:
               mountPath: /config
             - name: configmap
               mountPath: /configmap
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "50m"
       containers:
         - name: homepage
           image: "ghcr.io/gethomepage/homepage:v1.8.0"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
+              name: http
+              protocol: TCP
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
               value: "homepage.k8s.local"
+          # Health checks for robustness
+          livenessProbe:
+            httpGet:
+              path: /api/healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # Resource constraints
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "10m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
           volumeMounts:
             - name: config
               mountPath: /app/config
@@ -270,7 +430,19 @@ spec:
         - name: logs
           emptyDir: {}
 ---
-# --- 7. The Ingress rule to expose Homepage to your network ---
+# --- 7. PodDisruptionBudget for availability during maintenance ---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: homepage-pdb
+  namespace: apps
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: homepage
+---
+# --- 8. The Ingress rule to expose Homepage to your network ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
