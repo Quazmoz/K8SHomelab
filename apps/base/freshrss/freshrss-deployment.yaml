@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: freshrss
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: freshrss
+  template:
+    metadata:
+      labels:
+        app: freshrss
+    spec:
+      containers:
+      - name: freshrss
+        image: freshrss/freshrss:latest
+        ports:
+        - containerPort: 80
+        env:
+        # Cron job for auto-refresh (every 30 min)
+        - name: CRON_MIN
+          value: "2,32"
+        # PostgreSQL connection
+        - name: FRESHRSS_ENV
+          value: "production"
+        - name: FRESHRSS_INSTALL
+          value: "--default_user admin --api_enabled"
+        - name: DB_TYPE
+          value: "pgsql"
+        - name: DB_HOST
+          value: "postgres.apps.svc.cluster.local"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_BASE
+          value: "freshrss"
+        - name: DB_USER
+          value: "freshrss"
+        - name: DB_PASSWORD
+          value: "freshrss123"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "10m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: freshrss-data
+          mountPath: /var/www/FreshRSS/data
+        - name: feeds-opml
+          mountPath: /var/www/FreshRSS/data/opml
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: freshrss-data
+        persistentVolumeClaim:
+          claimName: freshrss-pvc
+      - name: feeds-opml
+        configMap:
+          name: freshrss-feeds

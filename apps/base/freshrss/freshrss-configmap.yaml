@@ -1,0 +1,46 @@
+# FreshRSS GitOps-managed RSS Feeds
+# Edit this OPML to add/remove feeds via GitOps
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: freshrss-feeds
+  namespace: apps
+data:
+  feeds.opml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <opml version="2.0">
+      <head><title>Homelab Security Feeds</title></head>
+      <body>
+        <outline text="Security Advisories" title="Security Advisories">
+          <outline type="rss" text="VMware Security Advisories" xmlUrl="https://www.vmware.com/security/advisories.xml"/>
+          <outline type="rss" text="VMware Blog Security" xmlUrl="https://blogs.vmware.com/security/feed"/>
+          <outline type="rss" text="CISA Alerts" xmlUrl="https://www.cisa.gov/cybersecurity-advisories/all.xml"/>
+          <outline type="rss" text="NVD CVEs" xmlUrl="https://nvd.nist.gov/feeds/xml/cve/misc/nvd-rss.xml"/>
+        </outline>
+        <outline text="Kubernetes" title="Kubernetes">
+          <outline type="rss" text="Kubernetes Blog" xmlUrl="https://kubernetes.io/feed.xml"/>
+          <outline type="rss" text="Kubernetes Releases" xmlUrl="https://github.com/kubernetes/kubernetes/releases.atom"/>
+          <outline type="rss" text="Calico Releases" xmlUrl="https://github.com/projectcalico/calico/releases.atom"/>
+          <outline type="rss" text="FluxCD Releases" xmlUrl="https://github.com/fluxcd/flux2/releases.atom"/>
+        </outline>
+        <outline text="Homelab Products" title="Homelab Products">
+          <outline type="rss" text="Grafana Releases" xmlUrl="https://github.com/grafana/grafana/releases.atom"/>
+          <outline type="rss" text="Prometheus Releases" xmlUrl="https://github.com/prometheus/prometheus/releases.atom"/>
+          <outline type="rss" text="OpenWebUI Releases" xmlUrl="https://github.com/open-webui/open-webui/releases.atom"/>
+          <outline type="rss" text="n8n Releases" xmlUrl="https://github.com/n8n-io/n8n/releases.atom"/>
+          <outline type="rss" text="Pi-hole Releases" xmlUrl="https://github.com/pi-hole/pi-hole/releases.atom"/>
+          <outline type="rss" text="Uptime Kuma Releases" xmlUrl="https://github.com/louislam/uptime-kuma/releases.atom"/>
+          <outline type="rss" text="Jenkins Releases" xmlUrl="https://github.com/jenkinsci/jenkins/releases.atom"/>
+          <outline type="rss" text="Authentik Releases" xmlUrl="https://github.com/goauthentik/authentik/releases.atom"/>
+          <outline type="rss" text="FreshRSS Releases" xmlUrl="https://github.com/FreshRSS/FreshRSS/releases.atom"/>
+          <outline type="rss" text="PostgreSQL News" xmlUrl="https://www.postgresql.org/news.rss"/>
+          <outline type="rss" text="Loki Releases" xmlUrl="https://github.com/grafana/loki/releases.atom"/>
+          <outline type="rss" text="Redis Releases" xmlUrl="https://github.com/redis/redis/releases.atom"/>
+        </outline>
+        <outline text="Infrastructure" title="Infrastructure">
+          <outline type="rss" text="NGINX Ingress Releases" xmlUrl="https://github.com/kubernetes/ingress-nginx/releases.atom"/>
+          <outline type="rss" text="MetalLB Releases" xmlUrl="https://github.com/metallb/metallb/releases.atom"/>
+          <outline type="rss" text="WireGuard News" xmlUrl="https://www.wireguard.com/blog/index.xml"/>
+        </outline>
+      </body>
+    </opml>

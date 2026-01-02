@@ -96,7 +96,7 @@ spec:
               key: CLICKUP_API_KEY
               optional: true
         - name: API_HEADERS
-          value: "Authorization: Bearer $(CLICKUP_API_KEY)"
+          value: "Authorization:$(CLICKUP_API_KEY)"
         volumeMounts:
         - name: mcpo-config
           mountPath: /config
