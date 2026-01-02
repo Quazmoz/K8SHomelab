@@ -42,6 +42,15 @@ data:
             "N8N_API_URL": "http://n8n.apps.svc.cluster.local:5678",
             "N8N_API_KEY": ""
           }
+        },
+        "clickup": {
+          "command": "npx",
+          "args": ["-y", "mcp-openapi-proxy"],
+          "env": {
+            "OPENAPI_SPEC_URL": "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json",
+            "API_BASE_URL": "https://api.clickup.com/api/v2",
+            "API_HEADERS": "{\"Authorization\": \"Bearer ${CLICKUP_API_KEY}\"}"
+          }
         }
       }
     }

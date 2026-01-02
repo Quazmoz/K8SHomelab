@@ -87,6 +87,13 @@ spec:
               name: n8n-mcp-credentials
               key: N8N_API_KEY
               optional: true
+        # ClickUp API credentials
+        - name: CLICKUP_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: clickup-mcp-credentials
+              key: CLICKUP_API_KEY
+              optional: true
         volumeMounts:
         - name: mcpo-config
           mountPath: /config
