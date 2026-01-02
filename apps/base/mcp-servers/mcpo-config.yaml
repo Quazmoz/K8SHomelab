@@ -58,6 +58,15 @@ data:
           "env": {
             "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
           }
+        },
+        "groupme": {
+          "command": "npx",
+          "args": [
+            "-y", 
+            "@ivotoby/openapi-mcp-server",
+            "--api-base-url", "https://api.groupme.com/v3",
+            "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/groupme-openapi.json"
+          ]
         }
       }
     }
