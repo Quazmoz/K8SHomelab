@@ -51,6 +51,13 @@ data:
             "--api-base-url", "https://api.clickup.com/api/v2",
             "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"
           ]
+        },
+        "freshrss": {
+          "command": "npx",
+          "args": ["-y", "mcp-server-fetch"],
+          "env": {
+            "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
+          }
         }
       }
     }

@@ -29,4 +29,11 @@ data:
     CREATE DATABASE openwebui_db;
     GRANT ALL PRIVILEGES ON DATABASE openwebui_db TO grafana_user;
     ALTER DATABASE openwebui_db OWNER TO grafana_user;
+    
+    -- Create FreshRSS database and user
+    CREATE DATABASE freshrss;
+    CREATE USER freshrss WITH PASSWORD 'freshrss123';
+    GRANT ALL PRIVILEGES ON DATABASE freshrss TO freshrss;
+    ALTER DATABASE freshrss OWNER TO freshrss;
+
 

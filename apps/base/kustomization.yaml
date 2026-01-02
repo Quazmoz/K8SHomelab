@@ -25,4 +25,6 @@ resources:
   - ./llamafactory
   - ./uptime-kuma
   - ./authentik
+  - ./freshrss
+
 
