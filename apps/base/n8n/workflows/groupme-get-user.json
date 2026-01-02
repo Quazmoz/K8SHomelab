@@ -5,7 +5,6 @@
             "parameters": {
                 "httpMethod": "GET",
                 "path": "groupme-get-user",
-                "authentication": "basicAuth",
                 "responseMode": "responseNode",
                 "options": {}
             },
