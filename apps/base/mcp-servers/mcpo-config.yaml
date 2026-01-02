@@ -61,6 +61,15 @@ data:
           "env": {
             "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
           }
+        },
+        "groupme": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "supergateway",
+            "--streamableHttp",
+            "http://groupme-backend.apps.svc.cluster.local:5000/sse"
+          ]
         }
       }
     }

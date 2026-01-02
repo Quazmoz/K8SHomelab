@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: groupme-backend
+  namespace: apps
+  labels:
+    app: groupme-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: groupme-backend
+  template:
+    metadata:
+      labels:
+        app: groupme-backend
+    spec:
+      containers:
+      - name: groupme-backend
+        image: quazmoz/quazmoz:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          name: http
+        env:
+        - name: GROUPME_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: groupme-mcp-credentials
+              key: GROUPME_TOKEN
+        - name: MCP_TRANSPORT
+          value: "sse"
+        - name: PORT
+          value: "5000"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: groupme-backend
+  namespace: apps
+spec:
+  selector:
+    app: groupme-backend
+  ports:
+  - port: 5000
+    targetPort: 5000
+    name: http

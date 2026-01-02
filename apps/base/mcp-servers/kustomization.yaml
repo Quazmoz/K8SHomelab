@@ -10,3 +10,5 @@ resources:
   - mcpo-deployment.yaml
   # Ingress for mcpo
   - ingress.yaml
+  # Custom GroupMe backend
+  - groupme-backend.yaml
