@@ -49,8 +49,7 @@ data:
             "-y", 
             "@ivotoby/openapi-mcp-server",
             "--api-base-url", "https://api.clickup.com/api/v2",
-            "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json",
-            "--headers", "Authorization: Bearer ${CLICKUP_API_KEY}"
+            "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"
           ]
         }
       }
