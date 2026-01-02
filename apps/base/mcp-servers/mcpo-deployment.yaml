@@ -103,9 +103,6 @@ spec:
           readOnly: true
         - name: tools
           mountPath: /tools
-        - name: private-specs
-          mountPath: /specs
-          readOnly: true
         resources:
           requests:
             memory: "64Mi"
@@ -136,10 +133,6 @@ spec:
           name: mcpo-config
       - name: tools
         emptyDir: {}
-      - name: private-specs
-        configMap:
-          name: mcpo-private-specs
-          optional: true
 
 ---
 # mcpo Service

@@ -5,11 +5,3 @@ apps/base/mcp-servers/mcp-gateway-secrets.yaml
 
 # Use .template files instead - they contain placeholders only
 # Template files ARE committed to git for easy setup documentation
-
-# Private OpenAPI Specs - COMMERCIAL/SELLABLE, do not publish
-# These are loaded by mcpo from a ConfigMap created manually
-apps/base/mcp-servers/private-specs/
-*-openapi.json
-
-# Keep example/template specs that show the pattern
-!apps/base/mcp-servers/example-openapi.json.template

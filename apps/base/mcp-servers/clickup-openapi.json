@@ -1,0 +1,694 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "ClickUp API v2",
+        "version": "2.0.0",
+        "description": "ClickUp API for task and project management. Use getWorkspaces first to get team_id, then getSpaces to get space_id, then getListsInSpace/getListsInFolder to get list_id, then getTasksInList to get tasks."
+    },
+    "servers": [
+        {
+            "url": "https://api.clickup.com/api/v2"
+        }
+    ],
+    "security": [
+        {
+            "apiKey": []
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "apiKey": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Authorization"
+            }
+        }
+    },
+    "paths": {
+        "/user": {
+            "get": {
+                "operationId": "getAuthenticatedUser",
+                "summary": "Get Authenticated User - returns user id, username, email, timezone",
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details including id, username, email, timezone"
+                    }
+                }
+            }
+        },
+        "/team": {
+            "get": {
+                "operationId": "getWorkspaces",
+                "summary": "Get Workspaces (Teams) - CALL THIS FIRST to get team_id for other endpoints",
+                "description": "Returns all workspaces/teams the user has access to. The team id is needed for most other API calls.",
+                "tags": [
+                    "Teams"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of teams with id, name, color, avatar, members"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}": {
+            "get": {
+                "operationId": "getTeam",
+                "summary": "Get Team Details",
+                "tags": [
+                    "Teams"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The team/workspace ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Team details with members"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/space": {
+            "get": {
+                "operationId": "getSpaces",
+                "summary": "Get Spaces in Workspace - returns spaces which contain folders and lists",
+                "tags": [
+                    "Spaces"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The team/workspace ID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "archived",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Include archived spaces"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of spaces with id, name, private, statuses, features"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}": {
+            "get": {
+                "operationId": "getSpace",
+                "summary": "Get Space Details",
+                "tags": [
+                    "Spaces"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Space details"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}/folder": {
+            "get": {
+                "operationId": "getFoldersInSpace",
+                "summary": "Get Folders in Space - folders contain lists",
+                "tags": [
+                    "Folders"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "archived",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of folders with id, name, lists"
+                    }
+                }
+            }
+        },
+        "/folder/{folder_id}": {
+            "get": {
+                "operationId": "getFolder",
+                "summary": "Get Folder Details",
+                "tags": [
+                    "Folders"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "folder_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Folder details with lists"
+                    }
+                }
+            }
+        },
+        "/folder/{folder_id}/list": {
+            "get": {
+                "operationId": "getListsInFolder",
+                "summary": "Get Lists in Folder",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "folder_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "archived",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of lists"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}/list": {
+            "get": {
+                "operationId": "getListsInSpace",
+                "summary": "Get Folderless Lists in Space - lists not inside folders",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "archived",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of lists not in folders"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}": {
+            "get": {
+                "operationId": "getList",
+                "summary": "Get List Details",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List details including task_count"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/task": {
+            "get": {
+                "operationId": "getTasksInList",
+                "summary": "Get Tasks in List - use page param for pagination (100 per page)",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Page number (0-indexed), 100 tasks per page"
+                    },
+                    {
+                        "in": "query",
+                        "name": "include_closed",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Include completed/closed tasks"
+                    },
+                    {
+                        "in": "query",
+                        "name": "subtasks",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Include subtasks"
+                    },
+                    {
+                        "in": "query",
+                        "name": "statuses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Filter by status names"
+                    },
+                    {
+                        "in": "query",
+                        "name": "assignees",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "description": "Filter by assignee user IDs"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of tasks with id, name, status, assignees, due_date, priority"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createTaskInList",
+                "summary": "Create Task in List",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "Task name"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "Task description (markdown supported)"
+                                    },
+                                    "priority": {
+                                        "type": "integer",
+                                        "description": "1=Urgent, 2=High, 3=Normal, 4=Low"
+                                    },
+                                    "due_date": {
+                                        "type": "integer",
+                                        "description": "Unix timestamp in milliseconds"
+                                    },
+                                    "assignees": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "description": "Array of user IDs"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "Array of tag names"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "description": "Status name"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created task"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/task": {
+            "get": {
+                "operationId": "getFilteredTeamTasks",
+                "summary": "Get Filtered Team Tasks - search across entire workspace with filters",
+                "description": "Returns tasks across the entire workspace matching filters. Useful for finding all tasks assigned to a user or with specific statuses.",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Page number (0-indexed)"
+                    },
+                    {
+                        "in": "query",
+                        "name": "include_closed",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Include completed tasks"
+                    },
+                    {
+                        "in": "query",
+                        "name": "assignees",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        },
+                        "description": "Filter by assignee IDs"
+                    },
+                    {
+                        "in": "query",
+                        "name": "statuses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "Filter by status names"
+                    },
+                    {
+                        "in": "query",
+                        "name": "due_date_gt",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Due date greater than (unix ms)"
+                    },
+                    {
+                        "in": "query",
+                        "name": "due_date_lt",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Due date less than (unix ms)"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of tasks matching filters"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}": {
+            "get": {
+                "operationId": "getTask",
+                "summary": "Get Task Details",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Full task details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateTask",
+                "summary": "Update Task",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "priority": {
+                                        "type": "integer"
+                                    },
+                                    "due_date": {
+                                        "type": "integer"
+                                    },
+                                    "assignees": {
+                                        "type": "object",
+                                        "properties": {
+                                            "add": {
+                                                "type": "array"
+                                            },
+                                            "rem": {
+                                                "type": "array"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated task"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteTask",
+                "summary": "Delete Task",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Task deleted"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/comment": {
+            "get": {
+                "operationId": "getTaskComments",
+                "summary": "Get Task Comments",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of comments"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createTaskComment",
+                "summary": "Create Task Comment",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "comment_text"
+                                ],
+                                "properties": {
+                                    "comment_text": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Comment created"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/member": {
+            "get": {
+                "operationId": "getTeamMembers",
+                "summary": "Get Team Members - returns user IDs for assignee filtering",
+                "tags": [
+                    "Teams"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of team members with user id, username, email"
+                    }
+                }
+            }
+        }
+    }
+}
