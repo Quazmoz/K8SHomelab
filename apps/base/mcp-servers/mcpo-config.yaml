@@ -40,7 +40,7 @@ data:
           "args": [
             "-y",
             "supergateway",
-            "--streamableHttp",
+            "--sse",
             "http://n8n.apps.svc.cluster.local:5678/mcp-server/http",
             "--header",
             "authorization:Bearer ${N8N_MCP_TOKEN}"
@@ -67,7 +67,7 @@ data:
           "args": [
             "-y",
             "supergateway",
-            "--streamableHttp",
+            "--sse",
             "http://groupme-backend.apps.svc.cluster.local:5000/sse"
           ]
         }
