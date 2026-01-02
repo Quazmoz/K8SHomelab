@@ -64,11 +64,12 @@ data:
           "args": [
             "-y", 
             "@ivotoby/openapi-mcp-server",
-            "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/groupme-openapi.json"
-          ],
-          "env": {
-            "API_BASE_URL": "https://api.groupme.com/v3"
-          }
+            "--api-base-url", "https://api.groupme.com/v3",
+            "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/groupme-openapi.json",
+            "--api-key-loc", "query",
+            "--api-key-name", "token",
+            "--api-key-env", "GROUPME_TOKEN"
+          ]
         }
       }
     }
