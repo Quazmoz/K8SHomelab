@@ -1,0 +1,90 @@
+# n8n Workflow Import Job
+# Imports workflow JSON files into n8n via API on deployment
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: n8n-groupme-workflows
+  namespace: apps
+data:
+  groupme-list-groups.json: |
+    {"name":"GroupMe - List Groups","nodes":[{"parameters":{},"id":"start","name":"When Called By AI","type":"n8n-nodes-base.executeWorkflowTrigger","typeVersion":1,"position":[250,300]},{"parameters":{"method":"GET","url":"=https://api.groupme.com/v3/groups?token={{ $env.GROUPME_TOKEN }}","options":{}},"id":"http-request","name":"Get Groups","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[500,300]},{"parameters":{"assignments":{"assignments":[{"id":"groups","name":"groups","value":"={{ $json.response }}","type":"array"}]},"options":{}},"id":"set-output","name":"Format Output","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[750,300]}],"connections":{"When Called By AI":{"main":[[{"node":"Get Groups","type":"main","index":0}]]},"Get Groups":{"main":[[{"node":"Format Output","type":"main","index":0}]]}},"settings":{"executionOrder":"v1"}}
+  groupme-get-user.json: |
+    {"name":"GroupMe - Get Current User","nodes":[{"parameters":{},"id":"start","name":"When Called By AI","type":"n8n-nodes-base.executeWorkflowTrigger","typeVersion":1,"position":[250,300]},{"parameters":{"method":"GET","url":"=https://api.groupme.com/v3/users/me?token={{ $env.GROUPME_TOKEN }}","options":{}},"id":"http-request","name":"Get User","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[500,300]},{"parameters":{"assignments":{"assignments":[{"id":"user","name":"user","value":"={{ $json.response }}","type":"object"}]},"options":{}},"id":"set-output","name":"Format Output","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[750,300]}],"connections":{"When Called By AI":{"main":[[{"node":"Get User","type":"main","index":0}]]},"Get User":{"main":[[{"node":"Format Output","type":"main","index":0}]]}},"settings":{"executionOrder":"v1"}}
+  groupme-send-message.json: |
+    {"name":"GroupMe - Send Message","nodes":[{"parameters":{"inputParameters":[{"name":"group_id","type":"string"},{"name":"message_text","type":"string"}]},"id":"start","name":"When Called By AI","type":"n8n-nodes-base.executeWorkflowTrigger","typeVersion":1,"position":[250,300]},{"parameters":{"method":"POST","url":"=https://api.groupme.com/v3/groups/{{ $json.group_id }}/messages?token={{ $env.GROUPME_TOKEN }}","sendBody":true,"specifyBody":"json","jsonBody":"={{ JSON.stringify({ message: { source_guid: $now.toMillis().toString(), text: $json.message_text } }) }}","options":{}},"id":"http-request","name":"Send Message","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[500,300]},{"parameters":{"assignments":{"assignments":[{"id":"result","name":"result","value":"={{ $json.response ? 'Message sent successfully' : 'Failed to send message' }}","type":"string"},{"id":"message","name":"message","value":"={{ $json.response?.message }}","type":"object"}]},"options":{}},"id":"set-output","name":"Format Output","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[750,300]}],"connections":{"When Called By AI":{"main":[[{"node":"Send Message","type":"main","index":0}]]},"Send Message":{"main":[[{"node":"Format Output","type":"main","index":0}]]}},"settings":{"executionOrder":"v1"}}
+  import-script.sh: |
+    #!/bin/sh
+    set -e
+    
+    N8N_URL="${N8N_API_URL:-http://n8n.apps.svc.cluster.local:5678}"
+    
+    echo "Waiting for n8n to be ready..."
+    until curl -sf "$N8N_URL/healthz" > /dev/null 2>&1; do
+      echo "n8n not ready, waiting..."
+      sleep 5
+    done
+    
+    echo "n8n is ready. Importing workflows..."
+    
+    for file in /workflows/*.json; do
+      name=$(basename "$file" .json)
+      echo "Importing workflow: $name"
+      
+      # Try to create, if exists it will fail, that's OK
+      curl -sf -X POST "$N8N_URL/api/v1/workflows" \
+        -H "Content-Type: application/json" \
+        -H "X-N8N-API-KEY: $N8N_API_KEY" \
+        -d @"$file" || echo "Workflow $name may already exist"
+    done
+    
+    echo "Workflow import complete!"
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: n8n-import-groupme-workflows
+  namespace: apps
+  annotations:
+    # Recreate job on configmap changes
+    checksum/workflows: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: import
+        image: curlimages/curl:8.5.0
+        command: ["/bin/sh", "/scripts/import-script.sh"]
+        env:
+        - name: N8N_API_URL
+          value: "http://n8n.apps.svc.cluster.local:5678"
+        - name: N8N_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: n8n-credentials
+              key: N8N_API_KEY
+        volumeMounts:
+        - name: workflows
+          mountPath: /workflows
+        - name: scripts
+          mountPath: /scripts
+      volumes:
+      - name: workflows
+        configMap:
+          name: n8n-groupme-workflows
+          items:
+          - key: groupme-list-groups.json
+            path: groupme-list-groups.json
+          - key: groupme-get-user.json
+            path: groupme-get-user.json
+          - key: groupme-send-message.json
+            path: groupme-send-message.json
+      - name: scripts
+        configMap:
+          name: n8n-groupme-workflows
+          items:
+          - key: import-script.sh
+            path: import-script.sh
+            mode: 0755

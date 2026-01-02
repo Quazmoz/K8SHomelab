@@ -1,0 +1,90 @@
+{
+    "name": "GroupMe - Get Current User",
+    "nodes": [
+        {
+            "parameters": {},
+            "id": "start",
+            "name": "When Called By AI",
+            "type": "n8n-nodes-base.executeWorkflowTrigger",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "=https://api.groupme.com/v3/users/me?token={{ $env.GROUPME_TOKEN }}",
+                "options": {}
+            },
+            "id": "http-request",
+            "name": "Get User",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                500,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "user",
+                            "name": "user",
+                            "value": "={{ $json.response }}",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "set-output",
+            "name": "Format Output",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                750,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "When Called By AI": {
+            "main": [
+                [
+                    {
+                        "node": "Get User",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get User": {
+            "main": [
+                [
+                    {
+                        "node": "Format Output",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [
+        {
+            "name": "GroupMe"
+        },
+        {
+            "name": "AI"
+        }
+    ]
+}

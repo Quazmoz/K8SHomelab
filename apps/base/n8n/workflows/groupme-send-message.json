@@ -1,0 +1,110 @@
+{
+    "name": "GroupMe - Send Message",
+    "nodes": [
+        {
+            "parameters": {
+                "inputParameters": [
+                    {
+                        "name": "group_id",
+                        "type": "string"
+                    },
+                    {
+                        "name": "message_text",
+                        "type": "string"
+                    }
+                ]
+            },
+            "id": "start",
+            "name": "When Called By AI",
+            "type": "n8n-nodes-base.executeWorkflowTrigger",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "=https://api.groupme.com/v3/groups/{{ $json.group_id }}/messages?token={{ $env.GROUPME_TOKEN }}",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ JSON.stringify({ message: { source_guid: $now.toMillis().toString(), text: $json.message_text } }) }}",
+                "options": {}
+            },
+            "id": "http-request",
+            "name": "Send Message",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                500,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "result",
+                            "name": "result",
+                            "value": "={{ $json.response ? 'Message sent successfully' : 'Failed to send message' }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "message",
+                            "name": "message",
+                            "value": "={{ $json.response?.message }}",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "set-output",
+            "name": "Format Output",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                750,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "When Called By AI": {
+            "main": [
+                [
+                    {
+                        "node": "Send Message",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send Message": {
+            "main": [
+                [
+                    {
+                        "node": "Format Output",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [
+        {
+            "name": "GroupMe"
+        },
+        {
+            "name": "AI"
+        }
+    ]
+}

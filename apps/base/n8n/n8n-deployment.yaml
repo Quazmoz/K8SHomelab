@@ -27,6 +27,14 @@ spec:
         envFrom:
         - configMapRef:
             name: n8n-config
+        env:
+        # GroupMe token for GroupMe workflows
+        - name: GROUPME_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: groupme-mcp-credentials
+              key: GROUPME_TOKEN
+              optional: true
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n
