@@ -337,8 +337,6 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: homepage
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
