@@ -87,6 +87,19 @@ spec:
               name: n8n-mcp-credentials
               key: N8N_API_KEY
               optional: true
+        # n8n Webhook credentials for run_webhook calls
+        - name: N8N_WEBHOOK_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: n8n-mcp-credentials
+              key: N8N_WEBHOOK_USERNAME
+              optional: true
+        - name: N8N_WEBHOOK_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: n8n-mcp-credentials
+              key: N8N_WEBHOOK_PASSWORD
+              optional: true
         # ClickUp API credentials - API_HEADERS is used by @ivotoby/openapi-mcp-server
         # CLICKUP_API_KEY must be defined BEFORE API_HEADERS for $(VAR) substitution
         - name: CLICKUP_API_KEY
