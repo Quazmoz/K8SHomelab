@@ -28,8 +28,8 @@ spec:
         - name: GROUPME_TOKEN
           valueFrom:
             secretKeyRef:
-              name: groupme-mcp-credentials
-              key: GROUPME_TOKEN
+              name: groupme-mcp-secret
+              key: GROUPME_ACCESS_TOKEN
         - name: MCP_TRANSPORT
           value: "sse"
         - name: PORT
