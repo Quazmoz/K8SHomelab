@@ -36,7 +36,7 @@ data:
       AI & Tools:
         icon: mdi-brain
         style: row
-        columns: 3
+        columns: 4
       Admin:
         icon: mdi-shield-key
         style: row
@@ -100,13 +100,19 @@ data:
             href: http://mcpo.k8s.local/docs
             icon: azure
             description: Azure MCP via OpenAPI
-            siteMonitor: http://mcpo.apps.svc.cluster.local:8000
+            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/docs
             statusStyle: dot
         - LLaMA Factory:
             href: http://llamafactory.k8s.local
             icon: mdi-brain
             description: LLM Fine-Tuning
-            siteMonitor: http://llamafactory.apps.svc.cluster.local:7860
+            siteMonitor: http://llamafactory.apps.svc.cluster.local:7860/
+            statusStyle: dot
+        - FreshRSS:
+            href: http://freshrss.k8s.local
+            icon: si-rss
+            description: RSS Feed Aggregator
+            siteMonitor: http://freshrss.apps.svc.cluster.local:80
             statusStyle: dot
 
     - Admin:
@@ -343,7 +349,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v2-enhanced"
+        checksum/config: "v3-freshrss"
     spec:
       serviceAccountName: homepage
       nodeSelector:

@@ -37,13 +37,14 @@ data:
         },
         "n8n": {
           "command": "npx",
-          "args": ["-y", "@leonardsellem/n8n-mcp-server"],
-          "env": {
-            "N8N_API_URL": "http://n8n.apps.svc.cluster.local:5678",
-            "N8N_API_KEY": "",
-            "N8N_WEBHOOK_USERNAME": "",
-            "N8N_WEBHOOK_PASSWORD": ""
-          }
+          "args": [
+            "-y",
+            "supergateway",
+            "--streamableHttp",
+            "http://n8n.apps.svc.cluster.local:5678/mcp-server/http",
+            "--header",
+            "authorization:Bearer ${N8N_MCP_TOKEN}"
+          ]
         },
         "clickup": {
           "command": "npx",
