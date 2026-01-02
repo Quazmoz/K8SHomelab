@@ -25,7 +25,7 @@ spec:
         - containerPort: 5000
           name: http
         env:
-        - name: GROUPME_TOKEN
+        - name: GROUPME_ACCESS_TOKEN
           valueFrom:
             secretKeyRef:
               name: groupme-mcp-secret
