@@ -64,9 +64,11 @@ data:
           "args": [
             "-y", 
             "@ivotoby/openapi-mcp-server",
-            "--api-base-url", "https://api.groupme.com/v3",
             "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/groupme-openapi.json"
-          ]
+          ],
+          "env": {
+            "API_BASE_URL": "https://api.groupme.com/v3"
+          }
         }
       }
     }
