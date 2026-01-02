@@ -2,15 +2,22 @@
     "name": "GroupMe - Get Current User",
     "nodes": [
         {
-            "parameters": {},
-            "id": "start",
-            "name": "When Called By AI",
-            "type": "n8n-nodes-base.executeWorkflowTrigger",
-            "typeVersion": 1,
+            "parameters": {
+                "httpMethod": "GET",
+                "path": "groupme-get-user",
+                "authentication": "basicAuth",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "id": "webhook",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
             "position": [
                 250,
                 300
-            ]
+            ],
+            "webhookId": "groupme-get-user"
         },
         {
             "parameters": {
@@ -29,22 +36,14 @@
         },
         {
             "parameters": {
-                "assignments": {
-                    "assignments": [
-                        {
-                            "id": "user",
-                            "name": "user",
-                            "value": "={{ $json.response }}",
-                            "type": "object"
-                        }
-                    ]
-                },
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify($json) }}",
                 "options": {}
             },
-            "id": "set-output",
-            "name": "Format Output",
-            "type": "n8n-nodes-base.set",
-            "typeVersion": 3.4,
+            "id": "respond",
+            "name": "Respond",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
             "position": [
                 750,
                 300
@@ -52,7 +51,7 @@
         }
     ],
     "connections": {
-        "When Called By AI": {
+        "Webhook": {
             "main": [
                 [
                     {
@@ -67,7 +66,7 @@
             "main": [
                 [
                     {
-                        "node": "Format Output",
+                        "node": "Respond",
                         "type": "main",
                         "index": 0
                     }
@@ -78,13 +77,5 @@
     "settings": {
         "executionOrder": "v1"
     },
-    "staticData": null,
-    "tags": [
-        {
-            "name": "GroupMe"
-        },
-        {
-            "name": "AI"
-        }
-    ]
+    "active": true
 }

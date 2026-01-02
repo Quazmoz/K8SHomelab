@@ -3,33 +3,29 @@
     "nodes": [
         {
             "parameters": {
-                "inputParameters": [
-                    {
-                        "name": "group_id",
-                        "type": "string"
-                    },
-                    {
-                        "name": "message_text",
-                        "type": "string"
-                    }
-                ]
+                "httpMethod": "POST",
+                "path": "groupme-send-message",
+                "authentication": "basicAuth",
+                "responseMode": "responseNode",
+                "options": {}
             },
-            "id": "start",
-            "name": "When Called By AI",
-            "type": "n8n-nodes-base.executeWorkflowTrigger",
-            "typeVersion": 1,
+            "id": "webhook",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
             "position": [
                 250,
                 300
-            ]
+            ],
+            "webhookId": "groupme-send-message"
         },
         {
             "parameters": {
                 "method": "POST",
-                "url": "=https://api.groupme.com/v3/groups/{{ $json.group_id }}/messages?token={{ $env.GROUPME_TOKEN }}",
+                "url": "=https://api.groupme.com/v3/groups/{{ $json.body.group_id }}/messages?token={{ $env.GROUPME_TOKEN }}",
                 "sendBody": true,
                 "specifyBody": "json",
-                "jsonBody": "={{ JSON.stringify({ message: { source_guid: $now.toMillis().toString(), text: $json.message_text } }) }}",
+                "jsonBody": "={{ JSON.stringify({ message: { source_guid: $now.toMillis().toString(), text: $json.body.message_text } }) }}",
                 "options": {}
             },
             "id": "http-request",
@@ -43,28 +39,14 @@
         },
         {
             "parameters": {
-                "assignments": {
-                    "assignments": [
-                        {
-                            "id": "result",
-                            "name": "result",
-                            "value": "={{ $json.response ? 'Message sent successfully' : 'Failed to send message' }}",
-                            "type": "string"
-                        },
-                        {
-                            "id": "message",
-                            "name": "message",
-                            "value": "={{ $json.response?.message }}",
-                            "type": "object"
-                        }
-                    ]
-                },
+                "respondWith": "json",
+                "responseBody": "={{ JSON.stringify({ result: 'Message sent', response: $json }) }}",
                 "options": {}
             },
-            "id": "set-output",
-            "name": "Format Output",
-            "type": "n8n-nodes-base.set",
-            "typeVersion": 3.4,
+            "id": "respond",
+            "name": "Respond",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.1,
             "position": [
                 750,
                 300
@@ -72,7 +54,7 @@
         }
     ],
     "connections": {
-        "When Called By AI": {
+        "Webhook": {
             "main": [
                 [
                     {
@@ -87,7 +69,7 @@
             "main": [
                 [
                     {
-                        "node": "Format Output",
+                        "node": "Respond",
                         "type": "main",
                         "index": 0
                     }
@@ -98,13 +80,5 @@
     "settings": {
         "executionOrder": "v1"
     },
-    "staticData": null,
-    "tags": [
-        {
-            "name": "GroupMe"
-        },
-        {
-            "name": "AI"
-        }
-    ]
+    "active": true
 }
