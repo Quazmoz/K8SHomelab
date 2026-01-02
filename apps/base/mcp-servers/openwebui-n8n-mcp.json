@@ -9,6 +9,6 @@
     },
     "info": {
         "name": "n8n MCP",
-        "description": "Manage n8n workflows and executions"
+        "description": "n8n Workflow Automation via MCP"
     }
 }
