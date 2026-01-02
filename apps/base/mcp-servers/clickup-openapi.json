@@ -1,0 +1,263 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "ClickUp API v2",
+        "version": "2.0.0",
+        "description": "ClickUp API for task and project management"
+    },
+    "servers": [
+        {
+            "url": "https://api.clickup.com/api/v2"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "paths": {
+        "/user": {
+            "get": {
+                "operationId": "getAuthenticatedUser",
+                "summary": "Get Authenticated User",
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details"
+                    }
+                }
+            }
+        },
+        "/team": {
+            "get": {
+                "operationId": "getWorkspaces",
+                "summary": "Get Workspaces",
+                "tags": [
+                    "Teams"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of workspaces"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/space": {
+            "get": {
+                "operationId": "getSpaces",
+                "summary": "Get Spaces",
+                "tags": [
+                    "Spaces"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of spaces"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}/list": {
+            "get": {
+                "operationId": "getListsInSpace",
+                "summary": "Get Lists in Space",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of lists"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/task": {
+            "get": {
+                "operationId": "getTasksInList",
+                "summary": "Get Tasks in List",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "include_closed",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of tasks"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createTaskInList",
+                "summary": "Create Task",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Task created"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}": {
+            "get": {
+                "operationId": "getTask",
+                "summary": "Get Task",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateTask",
+                "summary": "Update Task",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated task"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteTask",
+                "summary": "Delete Task",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Task deleted"
+                    }
+                }
+            }
+        }
+    }
+}
