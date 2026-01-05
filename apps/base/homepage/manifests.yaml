@@ -128,17 +128,6 @@ data:
             description: Redis Admin
             siteMonitor: http://redis-insight.apps.svc.cluster.local:5540
             statusStyle: dot
-        - Pi-hole:
-            href: http://pihole.k8s.local/admin
-            icon: pi-hole.png
-            description: DNS Ad Blocking
-            siteMonitor: http://pihole.apps.svc.cluster.local:80
-            statusStyle: dot
-            # Uncomment and add API key to enable widget:
-            # widget:
-            #   type: pihole
-            #   url: http://pihole.apps.svc.cluster.local
-            #   key: YOUR_API_KEY  # Get from Pi-hole settings
         - Authentik:
             href: http://auth.k8s.local
             icon: authentik
