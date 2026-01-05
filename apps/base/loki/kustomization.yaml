@@ -5,5 +5,3 @@ resources:
   - loki-configmap.yaml
   - loki-storage.yaml
   - loki-deployment.yaml
-  - loki-archive-pvc.yaml
-  - loki-archive-cronjob.yaml
