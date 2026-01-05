@@ -64,7 +64,7 @@ kubectl patch deployment coredns -n kube-system --type='json' -p='[
           "matchExpressions": [{
             "key": "kubernetes.io/hostname",
             "operator": "In",
-            "values": ["raspberrypi", "raspberrypi3", "quinn-hpprobook430g6"]
+            "values": ["raspberrypi", "quinn-hpprobook430g6"]
           }]
         }]
       }
@@ -151,7 +151,7 @@ Run these in order:
 # 1. Restart WireGuard on all nodes
 sudo systemctl restart wg-quick@wg0
 ssh quinn-hpprobook430g6 "sudo systemctl restart wg-quick@wg0"
-ssh raspberrypi3 "sudo systemctl restart wg-quick@wg0"
+
 
 # 2. Verify connectivity
 ping -c 2 10.49.104.1

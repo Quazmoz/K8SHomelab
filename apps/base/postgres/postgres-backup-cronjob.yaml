@@ -14,9 +14,9 @@ spec:
     spec:
       template:
         spec:
-          # Run on raspberrypi3 where USB storage is mounted
+          # Run on HP ProBook where local storage is available
           nodeSelector:
-            kubernetes.io/hostname: raspberrypi3
+            kubernetes.io/hostname: quinn-hpprobook430g6
           restartPolicy: OnFailure
           containers:
           - name: postgres-backup

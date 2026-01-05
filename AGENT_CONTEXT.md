@@ -12,7 +12,6 @@ GitOps-managed Kubernetes homelab running on hybrid infrastructure (local nodes 
 NODES:
 ├── raspberrypi (Control Plane) - 192.168.1.21 / wg: 10.49.104.3
 ├── quinn-hpprobook430g6 (Worker) - 192.168.1.15 / wg: 10.49.104.6
-├── raspberrypi3 (Worker) - 192.168.1.58 / wg: 10.49.104.5
 ├── oracle-wireguard (Worker) - wg: 10.49.104.1 (Oracle Cloud)
 └── oracle-groupmebot (Worker) - wg: 10.49.104.4 (Oracle Cloud)
 
@@ -78,7 +77,7 @@ flux reconcile kustomization apps --with-source
 | Prometheus | quinn-hpprobook430g6 | Needs local storage |
 | Grafana | quinn-hpprobook430g6 | Needs local storage |
 | Loki | quinn-hpprobook430g6 | Needs local storage |
-| Pi-hole | raspberrypi3 | DNS server for network |
+
 | metrics-server | Non-Oracle nodes | API server connectivity |
 | MetalLB speaker | Non-Oracle nodes | Network announcement |
 

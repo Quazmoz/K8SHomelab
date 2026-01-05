@@ -15,7 +15,6 @@ resources:
   - ./metrics-server
   - ./n8n
   - ./postgres
-  - ./pihole
   - ./jenkins
   - ./loki
   - ./redis

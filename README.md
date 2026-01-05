@@ -12,7 +12,6 @@ GitOps-managed Kubernetes homelab running on hybrid infrastructure (local nodes 
 │                                                                 │
 │  Workers:                                                       │
 │    • quinn-hpprobook430g6 (192.168.1.15) - Main workloads       │
-│    • raspberrypi3 (192.168.1.58) - Pi-hole, backups             │
 │    • oracle-wireguard (10.49.104.1) - Oracle Cloud              │
 │    • oracle-groupmebot (10.49.104.4) - Oracle Cloud             │
 ├─────────────────────────────────────────────────────────────────┤
@@ -34,7 +33,7 @@ GitOps-managed Kubernetes homelab running on hybrid infrastructure (local nodes 
 | **Homepage** | http://homepage.k8s.local | Dashboard |
 | **LlamaFactory** | http://llamafactory.k8s.local | LLM Fine-Tuning |
 | **Azure MCP** | http://mcpo.k8s.local/docs | Azure MCP via OpenAPI |
-| **Pi-hole** | http://pihole.k8s.local | DNS & Ad Blocking |
+
 | **Plex** | http://192.168.1.221:32400 | Media Server |
 
 ## 📁 Repository Structure
@@ -69,7 +68,7 @@ flux get all -A
 
 ### Add to Hosts File
 ```
-192.168.1.221 openwebui.k8s.local grafana.k8s.local prometheus.k8s.local jenkins.k8s.local n8n.k8s.local homepage.k8s.local llamafactory.k8s.local mcpo.k8s.local pihole.k8s.local pgadmin.k8s.local
+192.168.1.221 openwebui.k8s.local grafana.k8s.local prometheus.k8s.local jenkins.k8s.local n8n.k8s.local homepage.k8s.local llamafactory.k8s.local mcpo.k8s.local pgadmin.k8s.local
 ```
 
 ## 📚 Documentation
