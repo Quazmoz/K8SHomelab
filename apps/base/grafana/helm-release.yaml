@@ -33,17 +33,18 @@ spec:
           url: http://prometheus-server.apps.svc.cluster.local
           access: proxy
           isDefault: true
-        # TODO: This datasource uses a password from an insecure, plain-text secret.
-        # The secret should be encrypted with SOPS for any real-world use.
+        # PostgreSQL datasource for grafana_db
         - name: PostgreSQL
           type: postgres
+          uid: PostgreSQL
           url: postgres-service:5432
           user: grafana_user
           database: grafana_db
           secureJsonData:
-            password: "$__file{/etc/secrets/postgres-credentials/POSTGRES_PASSWORD}"
+            password: "passwordfortesting123"
           jsonData:
             sslmode: "disable"
+            postgresVersion: 1500
         # OpenWebUI database for audit queries
         - name: PostgreSQL-OpenWebUI
           type: postgres
@@ -52,9 +53,10 @@ spec:
           user: grafana_user
           database: openwebui_db
           secureJsonData:
-            password: "$__file{/etc/secrets/postgres-credentials/POSTGRES_PASSWORD}"
+            password: "passwordfortesting123"
           jsonData:
             sslmode: "disable"
+            postgresVersion: 1500
 
     # --- Persistence ---
     persistence:
