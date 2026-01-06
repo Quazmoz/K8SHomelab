@@ -12,3 +12,5 @@ resources:
   - ingress.yaml
   # Custom GroupMe backend
   - groupme-backend.yaml
+  # Tanium MCP server
+  - tanium-mcp-server.yaml

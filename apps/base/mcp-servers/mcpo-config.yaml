@@ -70,6 +70,15 @@ data:
             "--sse",
             "http://groupme-backend.apps.svc.cluster.local:5000/sse"
           ]
+        },
+        "tanium": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "supergateway",
+            "--sse",
+            "http://tanium-mcp-server.apps.svc.cluster.local:5000/sse"
+          ]
         }
       }
     }
