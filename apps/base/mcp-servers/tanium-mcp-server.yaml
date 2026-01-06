@@ -50,14 +50,16 @@ spec:
               name: tanium-mcp-secret
               key: TANIUM_API_TOKEN
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            path: /health
             port: 5000
           initialDelaySeconds: 15
-          periodSeconds: 10
+          periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
-          tcpSocket:
+          httpGet:
+            path: /health
             port: 5000
           initialDelaySeconds: 10
           periodSeconds: 10
