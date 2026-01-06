@@ -10,3 +10,5 @@ resources:
   - network.yaml
   - loki-logs.yaml
   - openwebui-analytics.yaml
+  - openwebui-audit.yaml
+

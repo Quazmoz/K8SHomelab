@@ -24,15 +24,15 @@ data:
           "title": "",
           "options": {
             "mode": "html",
-            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #7C3AED;'>🤖 OpenWebUI Analytics</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>User activity, chat metrics, and model usage</p></div>"
+            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #7C3AED;'>🤖 OpenWebUI Analytics</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>User activity, chat metrics, and AI model usage</p></div>"
           }
         },
         {
           "id": 2,
-          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 3 },
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 3 },
           "type": "stat",
           "title": "Total Users",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
@@ -52,10 +52,10 @@ data:
         },
         {
           "id": 3,
-          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 3 },
+          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 3 },
           "type": "stat",
           "title": "Total Chats",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
@@ -75,10 +75,10 @@ data:
         },
         {
           "id": 4,
-          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 3 },
+          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 3 },
           "type": "stat",
           "title": "Chats Today",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
@@ -98,10 +98,10 @@ data:
         },
         {
           "id": 5,
-          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 3 },
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 3 },
           "type": "stat",
           "title": "Active Users (24h)",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
@@ -120,11 +120,57 @@ data:
           }
         },
         {
+          "id": 11,
+          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 3 },
+          "type": "stat",
+          "title": "Archived Chats",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE archived = true",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "orange", "value": null }]
+              }
+            }
+          }
+        },
+        {
+          "id": 12,
+          "gridPos": { "h": 4, "w": 4, "x": 20, "y": 3 },
+          "type": "stat",
+          "title": "Pinned Chats",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE pinned = true",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{ "color": "red", "value": null }]
+              }
+            }
+          }
+        },
+        {
           "id": 6,
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
           "type": "timeseries",
           "title": "Chats Over Time",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
@@ -135,7 +181,7 @@ data:
           "fieldConfig": {
             "defaults": {
               "color": { "mode": "palette-classic" },
-              "custom": { "fillOpacity": 20 }
+              "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": true }
             }
           }
         },
@@ -144,7 +190,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
           "type": "piechart",
           "title": "Top Users by Chat Count",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
@@ -153,19 +199,60 @@ data:
             }
           ],
           "options": {
-            "legend": { "displayMode": "table", "placement": "right" }
+            "legend": { "displayMode": "table", "placement": "right" },
+            "pieType": "donut",
+            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": true }
+          }
+        },
+        {
+          "id": 13,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+          "type": "timeseries",
+          "title": "Daily Active Users",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT date_trunc('day', created_at) as time, COUNT(DISTINCT user_id) as active_users FROM chat WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', created_at) ORDER BY time",
+              "format": "time_series"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "purple" },
+              "custom": { "fillOpacity": 30, "lineWidth": 2, "spanNulls": false }
+            }
+          }
+        },
+        {
+          "id": 14,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+          "type": "piechart",
+          "title": "User Roles Distribution",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT role, COUNT(*) as count FROM \"user\" GROUP BY role",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right" },
+            "pieType": "pie",
+            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": true }
           }
         },
         {
           "id": 8,
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 15 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 23 },
           "type": "table",
           "title": "Recent Chats",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT c.title, u.name as user_name, c.created_at, c.updated_at FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 20",
+              "rawSql": "SELECT c.title, u.name as user_name, c.created_at, c.updated_at, CASE WHEN c.archived THEN 'Yes' ELSE 'No' END as archived, CASE WHEN c.pinned THEN 'Yes' ELSE 'No' END as pinned FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 25",
               "format": "table"
             }
           ],
@@ -177,7 +264,9 @@ data:
                   "title": "Chat Title",
                   "user_name": "User",
                   "created_at": "Created",
-                  "updated_at": "Last Updated"
+                  "updated_at": "Last Updated",
+                  "archived": "Archived",
+                  "pinned": "Pinned"
                 }
               }
             }
@@ -185,10 +274,10 @@ data:
         },
         {
           "id": 9,
-          "gridPos": { "h": 6, "w": 12, "x": 0, "y": 23 },
+          "gridPos": { "h": 7, "w": 12, "x": 0, "y": 31 },
           "type": "table",
           "title": "User List",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
@@ -213,10 +302,10 @@ data:
         },
         {
           "id": 10,
-          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 23 },
+          "gridPos": { "h": 7, "w": 12, "x": 12, "y": 31 },
           "type": "barchart",
           "title": "Chats by Day of Week",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
@@ -225,7 +314,38 @@ data:
             }
           ],
           "options": {
-            "orientation": "horizontal"
+            "orientation": "horizontal",
+            "xTickLabelRotation": 0,
+            "showValue": "always"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" }
+            }
+          }
+        },
+        {
+          "id": 15,
+          "gridPos": { "h": 7, "w": 24, "x": 0, "y": 38 },
+          "type": "barchart",
+          "title": "Activity by Hour of Day",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT EXTRACT(HOUR FROM created_at)::integer as hour, COUNT(*) as chats FROM chat GROUP BY EXTRACT(HOUR FROM created_at) ORDER BY hour",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "orientation": "vertical",
+            "xTickLabelRotation": 0,
+            "showValue": "auto"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "continuous-BlPu" }
+            }
           }
         }
       ],
@@ -236,5 +356,5 @@ data:
       "time": { "from": "now-7d", "to": "now" },
       "title": "OpenWebUI Analytics",
       "uid": "openwebui-analytics",
-      "version": 1
+      "version": 2
     }

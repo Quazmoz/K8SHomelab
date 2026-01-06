@@ -5,3 +5,4 @@ resources:
   - postgres-manifest.yaml
   - postgres-pvc.yaml
   - postgres-init-scripts.yaml
+  - postgres-exporter.yaml

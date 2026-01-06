@@ -44,6 +44,17 @@ spec:
             password: "$__file{/etc/secrets/postgres-credentials/POSTGRES_PASSWORD}"
           jsonData:
             sslmode: "disable"
+        # OpenWebUI database for audit queries
+        - name: PostgreSQL-OpenWebUI
+          type: postgres
+          uid: PostgreSQL-OpenWebUI
+          url: postgres-service:5432
+          user: grafana_user
+          database: openwebui_db
+          secureJsonData:
+            password: "$__file{/etc/secrets/postgres-credentials/POSTGRES_PASSWORD}"
+          jsonData:
+            sslmode: "disable"
 
     # --- Persistence ---
     persistence:
