@@ -21,7 +21,7 @@ spec:
       - name: regcred
       containers:
       - name: groupme-backend
-        image: quazmoz/quazmoz:latest
+        image: quazmoz/quazmoz:groupme
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
