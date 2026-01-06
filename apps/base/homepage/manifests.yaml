@@ -382,7 +382,7 @@ spec:
               protocol: TCP
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
-              value: "homepage.k8s.local"
+              value: "homepage.k8s.local,10.244.*.*:3000"
           # Health checks for robustness
           livenessProbe:
             httpGet:
