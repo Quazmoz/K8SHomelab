@@ -3,24 +3,862 @@
     "info": {
         "title": "ClickUp API v2",
         "version": "2.0.0",
-        "description": "ClickUp API for task and project management. Use getWorkspaces first to get team_id, then getSpaces to get space_id, then getListsInSpace/getListsInFolder to get list_id, then getTasksInList to get tasks."
+        "description": "ClickUp API for task and project management"
     },
     "servers": [
         {
-            "url": "https://api.clickup.com/api/v2"
+            "url": "https://api.clickup.com/api/v2",
+            "description": "Production"
         }
     ],
     "security": [
         {
-            "apiKey": []
+            "bearerAuth": []
         }
     ],
     "components": {
         "securitySchemes": {
-            "apiKey": {
-                "type": "apiKey",
-                "in": "header",
-                "name": "Authorization"
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "description": "ClickUp API Token (pk_...)"
+            }
+        },
+        "schemas": {
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "profilePicture": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "initials": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "integer"
+                    },
+                    "custom_role": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "last_active": {
+                        "type": "string"
+                    },
+                    "date_joined": {
+                        "type": "string"
+                    },
+                    "date_invited": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Task": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "custom_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "text_content": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/Status"
+                    },
+                    "orderindex": {
+                        "type": "string"
+                    },
+                    "date_created": {
+                        "type": "string"
+                    },
+                    "date_updated": {
+                        "type": "string"
+                    },
+                    "date_closed": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "date_done": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "archived": {
+                        "type": "boolean"
+                    },
+                    "creator": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "assignees": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    },
+                    "watchers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    },
+                    "checklists": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Checklist"
+                        }
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Tag"
+                        }
+                    },
+                    "parent": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "priority": {
+                        "$ref": "#/components/schemas/Priority"
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "points": {
+                        "type": "number",
+                        "nullable": true
+                    },
+                    "time_estimate": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "time_spent": {
+                        "type": "integer"
+                    },
+                    "custom_fields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CustomFieldValue"
+                        }
+                    },
+                    "dependencies": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "linked_tasks": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "team_id": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "list": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "folder": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "space": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "Status": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "orderindex": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Priority": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "priority": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "orderindex": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Space": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "private": {
+                        "type": "boolean"
+                    },
+                    "statuses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Status"
+                        }
+                    },
+                    "multiple_assignees": {
+                        "type": "boolean"
+                    },
+                    "features": {
+                        "type": "object"
+                    },
+                    "archived": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "Folder": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "orderindex": {
+                        "type": "integer"
+                    },
+                    "override_statuses": {
+                        "type": "boolean"
+                    },
+                    "hidden": {
+                        "type": "boolean"
+                    },
+                    "space": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "task_count": {
+                        "type": "string"
+                    },
+                    "archived": {
+                        "type": "boolean"
+                    },
+                    "lists": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/List"
+                        }
+                    }
+                }
+            },
+            "List": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "orderindex": {
+                        "type": "integer"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "object"
+                    },
+                    "priority": {
+                        "type": "object"
+                    },
+                    "assignee": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "task_count": {
+                        "type": "integer"
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "folder": {
+                        "type": "object"
+                    },
+                    "space": {
+                        "type": "object"
+                    },
+                    "archived": {
+                        "type": "boolean"
+                    },
+                    "override_statuses": {
+                        "type": "boolean"
+                    },
+                    "statuses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Status"
+                        }
+                    }
+                }
+            },
+            "Comment": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "comment": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "comment_text": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "resolved": {
+                        "type": "boolean"
+                    },
+                    "assignee": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "assigned_by": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "reactions": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "date": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Tag": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "tag_fg": {
+                        "type": "string"
+                    },
+                    "tag_bg": {
+                        "type": "string"
+                    },
+                    "creator": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "Checklist": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "task_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "date_created": {
+                        "type": "string"
+                    },
+                    "orderindex": {
+                        "type": "integer"
+                    },
+                    "creator": {
+                        "type": "integer"
+                    },
+                    "resolved": {
+                        "type": "integer"
+                    },
+                    "unresolved": {
+                        "type": "integer"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ChecklistItem"
+                        }
+                    }
+                }
+            },
+            "ChecklistItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "orderindex": {
+                        "type": "integer"
+                    },
+                    "assignee": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "resolved": {
+                        "type": "boolean"
+                    },
+                    "parent": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "date_created": {
+                        "type": "string"
+                    },
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "Goal": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "team_id": {
+                        "type": "string"
+                    },
+                    "date_created": {
+                        "type": "string"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "due_date": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "private": {
+                        "type": "boolean"
+                    },
+                    "archived": {
+                        "type": "boolean"
+                    },
+                    "creator": {
+                        "type": "integer"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "pretty_id": {
+                        "type": "string"
+                    },
+                    "multiple_owners": {
+                        "type": "boolean"
+                    },
+                    "folder_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "members": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "owners": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    },
+                    "key_results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/KeyResult"
+                        }
+                    },
+                    "percent_completed": {
+                        "type": "integer"
+                    },
+                    "history": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "pretty_url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "KeyResult": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "goal_id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "creator": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "date_created": {
+                        "type": "string"
+                    },
+                    "goal_pretty_id": {
+                        "type": "string"
+                    },
+                    "percent_completed": {
+                        "type": "integer"
+                    },
+                    "completed": {
+                        "type": "boolean"
+                    },
+                    "task_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "owners": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    },
+                    "steps_start": {
+                        "type": "integer"
+                    },
+                    "steps_end": {
+                        "type": "integer"
+                    },
+                    "steps_current": {
+                        "type": "integer"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "last_action": {
+                        "type": "object"
+                    }
+                }
+            },
+            "TimeEntry": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "task": {
+                        "type": "object"
+                    },
+                    "wid": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "billable": {
+                        "type": "boolean"
+                    },
+                    "start": {
+                        "type": "string"
+                    },
+                    "end": {
+                        "type": "string"
+                    },
+                    "duration": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "at": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Webhook": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "userid": {
+                        "type": "integer"
+                    },
+                    "team_id": {
+                        "type": "integer"
+                    },
+                    "endpoint": {
+                        "type": "string"
+                    },
+                    "client_id": {
+                        "type": "string"
+                    },
+                    "events": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "task_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "list_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "folder_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "space_id": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "health": {
+                        "type": "object"
+                    },
+                    "secret": {
+                        "type": "string"
+                    }
+                }
+            },
+            "View": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "object"
+                    },
+                    "grouping": {
+                        "type": "object"
+                    },
+                    "divide": {
+                        "type": "object"
+                    },
+                    "sorting": {
+                        "type": "object"
+                    },
+                    "filters": {
+                        "type": "object"
+                    },
+                    "columns": {
+                        "type": "object"
+                    },
+                    "team_sidebar": {
+                        "type": "object"
+                    },
+                    "settings": {
+                        "type": "object"
+                    }
+                }
+            },
+            "CustomField": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "type_config": {
+                        "type": "object"
+                    },
+                    "date_created": {
+                        "type": "string"
+                    },
+                    "hide_from_guests": {
+                        "type": "boolean"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "CustomFieldValue": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "type_config": {
+                        "type": "object"
+                    },
+                    "date_created": {
+                        "type": "string"
+                    },
+                    "hide_from_guests": {
+                        "type": "boolean"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "value": {
+                        "type": "object"
+                    }
+                }
+            },
+            "Guest": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "profilePicture": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "initials": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "err": {
+                        "type": "string"
+                    },
+                    "ECODE": {
+                        "type": "string"
+                    }
+                }
             }
         }
     },
@@ -28,13 +866,13 @@
         "/user": {
             "get": {
                 "operationId": "getAuthenticatedUser",
-                "summary": "Get Authenticated User - returns user id, username, email, timezone",
+                "summary": "Get Authenticated User",
                 "tags": [
                     "User"
                 ],
                 "responses": {
                     "200": {
-                        "description": "User details including id, username, email, timezone"
+                        "description": "User details"
                     }
                 }
             }
@@ -42,14 +880,13 @@
         "/team": {
             "get": {
                 "operationId": "getWorkspaces",
-                "summary": "Get Workspaces (Teams) - CALL THIS FIRST to get team_id for other endpoints",
-                "description": "Returns all workspaces/teams the user has access to. The team id is needed for most other API calls.",
+                "summary": "Get Workspaces (Teams)",
                 "tags": [
                     "Teams"
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of teams with id, name, color, avatar, members"
+                        "description": "Array of workspaces"
                     }
                 }
             }
@@ -57,7 +894,7 @@
         "/team/{team_id}": {
             "get": {
                 "operationId": "getTeam",
-                "summary": "Get Team Details",
+                "summary": "Get Team",
                 "tags": [
                     "Teams"
                 ],
@@ -68,13 +905,12 @@
                         "required": true,
                         "schema": {
                             "type": "string"
-                        },
-                        "description": "The team/workspace ID"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Team details with members"
+                        "description": "Team details"
                     }
                 }
             }
@@ -82,7 +918,7 @@
         "/team/{team_id}/space": {
             "get": {
                 "operationId": "getSpaces",
-                "summary": "Get Spaces in Workspace - returns spaces which contain folders and lists",
+                "summary": "Get Spaces",
                 "tags": [
                     "Spaces"
                 ],
@@ -93,21 +929,19 @@
                         "required": true,
                         "schema": {
                             "type": "string"
-                        },
-                        "description": "The team/workspace ID"
+                        }
                     },
                     {
                         "in": "query",
                         "name": "archived",
                         "schema": {
                             "type": "boolean"
-                        },
-                        "description": "Include archived spaces"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of spaces with id, name, private, statuses, features"
+                        "description": "Array of spaces"
                     }
                 }
             }
@@ -115,7 +949,7 @@
         "/space/{space_id}": {
             "get": {
                 "operationId": "getSpace",
-                "summary": "Get Space Details",
+                "summary": "Get Space",
                 "tags": [
                     "Spaces"
                 ],
@@ -139,7 +973,7 @@
         "/space/{space_id}/folder": {
             "get": {
                 "operationId": "getFoldersInSpace",
-                "summary": "Get Folders in Space - folders contain lists",
+                "summary": "Get Folders in Space",
                 "tags": [
                     "Folders"
                 ],
@@ -162,31 +996,118 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of folders with id, name, lists"
+                        "description": "Array of folders"
                     }
                 }
-            }
-        },
-        "/folder/{folder_id}": {
-            "get": {
-                "operationId": "getFolder",
-                "summary": "Get Folder Details",
+            },
+            "post": {
+                "operationId": "createFolder",
+                "summary": "Create Folder",
                 "tags": [
                     "Folders"
                 ],
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "folder_id",
+                        "name": "space_id",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Folder created"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}/list": {
+            "get": {
+                "operationId": "getListsInSpace",
+                "summary": "Get Lists in Space (folderless)",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "archived",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Folder details with lists"
+                        "description": "Array of lists"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createListInSpace",
+                "summary": "Create List in Space",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "List created"
                     }
                 }
             }
@@ -220,35 +1141,44 @@
                         "description": "Array of lists"
                     }
                 }
-            }
-        },
-        "/space/{space_id}/list": {
-            "get": {
-                "operationId": "getListsInSpace",
-                "summary": "Get Folderless Lists in Space - lists not inside folders",
+            },
+            "post": {
+                "operationId": "createListInFolder",
+                "summary": "Create List in Folder",
                 "tags": [
                     "Lists"
                 ],
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "space_id",
+                        "name": "folder_id",
                         "required": true,
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "in": "query",
-                        "name": "archived",
-                        "schema": {
-                            "type": "boolean"
-                        }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Array of lists not in folders"
+                    "201": {
+                        "description": "List created"
                     }
                 }
             }
@@ -256,7 +1186,7 @@
         "/list/{list_id}": {
             "get": {
                 "operationId": "getList",
-                "summary": "Get List Details",
+                "summary": "Get List",
                 "tags": [
                     "Lists"
                 ],
@@ -272,7 +1202,68 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "List details including task_count"
+                        "description": "List details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateList",
+                "summary": "Update List",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "due_date": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated list"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteList",
+                "summary": "Delete List",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "List deleted"
                     }
                 }
             }
@@ -280,7 +1271,7 @@
         "/list/{list_id}/task": {
             "get": {
                 "operationId": "getTasksInList",
-                "summary": "Get Tasks in List - use page param for pagination (100 per page)",
+                "summary": "Get Tasks in List",
                 "tags": [
                     "Tasks"
                 ],
@@ -298,8 +1289,7 @@
                         "name": "page",
                         "schema": {
                             "type": "integer"
-                        },
-                        "description": "Page number (0-indexed), 100 tasks per page"
+                        }
                     },
                     {
                         "in": "query",
@@ -307,42 +1297,12 @@
                         "schema": {
                             "type": "boolean"
                         },
-                        "description": "Include completed/closed tasks"
-                    },
-                    {
-                        "in": "query",
-                        "name": "subtasks",
-                        "schema": {
-                            "type": "boolean"
-                        },
-                        "description": "Include subtasks"
-                    },
-                    {
-                        "in": "query",
-                        "name": "statuses",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "description": "Filter by status names"
-                    },
-                    {
-                        "in": "query",
-                        "name": "assignees",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer"
-                            }
-                        },
-                        "description": "Filter by assignee user IDs"
+                        "description": "Set to true to include completed tasks"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of tasks with id, name, status, assignees, due_date, priority"
+                        "description": "Array of tasks"
                     }
                 }
             },
@@ -373,16 +1333,13 @@
                                 ],
                                 "properties": {
                                     "name": {
-                                        "type": "string",
-                                        "description": "Task name"
+                                        "type": "string"
                                     },
                                     "description": {
-                                        "type": "string",
-                                        "description": "Task description (markdown supported)"
+                                        "type": "string"
                                     },
                                     "priority": {
-                                        "type": "integer",
-                                        "description": "1=Urgent, 2=High, 3=Normal, 4=Low"
+                                        "type": "integer"
                                     },
                                     "due_date": {
                                         "type": "integer",
@@ -392,19 +1349,13 @@
                                         "type": "array",
                                         "items": {
                                             "type": "integer"
-                                        },
-                                        "description": "Array of user IDs"
+                                        }
                                     },
                                     "tags": {
                                         "type": "array",
                                         "items": {
                                             "type": "string"
-                                        },
-                                        "description": "Array of tag names"
-                                    },
-                                    "status": {
-                                        "type": "string",
-                                        "description": "Status name"
+                                        }
                                     }
                                 }
                             }
@@ -413,86 +1364,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Created task"
-                    }
-                }
-            }
-        },
-        "/team/{team_id}/task": {
-            "get": {
-                "operationId": "getFilteredTeamTasks",
-                "summary": "Get Filtered Team Tasks - search across entire workspace with filters",
-                "description": "Returns tasks across the entire workspace matching filters. Useful for finding all tasks assigned to a user or with specific statuses.",
-                "tags": [
-                    "Tasks"
-                ],
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "team_id",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "in": "query",
-                        "name": "page",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "Page number (0-indexed)"
-                    },
-                    {
-                        "in": "query",
-                        "name": "include_closed",
-                        "schema": {
-                            "type": "boolean"
-                        },
-                        "description": "Include completed tasks"
-                    },
-                    {
-                        "in": "query",
-                        "name": "assignees",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer"
-                            }
-                        },
-                        "description": "Filter by assignee IDs"
-                    },
-                    {
-                        "in": "query",
-                        "name": "statuses",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "description": "Filter by status names"
-                    },
-                    {
-                        "in": "query",
-                        "name": "due_date_gt",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "Due date greater than (unix ms)"
-                    },
-                    {
-                        "in": "query",
-                        "name": "due_date_lt",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "Due date less than (unix ms)"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Array of tasks matching filters"
+                        "description": "Task created"
                     }
                 }
             }
@@ -500,7 +1372,7 @@
         "/task/{task_id}": {
             "get": {
                 "operationId": "getTask",
-                "summary": "Get Task Details",
+                "summary": "Get Task",
                 "tags": [
                     "Tasks"
                 ],
@@ -516,7 +1388,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Full task details"
+                        "description": "Task details"
                     }
                 }
             },
@@ -556,17 +1428,6 @@
                                     },
                                     "due_date": {
                                         "type": "integer"
-                                    },
-                                    "assignees": {
-                                        "type": "object",
-                                        "properties": {
-                                            "add": {
-                                                "type": "array"
-                                            },
-                                            "rem": {
-                                                "type": "array"
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -666,12 +1527,43 @@
                 }
             }
         },
+        "/team/{team_id}/task": {
+            "get": {
+                "operationId": "searchTeamTasks",
+                "summary": "Search Team Tasks",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of tasks"
+                    }
+                }
+            }
+        },
         "/team/{team_id}/member": {
             "get": {
                 "operationId": "getTeamMembers",
-                "summary": "Get Team Members - returns user IDs for assignee filtering",
+                "summary": "Get Team Members",
                 "tags": [
-                    "Teams"
+                    "Members"
                 ],
                 "parameters": [
                     {
@@ -685,7 +1577,2912 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of team members with user id, username, email"
+                        "description": "Array of team members"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/goal": {
+            "get": {
+                "operationId": "getGoals",
+                "summary": "Get Goals",
+                "tags": [
+                    "Goals"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "include_completed",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of goals"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createGoal",
+                "summary": "Create Goal",
+                "tags": [
+                    "Goals"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name",
+                                    "due_date",
+                                    "multiple_owners",
+                                    "owners",
+                                    "color"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "due_date": {
+                                        "type": "integer"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "multiple_owners": {
+                                        "type": "boolean"
+                                    },
+                                    "owners": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "color": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Goal created"
+                    }
+                }
+            }
+        },
+        "/goal/{goal_id}": {
+            "get": {
+                "operationId": "getGoal",
+                "summary": "Get Goal",
+                "tags": [
+                    "Goals"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "goal_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Goal details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateGoal",
+                "summary": "Update Goal",
+                "tags": [
+                    "Goals"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "goal_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "due_date": {
+                                        "type": "integer"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "rem_owners": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "add_owners": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "color": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Goal updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteGoal",
+                "summary": "Delete Goal",
+                "tags": [
+                    "Goals"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "goal_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Goal deleted"
+                    }
+                }
+            }
+        },
+        "/goal/{goal_id}/key_result": {
+            "post": {
+                "operationId": "createKeyResult",
+                "summary": "Create Key Result",
+                "tags": [
+                    "Goals"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "goal_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name",
+                                    "owners",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "owners": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "number",
+                                            "currency",
+                                            "boolean",
+                                            "percentage",
+                                            "automatic"
+                                        ]
+                                    },
+                                    "steps_start": {
+                                        "type": "integer"
+                                    },
+                                    "steps_end": {
+                                        "type": "integer"
+                                    },
+                                    "unit": {
+                                        "type": "string"
+                                    },
+                                    "task_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "list_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Key result created"
+                    }
+                }
+            }
+        },
+        "/key_result/{key_result_id}": {
+            "put": {
+                "operationId": "editKeyResult",
+                "summary": "Edit Key Result",
+                "tags": [
+                    "Goals"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "key_result_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "steps_current": {
+                                        "type": "integer"
+                                    },
+                                    "note": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Key result updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteKeyResult",
+                "summary": "Delete Key Result",
+                "tags": [
+                    "Goals"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "key_result_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Key result deleted"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}/tag": {
+            "get": {
+                "operationId": "getSpaceTags",
+                "summary": "Get Space Tags",
+                "tags": [
+                    "Tags"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of tags"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createSpaceTag",
+                "summary": "Create Space Tag",
+                "tags": [
+                    "Tags"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "tag"
+                                ],
+                                "properties": {
+                                    "tag": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "tag_fg": {
+                                                "type": "string"
+                                            },
+                                            "tag_bg": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tag created"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}/tag/{tag_name}": {
+            "put": {
+                "operationId": "editSpaceTag",
+                "summary": "Edit Space Tag",
+                "tags": [
+                    "Tags"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "tag_name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "tag"
+                                ],
+                                "properties": {
+                                    "tag": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "tag_fg": {
+                                                "type": "string"
+                                            },
+                                            "tag_bg": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tag updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteSpaceTag",
+                "summary": "Delete Space Tag",
+                "tags": [
+                    "Tags"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "tag_name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Tag deleted"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/tag/{tag_name}": {
+            "post": {
+                "operationId": "addTagToTask",
+                "summary": "Add Tag To Task",
+                "tags": [
+                    "Tags"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "tag_name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Tag added to task"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "removeTagFromTask",
+                "summary": "Remove Tag From Task",
+                "tags": [
+                    "Tags"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "tag_name",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Tag removed from task"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/checklist": {
+            "post": {
+                "operationId": "createChecklist",
+                "summary": "Create Checklist",
+                "tags": [
+                    "Checklists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Checklist created"
+                    }
+                }
+            }
+        },
+        "/checklist/{checklist_id}": {
+            "put": {
+                "operationId": "editChecklist",
+                "summary": "Edit Checklist",
+                "tags": [
+                    "Checklists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "checklist_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "position": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Checklist updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteChecklist",
+                "summary": "Delete Checklist",
+                "tags": [
+                    "Checklists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "checklist_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Checklist deleted"
+                    }
+                }
+            }
+        },
+        "/checklist/{checklist_id}/checklist_item": {
+            "post": {
+                "operationId": "createChecklistItem",
+                "summary": "Create Checklist Item",
+                "tags": [
+                    "Checklists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "checklist_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "assignee": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Checklist item created"
+                    }
+                }
+            }
+        },
+        "/checklist/{checklist_id}/checklist_item/{checklist_item_id}": {
+            "put": {
+                "operationId": "editChecklistItem",
+                "summary": "Edit Checklist Item",
+                "tags": [
+                    "Checklists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "checklist_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "checklist_item_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "assignee": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "resolved": {
+                                        "type": "boolean"
+                                    },
+                                    "parent": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Checklist item updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteChecklistItem",
+                "summary": "Delete Checklist Item",
+                "tags": [
+                    "Checklists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "checklist_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "checklist_item_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Checklist item deleted"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/webhook": {
+            "get": {
+                "operationId": "getWebhooks",
+                "summary": "Get Webhooks",
+                "tags": [
+                    "Webhooks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of webhooks"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createWebhook",
+                "summary": "Create Webhook",
+                "tags": [
+                    "Webhooks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "endpoint",
+                                    "events"
+                                ],
+                                "properties": {
+                                    "endpoint": {
+                                        "type": "string"
+                                    },
+                                    "events": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "space_id": {
+                                        "type": "string"
+                                    },
+                                    "folder_id": {
+                                        "type": "string"
+                                    },
+                                    "list_id": {
+                                        "type": "string"
+                                    },
+                                    "task_id": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Webhook created"
+                    }
+                }
+            }
+        },
+        "/webhook/{webhook_id}": {
+            "put": {
+                "operationId": "updateWebhook",
+                "summary": "Update Webhook",
+                "tags": [
+                    "Webhooks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "webhook_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "endpoint": {
+                                        "type": "string"
+                                    },
+                                    "events": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "status": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Webhook updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteWebhook",
+                "summary": "Delete Webhook",
+                "tags": [
+                    "Webhooks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "webhook_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Webhook deleted"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/time_entries": {
+            "get": {
+                "operationId": "getTimeEntries",
+                "summary": "Get Time Entries",
+                "tags": [
+                    "Time Tracking"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "start_date",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Unix timestamp in milliseconds"
+                    },
+                    {
+                        "in": "query",
+                        "name": "end_date",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "assignee",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "include_task_tags",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "include_location_names",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "space_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "folder_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "list_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "task_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of time entries"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createTimeEntry",
+                "summary": "Create Time Entry",
+                "tags": [
+                    "Time Tracking"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "start",
+                                    "duration"
+                                ],
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "start": {
+                                        "type": "integer"
+                                    },
+                                    "duration": {
+                                        "type": "integer"
+                                    },
+                                    "billable": {
+                                        "type": "boolean"
+                                    },
+                                    "assignee": {
+                                        "type": "integer"
+                                    },
+                                    "tid": {
+                                        "type": "string"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Time entry created"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/time_entries/{timer_id}": {
+            "get": {
+                "operationId": "getTimeEntry",
+                "summary": "Get Time Entry",
+                "tags": [
+                    "Time Tracking"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "timer_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Time entry details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateTimeEntry",
+                "summary": "Update Time Entry",
+                "tags": [
+                    "Time Tracking"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "timer_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "start": {
+                                        "type": "integer"
+                                    },
+                                    "end": {
+                                        "type": "integer"
+                                    },
+                                    "duration": {
+                                        "type": "integer"
+                                    },
+                                    "billable": {
+                                        "type": "boolean"
+                                    },
+                                    "tid": {
+                                        "type": "string"
+                                    },
+                                    "tag_action": {
+                                        "type": "string"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Time entry updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteTimeEntry",
+                "summary": "Delete Time Entry",
+                "tags": [
+                    "Time Tracking"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "timer_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Time entry deleted"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/time_entries/start": {
+            "post": {
+                "operationId": "startTimeEntry",
+                "summary": "Start Time Entry",
+                "tags": [
+                    "Time Tracking"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "tid": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "billable": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Timer started"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/time_entries/stop": {
+            "post": {
+                "operationId": "stopTimeEntry",
+                "summary": "Stop Time Entry",
+                "tags": [
+                    "Time Tracking"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Timer stopped"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/time_entries/running": {
+            "get": {
+                "operationId": "getRunningTimeEntry",
+                "summary": "Get Running Time Entry",
+                "tags": [
+                    "Time Tracking"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "assignee",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Running time entry"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/view": {
+            "get": {
+                "operationId": "getWorkspaceViews",
+                "summary": "Get Workspace Views",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of views"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createWorkspaceView",
+                "summary": "Create Workspace View",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "list",
+                                            "board",
+                                            "calendar",
+                                            "gantt",
+                                            "table",
+                                            "timeline",
+                                            "workload",
+                                            "map",
+                                            "activity",
+                                            "doc"
+                                        ]
+                                    },
+                                    "grouping": {
+                                        "type": "object"
+                                    },
+                                    "divide": {
+                                        "type": "object"
+                                    },
+                                    "sorting": {
+                                        "type": "object"
+                                    },
+                                    "filters": {
+                                        "type": "object"
+                                    },
+                                    "columns": {
+                                        "type": "object"
+                                    },
+                                    "settings": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "View created"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}/view": {
+            "get": {
+                "operationId": "getSpaceViews",
+                "summary": "Get Space Views",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of views"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createSpaceView",
+                "summary": "Create Space View",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "View created"
+                    }
+                }
+            }
+        },
+        "/folder/{folder_id}/view": {
+            "get": {
+                "operationId": "getFolderViews",
+                "summary": "Get Folder Views",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "folder_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of views"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createFolderView",
+                "summary": "Create Folder View",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "folder_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "View created"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/view": {
+            "get": {
+                "operationId": "getListViews",
+                "summary": "Get List Views",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of views"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createListView",
+                "summary": "Create List View",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "View created"
+                    }
+                }
+            }
+        },
+        "/view/{view_id}": {
+            "get": {
+                "operationId": "getView",
+                "summary": "Get View",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "view_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "View details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateView",
+                "summary": "Update View",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "view_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "settings": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "View updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteView",
+                "summary": "Delete View",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "view_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "View deleted"
+                    }
+                }
+            }
+        },
+        "/view/{view_id}/task": {
+            "get": {
+                "operationId": "getViewTasks",
+                "summary": "Get View Tasks",
+                "tags": [
+                    "Views"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "view_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of tasks"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/field": {
+            "get": {
+                "operationId": "getListCustomFields",
+                "summary": "Get List Custom Fields",
+                "tags": [
+                    "Custom Fields"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of custom fields"
+                    }
+                }
+            }
+        },
+        "/folder/{folder_id}/field": {
+            "get": {
+                "operationId": "getFolderCustomFields",
+                "summary": "Get Folder Custom Fields",
+                "tags": [
+                    "Custom Fields"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "folder_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of custom fields"
+                    }
+                }
+            }
+        },
+        "/space/{space_id}/field": {
+            "get": {
+                "operationId": "getSpaceCustomFields",
+                "summary": "Get Space Custom Fields",
+                "tags": [
+                    "Custom Fields"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of custom fields"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/field": {
+            "get": {
+                "operationId": "getWorkspaceCustomFields",
+                "summary": "Get Workspace Custom Fields",
+                "tags": [
+                    "Custom Fields"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of custom fields"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/field/{field_id}": {
+            "post": {
+                "operationId": "setCustomFieldValue",
+                "summary": "Set Custom Field Value",
+                "tags": [
+                    "Custom Fields"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "field_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "value": {
+                                        "type": "object"
+                                    },
+                                    "value_options": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Custom field value set"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "removeCustomFieldValue",
+                "summary": "Remove Custom Field Value",
+                "tags": [
+                    "Custom Fields"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "field_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Custom field value removed"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/dependency": {
+            "post": {
+                "operationId": "addDependency",
+                "summary": "Add Dependency",
+                "tags": [
+                    "Dependencies"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "depends_on"
+                                ],
+                                "properties": {
+                                    "depends_on": {
+                                        "type": "string"
+                                    },
+                                    "dependency_of": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Dependency added"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteDependency",
+                "summary": "Delete Dependency",
+                "tags": [
+                    "Dependencies"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "depends_on",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "dependency_of",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Dependency deleted"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/link/{links_to}": {
+            "post": {
+                "operationId": "addTaskLink",
+                "summary": "Add Task Link",
+                "tags": [
+                    "Dependencies"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "links_to",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Task link added"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteTaskLink",
+                "summary": "Delete Task Link",
+                "tags": [
+                    "Dependencies"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "links_to",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Task link deleted"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/attachment": {
+            "post": {
+                "operationId": "createTaskAttachment",
+                "summary": "Create Task Attachment",
+                "tags": [
+                    "Attachments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "attachment"
+                                ],
+                                "properties": {
+                                    "attachment": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Attachment created"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/guest": {
+            "post": {
+                "operationId": "inviteGuestToWorkspace",
+                "summary": "Invite Guest To Workspace",
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "email",
+                                    "can_edit_tags",
+                                    "can_see_time_spent",
+                                    "can_see_time_estimated"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "can_edit_tags": {
+                                        "type": "boolean"
+                                    },
+                                    "can_see_time_spent": {
+                                        "type": "boolean"
+                                    },
+                                    "can_see_time_estimated": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Guest invited"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/guest/{guest_id}": {
+            "get": {
+                "operationId": "getGuest",
+                "summary": "Get Guest",
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "guest_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Guest details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "editGuestOnWorkspace",
+                "summary": "Edit Guest On Workspace",
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "guest_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "can_edit_tags": {
+                                        "type": "boolean"
+                                    },
+                                    "can_see_time_spent": {
+                                        "type": "boolean"
+                                    },
+                                    "can_see_time_estimated": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Guest updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "removeGuestFromWorkspace",
+                "summary": "Remove Guest From Workspace",
+                "tags": [
+                    "Guests"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "guest_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Guest removed"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/seats": {
+            "get": {
+                "operationId": "getWorkspaceSeats",
+                "summary": "Get Workspace Seats",
+                "tags": [
+                    "Workspaces"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Workspace seat information"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/plan": {
+            "get": {
+                "operationId": "getWorkspacePlan",
+                "summary": "Get Workspace Plan",
+                "tags": [
+                    "Workspaces"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Workspace plan details"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/customroles": {
+            "get": {
+                "operationId": "getCustomRoles",
+                "summary": "Get Custom Roles",
+                "tags": [
+                    "Roles"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of custom roles"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/shared": {
+            "get": {
+                "operationId": "getSharedHierarchy",
+                "summary": "Get Shared Hierarchy",
+                "tags": [
+                    "Shared"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Shared hierarchy"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/group": {
+            "get": {
+                "operationId": "getGroups",
+                "summary": "Get Groups",
+                "tags": [
+                    "User Groups"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "group_ids",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of user groups"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createGroup",
+                "summary": "Create Group",
+                "tags": [
+                    "User Groups"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "member_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Group created"
+                    }
+                }
+            }
+        },
+        "/group/{group_id}": {
+            "put": {
+                "operationId": "updateGroup",
+                "summary": "Update Group",
+                "tags": [
+                    "User Groups"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "group_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "handle": {
+                                        "type": "string"
+                                    },
+                                    "members": {
+                                        "type": "object",
+                                        "properties": {
+                                            "add": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "rem": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "integer"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Group updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteGroup",
+                "summary": "Delete Group",
+                "tags": [
+                    "User Groups"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "group_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Group deleted"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/template": {
+            "get": {
+                "operationId": "getTaskTemplates",
+                "summary": "Get Task Templates",
+                "tags": [
+                    "Templates"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of task templates"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/taskTemplate/{template_id}": {
+            "post": {
+                "operationId": "createTaskFromTemplate",
+                "summary": "Create Task From Template",
+                "tags": [
+                    "Templates"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "template_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Task created from template"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/member": {
+            "get": {
+                "operationId": "getListMembers",
+                "summary": "Get List Members",
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of list members"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/member": {
+            "get": {
+                "operationId": "getTaskMembers",
+                "summary": "Get Task Members",
+                "tags": [
+                    "Members"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of task members"
+                    }
+                }
+            }
+        },
+        "/comment/{comment_id}": {
+            "put": {
+                "operationId": "updateComment",
+                "summary": "Update Comment",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "comment_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "comment_text"
+                                ],
+                                "properties": {
+                                    "comment_text": {
+                                        "type": "string"
+                                    },
+                                    "assignee": {
+                                        "type": "integer"
+                                    },
+                                    "resolved": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Comment updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteComment",
+                "summary": "Delete Comment",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "comment_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Comment deleted"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/comment": {
+            "get": {
+                "operationId": "getListComments",
+                "summary": "Get List Comments",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of comments"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createListComment",
+                "summary": "Create List Comment",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "comment_text"
+                                ],
+                                "properties": {
+                                    "comment_text": {
+                                        "type": "string"
+                                    },
+                                    "assignee": {
+                                        "type": "integer"
+                                    },
+                                    "notify_all": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Comment created"
+                    }
+                }
+            }
+        },
+        "/view/{view_id}/comment": {
+            "get": {
+                "operationId": "getChatViewComments",
+                "summary": "Get Chat View Comments",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "view_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of comments"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createChatViewComment",
+                "summary": "Create Chat View Comment",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "view_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "comment_text"
+                                ],
+                                "properties": {
+                                    "comment_text": {
+                                        "type": "string"
+                                    },
+                                    "notify_all": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Comment created"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/customitem": {
+            "get": {
+                "operationId": "getCustomTaskTypes",
+                "summary": "Get Custom Task Types",
+                "tags": [
+                    "Custom Task Types"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of custom task types"
                     }
                 }
             }
