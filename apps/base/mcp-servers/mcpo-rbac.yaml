@@ -12,20 +12,46 @@ kind: ClusterRole
 metadata:
   name: mcpo-cluster-reader
 rules:
+# Core API resources
 - apiGroups: [""]
-  resources: ["pods", "services", "configmaps", "secrets", "namespaces", "nodes", "persistentvolumes", "persistentvolumeclaims", "events"]
+  resources: ["pods", "services", "configmaps", "secrets", "namespaces", "nodes", "persistentvolumes", "persistentvolumeclaims", "events", "endpoints", "resourcequotas", "limitranges"]
   verbs: ["get", "list", "watch"]
+# Pods logs and exec (for debugging)
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+# Apps API
 - apiGroups: ["apps"]
   resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
   verbs: ["get", "list", "watch"]
+# Batch jobs
 - apiGroups: ["batch"]
   resources: ["jobs", "cronjobs"]
   verbs: ["get", "list", "watch"]
+# Networking
 - apiGroups: ["networking.k8s.io"]
-  resources: ["ingresses", "networkpolicies"]
+  resources: ["ingresses", "networkpolicies", "ingressclasses"]
   verbs: ["get", "list", "watch"]
+# Storage
 - apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses"]
+  resources: ["storageclasses", "volumeattachments"]
+  verbs: ["get", "list", "watch"]
+# Metrics API - required for kubectl top
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes", "pods"]
+  verbs: ["get", "list"]
+# Flux CD resources
+- apiGroups: ["source.toolkit.fluxcd.io"]
+  resources: ["gitrepositories", "helmrepositories", "helmcharts", "buckets", "ocirepositories"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["kustomize.toolkit.fluxcd.io"]
+  resources: ["kustomizations"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["helm.toolkit.fluxcd.io"]
+  resources: ["helmreleases"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["notification.toolkit.fluxcd.io"]
+  resources: ["receivers", "alerts", "providers"]
   verbs: ["get", "list", "watch"]
 ---
 # ClusterRoleBinding
