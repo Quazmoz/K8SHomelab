@@ -161,9 +161,9 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "label_replace(label_replace(label_replace(100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100), \"node\", \"raspberrypi-4\", \"instance\", \"192.168.1.21:9100\"), \"node\", \"raspberrypi-3\", \"instance\", \"192.168.1.58:9100\"), \"node\", \"hp-probook\", \"instance\", \"192.168.1.15:9100\")",
+              "expr": "100 - (avg by (nodename) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
               "instant": true,
-              "legendFormat": "{{node}}"
+              "legendFormat": "{{nodename}}"
             }
           ],
           "options": {
@@ -189,9 +189,9 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "label_replace(label_replace(label_replace(100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)), \"node\", \"raspberrypi-4\", \"instance\", \"192.168.1.21:9100\"), \"node\", \"raspberrypi-3\", \"instance\", \"192.168.1.58:9100\"), \"node\", \"hp-probook\", \"instance\", \"192.168.1.15:9100\")",
+              "expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
               "instant": true,
-              "legendFormat": "{{node}}"
+              "legendFormat": "{{nodename}}"
             }
           ],
           "options": {
@@ -273,9 +273,9 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "label_replace(label_replace(label_replace(100 - (node_filesystem_avail_bytes{mountpoint=\"/\", fstype!=\"rootfs\"} / node_filesystem_size_bytes{mountpoint=\"/\", fstype!=\"rootfs\"} * 100), \"node\", \"raspberrypi-4\", \"instance\", \"192.168.1.21:9100\"), \"node\", \"raspberrypi-3\", \"instance\", \"192.168.1.58:9100\"), \"node\", \"hp-probook\", \"instance\", \"192.168.1.15:9100\")",
+              "expr": "100 - (node_filesystem_avail_bytes{mountpoint=\"/\", fstype!=\"rootfs\"} / node_filesystem_size_bytes{mountpoint=\"/\", fstype!=\"rootfs\"} * 100)",
               "instant": true,
-              "legendFormat": "{{node}}"
+              "legendFormat": "{{nodename}}"
             }
           ],
           "options": {
