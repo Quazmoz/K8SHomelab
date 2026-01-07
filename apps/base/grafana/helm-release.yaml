@@ -38,22 +38,26 @@ spec:
           type: postgres
           url: postgres-service:5432
           user: grafana_user
-          database: grafana_db
           secureJsonData:
             password: "passwordfortesting123"
           jsonData:
+            database: grafana_db
             sslmode: "disable"
+            maxOpenConns: 5
+            maxIdleConns: 2
         # OpenWebUI database for audit queries
         - name: PostgreSQL-OpenWebUI
           type: postgres
           uid: PostgreSQL-OpenWebUI
           url: postgres-service:5432
           user: grafana_user
-          database: openwebui_db
           secureJsonData:
             password: "passwordfortesting123"
           jsonData:
+            database: openwebui_db
             sslmode: "disable"
+            maxOpenConns: 5
+            maxIdleConns: 2
 
     # --- Persistence ---
     persistence:
