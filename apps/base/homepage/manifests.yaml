@@ -322,7 +322,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v3-freshrss"
+        checksum/config: "v4-remove-plex"
     spec:
       serviceAccountName: homepage
       nodeSelector:
