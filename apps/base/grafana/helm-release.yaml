@@ -36,7 +36,6 @@ spec:
         # PostgreSQL datasource for grafana_db
         - name: PostgreSQL
           type: postgres
-          uid: PostgreSQL
           url: postgres-service:5432
           user: grafana_user
           database: grafana_db
@@ -44,7 +43,6 @@ spec:
             password: "passwordfortesting123"
           jsonData:
             sslmode: "disable"
-            postgresVersion: 1500
         # OpenWebUI database for audit queries
         - name: PostgreSQL-OpenWebUI
           type: postgres
@@ -56,7 +54,6 @@ spec:
             password: "passwordfortesting123"
           jsonData:
             sslmode: "disable"
-            postgresVersion: 1500
 
     # --- Persistence ---
     persistence:
@@ -65,14 +62,6 @@ spec:
       storageClassName: "local-storage"
       size: 25Gi
       existingClaim: "grafana"
-
-    # --- Secret Mounting ---
-    # This securely mounts the postgres password into the Grafana pod
-    extraSecretMounts:
-      - name: postgres-credentials-file
-        secretName: postgres-credentials
-        mountPath: /etc/secrets/postgres-credentials
-        readOnly: true
 
     # --- Resources (best-effort) ---
     resources:
