@@ -1,5 +1,6 @@
 # OpenWebUI Analytics Dashboard
 # Queries the OpenWebUI PostgreSQL database for user activity, chat metrics, and model usage
+# Note: OpenWebUI stores timestamps as bigint (Unix epoch in nanoseconds)
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -82,7 +83,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE created_at > NOW() - INTERVAL '24 hours'",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
               "format": "table"
             }
           ],
@@ -105,7 +106,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(DISTINCT user_id) FROM chat WHERE created_at > NOW() - INTERVAL '24 hours'",
+              "rawSql": "SELECT COUNT(DISTINCT user_id) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
               "format": "table"
             }
           ],
@@ -174,7 +175,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('hour', created_at) as time, COUNT(*) as chats FROM chat WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY date_trunc('hour', created_at) ORDER BY time",
+              "rawSql": "SELECT date_trunc('hour', to_timestamp(created_at / 1000000000.0)) as time, COUNT(*) as chats FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '7 days' GROUP BY date_trunc('hour', to_timestamp(created_at / 1000000000.0)) ORDER BY time",
               "format": "time_series"
             }
           ],
@@ -213,7 +214,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('day', created_at) as time, COUNT(DISTINCT user_id) as active_users FROM chat WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', created_at) ORDER BY time",
+              "rawSql": "SELECT date_trunc('day', to_timestamp(created_at / 1000000000.0)) as time, COUNT(DISTINCT user_id) as active_users FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', to_timestamp(created_at / 1000000000.0)) ORDER BY time",
               "format": "time_series"
             }
           ],
@@ -252,7 +253,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT c.title, u.name as user_name, c.created_at, c.updated_at, CASE WHEN c.archived THEN 'Yes' ELSE 'No' END as archived, CASE WHEN c.pinned THEN 'Yes' ELSE 'No' END as pinned FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 25",
+              "rawSql": "SELECT c.title, u.name as user_name, to_timestamp(c.created_at / 1000000000.0) as created_at, to_timestamp(c.updated_at / 1000000000.0) as updated_at, CASE WHEN c.archived THEN 'Yes' ELSE 'No' END as archived, CASE WHEN c.pinned THEN 'Yes' ELSE 'No' END as pinned FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 25",
               "format": "table"
             }
           ],
@@ -281,7 +282,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT name, email, role, created_at, last_active_at FROM \"user\" ORDER BY last_active_at DESC NULLS LAST LIMIT 20",
+              "rawSql": "SELECT name, email, role, to_timestamp(created_at / 1000000000.0) as created_at, to_timestamp(last_active_at / 1000000000.0) as last_active_at FROM \"user\" ORDER BY last_active_at DESC NULLS LAST LIMIT 20",
               "format": "table"
             }
           ],
@@ -309,7 +310,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT to_char(created_at, 'Day') as day, COUNT(*) as chats FROM chat GROUP BY to_char(created_at, 'Day'), EXTRACT(DOW FROM created_at) ORDER BY EXTRACT(DOW FROM created_at)",
+              "rawSql": "SELECT to_char(to_timestamp(created_at / 1000000000.0), 'Day') as day, COUNT(*) as chats FROM chat GROUP BY to_char(to_timestamp(created_at / 1000000000.0), 'Day'), EXTRACT(DOW FROM to_timestamp(created_at / 1000000000.0)) ORDER BY EXTRACT(DOW FROM to_timestamp(created_at / 1000000000.0))",
               "format": "table"
             }
           ],
@@ -333,7 +334,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT EXTRACT(HOUR FROM created_at)::integer as hour, COUNT(*) as chats FROM chat GROUP BY EXTRACT(HOUR FROM created_at) ORDER BY hour",
+              "rawSql": "SELECT EXTRACT(HOUR FROM to_timestamp(created_at / 1000000000.0))::integer as hour, COUNT(*) as chats FROM chat GROUP BY EXTRACT(HOUR FROM to_timestamp(created_at / 1000000000.0)) ORDER BY hour",
               "format": "table"
             }
           ],
@@ -356,5 +357,5 @@ data:
       "time": { "from": "now-7d", "to": "now" },
       "title": "OpenWebUI Analytics",
       "uid": "openwebui-analytics",
-      "version": 2
+      "version": 3
     }

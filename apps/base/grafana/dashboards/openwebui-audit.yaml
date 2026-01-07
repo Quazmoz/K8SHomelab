@@ -1,5 +1,6 @@
 # OpenWebUI Audit Dashboard
 # Comprehensive AI activity auditing - model usage, response patterns, and user behavior
+# Note: OpenWebUI stores timestamps as bigint (Unix epoch in nanoseconds)
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -34,7 +35,7 @@ data:
           "title": "",
           "options": {
             "mode": "html",
-            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🔍 OpenWebUI Audit Dashboard</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.85);'>AI Activity Monitoring • Model Usage • User Behavior Analysis</p></div>"
+            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🔍 OpenWebUI Audit Dashboard</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.85);'>AI Activity Monitoring • User Behavior Analysis</p></div>"
           }
         },
         {
@@ -69,7 +70,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE updated_at > NOW() - INTERVAL '24 hours'",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(updated_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
               "format": "table"
             }
           ],
@@ -92,7 +93,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE created_at > NOW() - INTERVAL '7 days'",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '7 days'",
               "format": "table"
             }
           ],
@@ -115,7 +116,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE created_at > NOW() - INTERVAL '30 days'",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '30 days'",
               "format": "table"
             }
           ],
@@ -192,7 +193,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('day', created_at) as time, COUNT(*) as \"New Chats\" FROM chat WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', created_at) ORDER BY time",
+              "rawSql": "SELECT date_trunc('day', to_timestamp(created_at / 1000000000.0)) as time, COUNT(*) as \"New Chats\" FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', to_timestamp(created_at / 1000000000.0)) ORDER BY time",
               "format": "time_series"
             }
           ],
@@ -219,7 +220,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('day', created_at) as time, COUNT(DISTINCT user_id) as \"Active Users\" FROM chat WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', created_at) ORDER BY time",
+              "rawSql": "SELECT date_trunc('day', to_timestamp(created_at / 1000000000.0)) as time, COUNT(DISTINCT user_id) as \"Active Users\" FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', to_timestamp(created_at / 1000000000.0)) ORDER BY time",
               "format": "time_series"
             }
           ],
@@ -299,36 +300,8 @@ data:
           }
         },
         {
-          "id": 13,
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
-          "type": "heatmap",
-          "title": "Activity Heatmap (Hour vs Day)",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT EXTRACT(DOW FROM created_at) as day_of_week, EXTRACT(HOUR FROM created_at) as hour, COUNT(*) as count FROM chat WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY EXTRACT(DOW FROM created_at), EXTRACT(HOUR FROM created_at) ORDER BY day_of_week, hour",
-              "format": "table"
-            }
-          ],
-          "options": {
-            "calculate": false,
-            "cellGap": 2,
-            "color": {
-              "exponent": 0.5,
-              "fill": "#7C3AED",
-              "mode": "scheme",
-              "reverse": false,
-              "scale": "exponential",
-              "scheme": "Purples",
-              "steps": 64
-            },
-            "yAxis": { "reverse": false }
-          }
-        },
-        {
           "id": 14,
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 23 },
           "type": "barchart",
           "title": "Daily Activity Pattern",
           "description": "Chat count by day of week",
@@ -336,7 +309,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT CASE EXTRACT(DOW FROM created_at) WHEN 0 THEN 'Sunday' WHEN 1 THEN 'Monday' WHEN 2 THEN 'Tuesday' WHEN 3 THEN 'Wednesday' WHEN 4 THEN 'Thursday' WHEN 5 THEN 'Friday' WHEN 6 THEN 'Saturday' END as day, COUNT(*) as chats FROM chat WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY EXTRACT(DOW FROM created_at) ORDER BY EXTRACT(DOW FROM created_at)",
+              "rawSql": "SELECT CASE EXTRACT(DOW FROM to_timestamp(created_at / 1000000000.0))::integer WHEN 0 THEN 'Sunday' WHEN 1 THEN 'Monday' WHEN 2 THEN 'Tuesday' WHEN 3 THEN 'Wednesday' WHEN 4 THEN 'Thursday' WHEN 5 THEN 'Friday' WHEN 6 THEN 'Saturday' END as day, COUNT(*) as chats FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY EXTRACT(DOW FROM to_timestamp(created_at / 1000000000.0)) ORDER BY EXTRACT(DOW FROM to_timestamp(created_at / 1000000000.0))",
               "format": "table"
             }
           ],
@@ -360,7 +333,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT c.updated_at as \"Last Activity\", u.name as \"User\", u.role as \"Role\", c.title as \"Chat Title\", c.created_at as \"Started\", CASE WHEN c.pinned THEN '📌' ELSE '' END || CASE WHEN c.archived THEN '📦' ELSE '' END as \"Status\" FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 30",
+              "rawSql": "SELECT to_timestamp(c.updated_at / 1000000000.0) as \"Last Activity\", u.name as \"User\", u.role as \"Role\", c.title as \"Chat Title\", to_timestamp(c.created_at / 1000000000.0) as \"Started\", CASE WHEN c.pinned THEN '📌' ELSE '' END || CASE WHEN c.archived THEN '📦' ELSE '' END as \"Status\" FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 30",
               "format": "table"
             }
           ],
@@ -398,7 +371,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT name, email, role, created_at as \"Registered\", last_active_at as \"Last Seen\" FROM \"user\" ORDER BY created_at DESC LIMIT 15",
+              "rawSql": "SELECT name, email, role, to_timestamp(created_at / 1000000000.0) as \"Registered\", to_timestamp(last_active_at / 1000000000.0) as \"Last Seen\" FROM \"user\" ORDER BY created_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -440,5 +413,5 @@ data:
       "time": { "from": "now-30d", "to": "now" },
       "title": "OpenWebUI Audit",
       "uid": "openwebui-audit",
-      "version": 1
+      "version": 2
     }
