@@ -34,8 +34,6 @@ GitOps-managed Kubernetes homelab running on hybrid infrastructure (local nodes 
 | **LlamaFactory** | http://llamafactory.k8s.local | LLM Fine-Tuning |
 | **Azure MCP** | http://mcpo.k8s.local/docs | Azure MCP via OpenAPI |
 
-| **Plex** | http://192.168.1.221:32400 | Media Server |
-
 ## 📁 Repository Structure
 
 ```

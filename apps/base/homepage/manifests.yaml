@@ -41,10 +41,6 @@ data:
         icon: mdi-shield-key
         style: row
         columns: 2
-      Media:
-        icon: mdi-play-circle
-        style: row
-        columns: 1
 
   services.yaml: |-
     - Monitoring:
@@ -134,18 +130,6 @@ data:
             description: SSO Identity Provider
             siteMonitor: http://authentik-server.apps.svc.cluster.local:80
             statusStyle: dot
-
-    - Media:
-        - Plex:
-            href: http://192.168.1.221:32400/web
-            icon: plex.png
-            description: Media Server
-            statusStyle: dot
-            # Uncomment to enable Plex widget:
-            # widget:
-            #   type: plex
-            #   url: http://192.168.1.221:32400
-            #   key: YOUR_PLEX_TOKEN
 
   widgets.yaml: |
     - search:
