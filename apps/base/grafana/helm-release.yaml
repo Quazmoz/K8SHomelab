@@ -33,6 +33,12 @@ spec:
           url: http://prometheus-server.apps.svc.cluster.local
           access: proxy
           isDefault: true
+        # Loki for log aggregation
+        - name: Loki
+          type: loki
+          uid: loki
+          url: http://loki.apps.svc.cluster.local:3100
+          access: proxy
         # PostgreSQL datasource for grafana_db
         - name: PostgreSQL
           type: postgres

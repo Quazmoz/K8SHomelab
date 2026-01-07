@@ -1,0 +1,342 @@
+# Homelab Overview Dashboard
+# Central hub with navigation to all dashboards and key metrics at a glance
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-homelab-overview
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  homelab-overview.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 15px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 12px;'><h1 style='margin: 0; color: #e94560; font-size: 2.5em;'>🏠 Quinn's Homelab</h1><p style='margin: 10px 0 0 0; color: #eee; font-size: 1.1em;'>Kubernetes Cluster Overview • GitOps Managed • Flux CD</p></div>"
+          }
+        },
+        {
+          "id": 20,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 4 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='display: flex; justify-content: center; gap: 20px; padding: 10px;'><a href='/d/k8s-overview' style='padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold;'>📊 Kubernetes</a><a href='/d/openwebui-analytics' style='padding: 12px 24px; background: linear-gradient(135deg, #7C3AED 0%, #a855f7 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold;'>🤖 OpenWebUI</a><a href='/d/openwebui-audit' style='padding: 12px 24px; background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold;'>🔍 Audit</a><a href='/d/postgresql' style='padding: 12px 24px; background: linear-gradient(135deg, #336791 0%, #1d4a6d 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold;'>🐘 PostgreSQL</a><a href='/d/homelab-arch' style='padding: 12px 24px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold;'>🏗️ Architecture</a></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 7 },
+          "type": "stat",
+          "title": "Nodes Ready",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(kube_node_status_condition{condition=\"Ready\", status=\"true\"})",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 2 },
+                  { "color": "green", "value": 3 }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 4, "w": 4, "x": 4, "y": 7 },
+          "type": "stat",
+          "title": "Pods Running",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(kube_pod_status_phase{phase=\"Running\"})",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "green" }
+            }
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 4, "w": 4, "x": 8, "y": 7 },
+          "type": "stat",
+          "title": "OpenWebUI Chats",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM chat",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "purple" }
+            }
+          }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 4, "w": 4, "x": 12, "y": 7 },
+          "type": "stat",
+          "title": "Chats Today",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "yellow" }
+            }
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 4, "w": 4, "x": 16, "y": 7 },
+          "type": "stat",
+          "title": "DB Size",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(pg_database_size_bytes)",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "color": { "mode": "fixed", "fixedColor": "blue" }
+            }
+          }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 4, "w": 4, "x": 20, "y": 7 },
+          "type": "stat",
+          "title": "Active Users",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM \"user\"",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "orange" }
+            }
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 5, "w": 8, "x": 0, "y": 11 },
+          "type": "gauge",
+          "title": "Cluster CPU Usage",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])) / sum(count without(cpu, mode) (node_cpu_seconds_total{mode=\"idle\"})) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 90 }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 9,
+          "gridPos": { "h": 5, "w": 8, "x": 8, "y": 11 },
+          "type": "gauge",
+          "title": "Cluster Memory Usage",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "(1 - (sum(node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes))) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 90 }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 10,
+          "gridPos": { "h": 5, "w": 8, "x": 16, "y": 11 },
+          "type": "gauge",
+          "title": "Disk Usage",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "(1 - (sum(node_filesystem_avail_bytes{mountpoint=\"/\", fstype!=\"rootfs\"}) / sum(node_filesystem_size_bytes{mountpoint=\"/\", fstype!=\"rootfs\"}))) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 85 }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 11,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "type": "timeseries",
+          "title": "OpenWebUI Activity (7 days)",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT date_trunc('day', to_timestamp(created_at / 1000000000.0)) as time, COUNT(*) as chats FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '7 days' GROUP BY date_trunc('day', to_timestamp(created_at / 1000000000.0)) ORDER BY time",
+              "format": "time_series"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#7C3AED" },
+              "custom": { "fillOpacity": 30, "lineWidth": 2, "drawStyle": "bars" }
+            }
+          }
+        },
+        {
+          "id": 12,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "type": "timeseries",
+          "title": "Database Transactions (1h)",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(pg_stat_database_xact_commit[5m]))",
+              "legendFormat": "Commits/s"
+            },
+            {
+              "refId": "B",
+              "expr": "sum(rate(pg_stat_database_xact_rollback[5m]))",
+              "legendFormat": "Rollbacks/s"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "custom": { "fillOpacity": 20 }
+            }
+          }
+        },
+        {
+          "id": 13,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+          "type": "logs",
+          "title": "OpenWebUI Logs (Loki)",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "{app=\"openwebui\"} |= ``",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "dedupStrategy": "none",
+            "sortOrder": "Descending"
+          }
+        },
+        {
+          "id": 14,
+          "gridPos": { "h": 6, "w": 24, "x": 0, "y": 32 },
+          "type": "table",
+          "title": "Recent OpenWebUI Chats",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT c.title as \"Chat\", u.name as \"User\", to_timestamp(c.updated_at / 1000000000.0) as \"Last Activity\" FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 10",
+              "format": "table"
+            }
+          ]
+        }
+      ],
+      "refresh": "1m",
+      "schemaVersion": 39,
+      "tags": ["homelab", "overview"],
+      "templating": { "list": [] },
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Homelab Overview",
+      "uid": "homelab-overview",
+      "version": 1
+    }

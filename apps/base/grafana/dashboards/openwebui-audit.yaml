@@ -25,6 +25,14 @@ data:
           "tags": ["openwebui"],
           "title": "OpenWebUI Dashboards",
           "type": "dashboards"
+        },
+        {
+          "asDropdown": false,
+          "icon": "external link",
+          "targetBlank": false,
+          "title": "🏠 Overview",
+          "type": "link",
+          "url": "/d/homelab-overview"
         }
       ],
       "panels": [
