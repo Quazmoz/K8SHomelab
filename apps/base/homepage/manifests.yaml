@@ -40,7 +40,15 @@ data:
       Admin:
         icon: mdi-shield-key
         style: row
-        columns: 2
+        columns: 3
+      MCP Servers:
+        icon: mdi-api
+        style: row
+        columns: 4
+      Infrastructure:
+        icon: mdi-server-network
+        style: row
+        columns: 6
 
   services.yaml: |-
     - Monitoring:
@@ -92,12 +100,6 @@ data:
             description: LLM Chat Interface
             siteMonitor: http://openwebui.apps.svc.cluster.local:8080
             statusStyle: dot
-        - Azure MCP Tools:
-            href: http://mcpo.k8s.local/docs
-            icon: azure
-            description: Azure MCP via OpenAPI
-            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/docs
-            statusStyle: dot
         - LLaMA Factory:
             href: http://llamafactory.k8s.local
             icon: mdi-brain
@@ -109,6 +111,54 @@ data:
             icon: si-rss
             description: RSS Feed Aggregator
             siteMonitor: http://freshrss.apps.svc.cluster.local:80
+            statusStyle: dot
+
+    - MCP Servers:
+        - Azure MCP:
+            href: http://mcpo.k8s.local/docs#/azure
+            icon: azure
+            description: Azure Cloud Management
+            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/docs
+            statusStyle: dot
+        - Kubernetes MCP:
+            href: http://mcpo.k8s.local/docs#/kubernetes
+            icon: kubernetes
+            description: K8s Cluster Management
+            statusStyle: dot
+        - Prometheus MCP:
+            href: http://mcpo.k8s.local/docs#/prometheus
+            icon: prometheus.png
+            description: Metrics Queries
+            statusStyle: dot
+        - Postgres MCP:
+            href: http://mcpo.k8s.local/docs#/postgres
+            icon: si-postgresql
+            description: Database Queries
+            statusStyle: dot
+        - n8n MCP:
+            href: http://mcpo.k8s.local/docs#/n8n
+            icon: n8n.png
+            description: Workflow Automation
+            statusStyle: dot
+        - ClickUp MCP:
+            href: http://mcpo.k8s.local/docs#/clickup
+            icon: mdi-checkbox-marked-circle
+            description: Project Management
+            statusStyle: dot
+        - FreshRSS MCP:
+            href: http://mcpo.k8s.local/docs#/freshrss
+            icon: si-rss
+            description: RSS Feed Queries
+            statusStyle: dot
+        - GroupMe MCP:
+            href: http://mcpo.k8s.local/docs#/groupme
+            icon: mdi-message-text
+            description: GroupMe Messaging
+            statusStyle: dot
+        - Tanium MCP:
+            href: http://mcpo.k8s.local/docs#/tanium
+            icon: mdi-shield-check
+            description: Endpoint Security
             statusStyle: dot
 
     - Admin:
@@ -129,6 +179,36 @@ data:
             icon: authentik
             description: SSO Identity Provider
             siteMonitor: http://authentik-server.apps.svc.cluster.local:80
+            statusStyle: dot
+
+    - Infrastructure:
+        - PostgreSQL:
+            icon: si-postgresql
+            description: Database Server
+            siteMonitor: http://postgres.apps.svc.cluster.local:5432
+            statusStyle: dot
+        - Redis:
+            icon: si-redis
+            description: Cache & Message Broker
+            siteMonitor: http://redis.apps.svc.cluster.local:6379
+            statusStyle: dot
+        - Loki:
+            href: http://grafana.k8s.local/explore?orgId=1&left=%7B%22datasource%22:%22loki%22%7D
+            icon: loki
+            description: Log Aggregation
+            siteMonitor: http://loki.apps.svc.cluster.local:3100/ready
+            statusStyle: dot
+        - Ingress NGINX:
+            icon: nginx.png
+            description: Ingress Controller
+            statusStyle: dot
+        - MetalLB:
+            icon: mdi-lan
+            description: Load Balancer
+            statusStyle: dot
+        - Metrics Server:
+            icon: mdi-chart-areaspline
+            description: Resource Metrics
             statusStyle: dot
 
   widgets.yaml: |
@@ -322,7 +402,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v4-remove-plex"
+        checksum/config: "v6-all-apps"
     spec:
       serviceAccountName: homepage
       nodeSelector:
