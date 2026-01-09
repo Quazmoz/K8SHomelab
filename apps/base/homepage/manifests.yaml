@@ -16,78 +16,71 @@ data:
     title: Quinn's Homelab
     favicon: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/png/kubernetes.png
     background:
-      image: https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920
+      image: https://images.unsplash.com/photo-1639322537228-f710d846310a?w=1920
       blur: sm
-      opacity: 20
+      opacity: 15
     theme: dark
-    color: zinc
+    color: slate
     headerStyle: clean
     statusStyle: dot
     hideVersion: true
+    useEqualHeights: true
     layout:
-      My Sites:
-        icon: mdi-web
+      Portfolio:
+        icon: mdi-account-star
         style: row
-        columns: 5
-      AI & Tools:
+        columns: 3
+      AI & LLM:
         icon: mdi-brain
         style: row
         columns: 4
-      MCP Servers:
+      MCP Tools:
         icon: mdi-api
         style: row
+        columns: 5
+      DevOps:
+        icon: mdi-infinity
+        style: row
         columns: 4
-      Monitoring:
-        icon: mdi-chart-line
-        style: row
-        columns: 3
-      Automation:
-        icon: mdi-robot
-        style: row
-        columns: 2
-      Admin:
-        icon: mdi-shield-key
-        style: row
-        columns: 3
-      Infrastructure:
-        icon: mdi-server-network
+      Operations:
+        icon: mdi-monitor-dashboard
         style: row
         columns: 6
 
   services.yaml: |-
-    - My Sites:
-        - AI Portfolio:
-            href: https://ai.quinnfavo.com
-            icon: mdi-brain
-            description: AI Projects & Demos
-            siteMonitor: https://ai.quinnfavo.com
-            statusStyle: dot
-        - Universe:
-            href: https://universe.quinnfavo.com
-            icon: mdi-rocket-launch
-            description: Universe Project
-            siteMonitor: https://universe.quinnfavo.com
-            statusStyle: dot
-        - Main Site:
+    - Portfolio:
+        - quinnfavo.com:
             href: https://quinnfavo.com
-            icon: mdi-home
+            icon: mdi-web
             description: Personal Website
             siteMonitor: https://quinnfavo.com
             statusStyle: dot
         - Profile:
             href: https://profile.quinnfavo.com
-            icon: mdi-account
+            icon: mdi-card-account-details
             description: Professional Profile
             siteMonitor: https://profile.quinnfavo.com
             statusStyle: dot
+        - AI Portfolio:
+            href: https://ai.quinnfavo.com
+            icon: mdi-head-lightbulb
+            description: AI Projects & Demos
+            siteMonitor: https://ai.quinnfavo.com
+            statusStyle: dot
+        - Universe:
+            href: https://universe.quinnfavo.com
+            icon: mdi-creation
+            description: Universe Project
+            siteMonitor: https://universe.quinnfavo.com
+            statusStyle: dot
         - DevOps Toolkit:
             href: https://devopstoolkit.quinnfavo.com
-            icon: mdi-tools
+            icon: mdi-wrench-cog
             description: DevOps Resources
             siteMonitor: https://devopstoolkit.quinnfavo.com
             statusStyle: dot
 
-    - AI & Tools:
+    - AI & LLM:
         - OpenWebUI:
             href: http://openwebui.k8s.local
             icon: si-openai
@@ -96,95 +89,72 @@ data:
             statusStyle: dot
         - LLaMA Factory:
             href: http://llamafactory.k8s.local
-            icon: mdi-brain
+            icon: mdi-tune-vertical
             description: LLM Fine-Tuning
             siteMonitor: http://llamafactory.apps.svc.cluster.local:7860/
             statusStyle: dot
         - Qdrant:
             href: http://qdrant.k8s.local/dashboard
-            icon: mdi-database-search
+            icon: mdi-vector-combine
             description: Vector Database
             siteMonitor: http://qdrant.apps.svc.cluster.local:6333
             statusStyle: dot
         - FreshRSS:
             href: http://freshrss.k8s.local
             icon: si-rss
-            description: RSS Feed Aggregator
+            description: RSS Intelligence
             siteMonitor: http://freshrss.apps.svc.cluster.local:80
             statusStyle: dot
 
-    - MCP Servers:
-        - Azure MCP:
+    - MCP Tools:
+        - Azure:
             href: http://mcpo.k8s.local/azure/docs
             icon: azure
-            description: Azure Cloud Management
+            description: Cloud Management
             siteMonitor: http://mcpo.apps.svc.cluster.local:8000/azure/docs
             statusStyle: dot
-        - Kubernetes MCP:
+        - Kubernetes:
             href: http://mcpo.k8s.local/kubernetes/docs
             icon: kubernetes
-            description: K8s Cluster Management
-            statusStyle: dot
-        - Prometheus MCP:
-            href: http://mcpo.k8s.local/prometheus/docs
-            icon: prometheus.png
-            description: Metrics Queries
-            statusStyle: dot
-        - Postgres MCP:
-            href: http://mcpo.k8s.local/postgres/docs
-            icon: si-postgresql
-            description: Database Queries
-            statusStyle: dot
-        - n8n MCP:
-            href: http://mcpo.k8s.local/n8n/docs
-            icon: n8n.png
-            description: Workflow Automation
-            statusStyle: dot
-        - ClickUp MCP:
-            href: http://mcpo.k8s.local/clickup/docs
-            icon: mdi-checkbox-marked-circle
-            description: Project Management
-            statusStyle: dot
-        - FreshRSS MCP:
-            href: http://mcpo.k8s.local/freshrss/docs
-            icon: si-rss
-            description: RSS Feed Queries
-            statusStyle: dot
-        - GroupMe MCP:
-            href: http://mcpo.k8s.local/groupme/docs
-            icon: mdi-message-text
-            description: GroupMe Messaging
-            statusStyle: dot
-        - Tanium MCP:
-            href: http://mcpo.k8s.local/tanium/docs
-            icon: mdi-shield-check
-            description: Endpoint Security
-            statusStyle: dot
-
-    - Monitoring:
-        - Grafana:
-            href: http://grafana.k8s.local
-            icon: grafana.png
-            description: Dashboards & Visualization
-            siteMonitor: http://grafana.apps.svc.cluster.local:80
+            description: Cluster Ops
             statusStyle: dot
         - Prometheus:
-            href: http://prometheus.k8s.local
+            href: http://mcpo.k8s.local/prometheus/docs
             icon: prometheus.png
-            description: Metrics Collection
-            siteMonitor: http://prometheus-server.apps.svc.cluster.local:80
+            description: Metrics API
             statusStyle: dot
-            widget:
-              type: prometheus
-              url: http://prometheus-server.apps.svc.cluster.local
-        - Uptime Kuma:
-            href: http://status.k8s.local
-            icon: uptime-kuma
-            description: Service Status Page
-            siteMonitor: http://uptime-kuma.apps.svc.cluster.local:3001
+        - PostgreSQL:
+            href: http://mcpo.k8s.local/postgres/docs
+            icon: si-postgresql
+            description: Database API
+            statusStyle: dot
+        - n8n:
+            href: http://mcpo.k8s.local/n8n/docs
+            icon: n8n.png
+            description: Workflows API
+            statusStyle: dot
+        - ClickUp:
+            href: http://mcpo.k8s.local/clickup/docs
+            icon: mdi-clipboard-check
+            description: Project Mgmt
+            statusStyle: dot
+        - FreshRSS:
+            href: http://mcpo.k8s.local/freshrss/docs
+            icon: si-rss
+            description: RSS API
+            statusStyle: dot
+        - GroupMe:
+            href: http://mcpo.k8s.local/groupme/docs
+            icon: mdi-forum
+            description: Messaging API
+            statusStyle: dot
+        - Tanium:
+            href: http://mcpo.k8s.local/tanium/docs
+            icon: mdi-shield-lock
+            description: Security API
             statusStyle: dot
 
-    - Automation:
+    - DevOps:
         - Jenkins:
             href: http://jenkins.k8s.local
             icon: jenkins.png
@@ -197,8 +167,44 @@ data:
             description: Workflow Automation
             siteMonitor: http://n8n.apps.svc.cluster.local:5678
             statusStyle: dot
+        - Grafana:
+            href: http://grafana.k8s.local
+            icon: grafana.png
+            description: Dashboards
+            siteMonitor: http://grafana.apps.svc.cluster.local:80
+            statusStyle: dot
+            widget:
+              type: grafana
+              url: http://grafana.apps.svc.cluster.local:80
+        - Prometheus:
+            href: http://prometheus.k8s.local
+            icon: prometheus.png
+            description: Metrics
+            siteMonitor: http://prometheus-server.apps.svc.cluster.local:80
+            statusStyle: dot
+            widget:
+              type: prometheus
+              url: http://prometheus-server.apps.svc.cluster.local
+        - Uptime Kuma:
+            href: http://status.k8s.local
+            icon: uptime-kuma
+            description: Status Page
+            siteMonitor: http://uptime-kuma.apps.svc.cluster.local:3001
+            statusStyle: dot
+        - Loki:
+            href: http://grafana.k8s.local/explore?orgId=1&left=%7B%22datasource%22:%22loki%22%7D
+            icon: loki
+            description: Log Aggregation
+            siteMonitor: http://loki.apps.svc.cluster.local:3100/ready
+            statusStyle: dot
+        - Authentik:
+            href: http://auth.k8s.local
+            icon: authentik
+            description: Identity Provider
+            siteMonitor: http://authentik-server.apps.svc.cluster.local:80
+            statusStyle: dot
 
-    - Admin:
+    - Operations:
         - pgAdmin:
             href: http://pgadmin.k8s.local
             icon: si-postgresql
@@ -211,41 +217,21 @@ data:
             description: Redis Admin
             siteMonitor: http://redis-insight.apps.svc.cluster.local:5540
             statusStyle: dot
-        - Authentik:
-            href: http://auth.k8s.local
-            icon: authentik
-            description: SSO Identity Provider
-            siteMonitor: http://authentik-server.apps.svc.cluster.local:80
-            statusStyle: dot
-
-    - Infrastructure:
         - PostgreSQL:
             icon: si-postgresql
-            description: Database Server
-            siteMonitor: http://postgres.apps.svc.cluster.local:5432
+            description: Database
             statusStyle: dot
         - Redis:
             icon: si-redis
-            description: Cache & Message Broker
-            siteMonitor: http://redis.apps.svc.cluster.local:6379
-            statusStyle: dot
-        - Loki:
-            href: http://grafana.k8s.local/explore?orgId=1&left=%7B%22datasource%22:%22loki%22%7D
-            icon: loki
-            description: Log Aggregation
-            siteMonitor: http://loki.apps.svc.cluster.local:3100/ready
+            description: Cache
             statusStyle: dot
         - Ingress NGINX:
             icon: nginx.png
-            description: Ingress Controller
+            description: Ingress
             statusStyle: dot
         - MetalLB:
-            icon: mdi-lan
+            icon: mdi-lan-connect
             description: Load Balancer
-            statusStyle: dot
-        - Metrics Server:
-            icon: mdi-chart-areaspline
-            description: Resource Metrics
             statusStyle: dot
 
   widgets.yaml: |
@@ -439,7 +425,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v10-my-sites"
+        checksum/config: "v11-redesign"
     spec:
       serviceAccountName: homepage
       nodeSelector:
