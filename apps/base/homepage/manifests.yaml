@@ -115,48 +115,48 @@ data:
 
     - MCP Servers:
         - Azure MCP:
-            href: http://mcpo.k8s.local/docs#/azure
+            href: http://mcpo.k8s.local/azure/docs
             icon: azure
             description: Azure Cloud Management
-            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/docs
+            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/azure/docs
             statusStyle: dot
         - Kubernetes MCP:
-            href: http://mcpo.k8s.local/docs#/kubernetes
+            href: http://mcpo.k8s.local/kubernetes/docs
             icon: kubernetes
             description: K8s Cluster Management
             statusStyle: dot
         - Prometheus MCP:
-            href: http://mcpo.k8s.local/docs#/prometheus
+            href: http://mcpo.k8s.local/prometheus/docs
             icon: prometheus.png
             description: Metrics Queries
             statusStyle: dot
         - Postgres MCP:
-            href: http://mcpo.k8s.local/docs#/postgres
+            href: http://mcpo.k8s.local/postgres/docs
             icon: si-postgresql
             description: Database Queries
             statusStyle: dot
         - n8n MCP:
-            href: http://mcpo.k8s.local/docs#/n8n
+            href: http://mcpo.k8s.local/n8n/docs
             icon: n8n.png
             description: Workflow Automation
             statusStyle: dot
         - ClickUp MCP:
-            href: http://mcpo.k8s.local/docs#/clickup
+            href: http://mcpo.k8s.local/clickup/docs
             icon: mdi-checkbox-marked-circle
             description: Project Management
             statusStyle: dot
         - FreshRSS MCP:
-            href: http://mcpo.k8s.local/docs#/freshrss
+            href: http://mcpo.k8s.local/freshrss/docs
             icon: si-rss
             description: RSS Feed Queries
             statusStyle: dot
         - GroupMe MCP:
-            href: http://mcpo.k8s.local/docs#/groupme
+            href: http://mcpo.k8s.local/groupme/docs
             icon: mdi-message-text
             description: GroupMe Messaging
             statusStyle: dot
         - Tanium MCP:
-            href: http://mcpo.k8s.local/docs#/tanium
+            href: http://mcpo.k8s.local/tanium/docs
             icon: mdi-shield-check
             description: Endpoint Security
             statusStyle: dot
@@ -402,7 +402,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v6-all-apps"
+        checksum/config: "v7-fix-mcp-urls"
     spec:
       serviceAccountName: homepage
       nodeSelector:
