@@ -58,15 +58,26 @@ spec:
         # .NET globalization invariant mode - fixes libicu dependency
         - name: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
           value: "true"
-        # Azure credentials for Azure MCP - using bearer token
-        # Get token from: Azure Portal → DevTools → Network → Any Graph API request → Authorization header
-        # Token expires every 1 hour, update secret when needed
-        - name: AZURE_ACCESS_TOKEN
+        # Azure credentials for Azure MCP (service principal)
+        # Required: AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
+        # Create secret: kubectl create secret generic azure-mcp-credentials -n apps \
+        #   --from-literal=AZURE_TENANT_ID=xxx --from-literal=AZURE_CLIENT_ID=xxx \
+        #   --from-literal=AZURE_CLIENT_SECRET=xxx --from-literal=AZURE_SUBSCRIPTION_ID=xxx
+        - name: AZURE_TENANT_ID
           valueFrom:
             secretKeyRef:
               name: azure-mcp-credentials
-              key: AZURE_ACCESS_TOKEN
-              optional: true
+              key: AZURE_TENANT_ID
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_ID
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_SECRET
         - name: AZURE_SUBSCRIPTION_ID
           valueFrom:
             secretKeyRef:

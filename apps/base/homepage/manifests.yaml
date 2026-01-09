@@ -112,6 +112,13 @@ data:
             description: RSS Feed Aggregator
             siteMonitor: http://freshrss.apps.svc.cluster.local:80
             statusStyle: dot
+        - Qdrant:
+            href: http://qdrant.k8s.local/dashboard
+            icon: mdi-database-search
+            description: Vector Database
+            siteMonitor: http://qdrant.apps.svc.cluster.local:6333
+            statusStyle: dot
+
 
     - MCP Servers:
         - Azure MCP:
@@ -402,7 +409,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v7-fix-mcp-urls"
+        checksum/config: "v8-qdrant"
     spec:
       serviceAccountName: homepage
       nodeSelector:

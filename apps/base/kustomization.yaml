@@ -23,5 +23,7 @@ resources:
   - ./uptime-kuma
   - ./authentik
   - ./freshrss
+  - ./qdrant
+
 
 

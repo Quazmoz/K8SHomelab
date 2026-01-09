@@ -303,3 +303,29 @@ spec:
           values:
           - quinn-hpprobook430g6
 
+---
+# The Persistent Volume for Qdrant vector database
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: qdrant-local-pv
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/qdrant
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6
+
+
