@@ -25,6 +25,14 @@ data:
     statusStyle: dot
     hideVersion: true
     layout:
+      AI & Tools:
+        icon: mdi-brain
+        style: row
+        columns: 4
+      MCP Servers:
+        icon: mdi-api
+        style: row
+        columns: 4
       Monitoring:
         icon: mdi-chart-line
         style: row
@@ -33,66 +41,16 @@ data:
         icon: mdi-robot
         style: row
         columns: 2
-      AI & Tools:
-        icon: mdi-brain
-        style: row
-        columns: 4
       Admin:
         icon: mdi-shield-key
         style: row
         columns: 3
-      MCP Servers:
-        icon: mdi-api
-        style: row
-        columns: 4
       Infrastructure:
         icon: mdi-server-network
         style: row
         columns: 6
 
   services.yaml: |-
-    - Monitoring:
-        - Grafana:
-            href: http://grafana.k8s.local
-            icon: grafana.png
-            description: Dashboards & Visualization
-            siteMonitor: http://grafana.apps.svc.cluster.local:80
-            statusStyle: dot
-        - Prometheus:
-            href: http://prometheus.k8s.local
-            icon: prometheus.png
-            description: Metrics Collection
-            siteMonitor: http://prometheus-server.apps.svc.cluster.local:80
-            statusStyle: dot
-            widget:
-              type: prometheus
-              url: http://prometheus-server.apps.svc.cluster.local
-        - Uptime Kuma:
-            href: http://status.k8s.local
-            icon: uptime-kuma
-            description: Service Status Page
-            siteMonitor: http://uptime-kuma.apps.svc.cluster.local:3001
-            statusStyle: dot
-            # Uncomment and add API key to enable widget:
-            # widget:
-            #   type: uptimekuma
-            #   url: http://uptime-kuma.apps.svc.cluster.local:3001
-            #   slug: homelab  # Your status page slug
-
-    - Automation:
-        - Jenkins:
-            href: http://jenkins.k8s.local
-            icon: jenkins.png
-            description: CI/CD Pipelines
-            siteMonitor: http://jenkins.apps.svc.cluster.local:8080
-            statusStyle: dot
-        - n8n:
-            href: http://n8n.k8s.local
-            icon: n8n.png
-            description: Workflow Automation
-            siteMonitor: http://n8n.apps.svc.cluster.local:5678
-            statusStyle: dot
-
     - AI & Tools:
         - OpenWebUI:
             href: http://openwebui.k8s.local
@@ -106,19 +64,18 @@ data:
             description: LLM Fine-Tuning
             siteMonitor: http://llamafactory.apps.svc.cluster.local:7860/
             statusStyle: dot
-        - FreshRSS:
-            href: http://freshrss.k8s.local
-            icon: si-rss
-            description: RSS Feed Aggregator
-            siteMonitor: http://freshrss.apps.svc.cluster.local:80
-            statusStyle: dot
         - Qdrant:
             href: http://qdrant.k8s.local/dashboard
             icon: mdi-database-search
             description: Vector Database
             siteMonitor: http://qdrant.apps.svc.cluster.local:6333
             statusStyle: dot
-
+        - FreshRSS:
+            href: http://freshrss.k8s.local
+            icon: si-rss
+            description: RSS Feed Aggregator
+            siteMonitor: http://freshrss.apps.svc.cluster.local:80
+            statusStyle: dot
 
     - MCP Servers:
         - Azure MCP:
@@ -166,6 +123,43 @@ data:
             href: http://mcpo.k8s.local/tanium/docs
             icon: mdi-shield-check
             description: Endpoint Security
+            statusStyle: dot
+
+    - Monitoring:
+        - Grafana:
+            href: http://grafana.k8s.local
+            icon: grafana.png
+            description: Dashboards & Visualization
+            siteMonitor: http://grafana.apps.svc.cluster.local:80
+            statusStyle: dot
+        - Prometheus:
+            href: http://prometheus.k8s.local
+            icon: prometheus.png
+            description: Metrics Collection
+            siteMonitor: http://prometheus-server.apps.svc.cluster.local:80
+            statusStyle: dot
+            widget:
+              type: prometheus
+              url: http://prometheus-server.apps.svc.cluster.local
+        - Uptime Kuma:
+            href: http://status.k8s.local
+            icon: uptime-kuma
+            description: Service Status Page
+            siteMonitor: http://uptime-kuma.apps.svc.cluster.local:3001
+            statusStyle: dot
+
+    - Automation:
+        - Jenkins:
+            href: http://jenkins.k8s.local
+            icon: jenkins.png
+            description: CI/CD Pipelines
+            siteMonitor: http://jenkins.apps.svc.cluster.local:8080
+            statusStyle: dot
+        - n8n:
+            href: http://n8n.k8s.local
+            icon: n8n.png
+            description: Workflow Automation
+            siteMonitor: http://n8n.apps.svc.cluster.local:5678
             statusStyle: dot
 
     - Admin:
@@ -409,7 +403,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v8-qdrant"
+        checksum/config: "v9-ai-first"
     spec:
       serviceAccountName: homepage
       nodeSelector:
