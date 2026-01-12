@@ -880,8 +880,8 @@
         "/team": {
             "get": {
                 "operationId": "getWorkspaces",
-                "summary": "Get Workspaces (Teams)",
-                "description": "Returns all workspaces (teams) accessible to the authenticated user. Each workspace has an 'id' field that should be used as 'team_id' when calling other endpoints like getSpaces. To list spaces in a workspace, use the getSpaces endpoint (/team/{team_id}/space) with the workspace id.",
+                "summary": "Get Workspace IDs (Step 1 - start here for any task query)",
+                "description": "ALWAYS CALL THIS FIRST. Returns all workspaces. Use the workspace 'id' as 'team_id' in subsequent calls. For task queries: Step 1) Call this, Step 2) Call getTeamMembers with team_id, Step 3) Call searchTeamTasks with assignees[].",
                 "tags": [
                     "Teams"
                 ],
@@ -1033,6 +1033,54 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "operationId": "createSpace",
+                "summary": "Create Space",
+                "description": "Create a new space in the workspace.",
+                "tags": [
+                    "Spaces"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "description": "Workspace ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "multiple_assignees": {
+                                        "type": "boolean"
+                                    },
+                                    "features": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Space created"
+                    }
+                }
             }
         },
         "/space/{space_id}": {
@@ -1055,6 +1103,161 @@
                 "responses": {
                     "200": {
                         "description": "Space details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateSpace",
+                "summary": "Update Space",
+                "tags": [
+                    "Spaces"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "color": {
+                                        "type": "string"
+                                    },
+                                    "private": {
+                                        "type": "boolean"
+                                    },
+                                    "admin_can_manage": {
+                                        "type": "boolean"
+                                    },
+                                    "multiple_assignees": {
+                                        "type": "boolean"
+                                    },
+                                    "features": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Space updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteSpace",
+                "summary": "Delete Space",
+                "tags": [
+                    "Spaces"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "space_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Space deleted"
+                    }
+                }
+            }
+        },
+        "/folder/{folder_id}": {
+            "get": {
+                "operationId": "getFolder",
+                "summary": "Get Folder",
+                "tags": [
+                    "Folders"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "folder_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Folder details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateFolder",
+                "summary": "Update Folder",
+                "tags": [
+                    "Folders"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "folder_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Folder updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteFolder",
+                "summary": "Delete Folder",
+                "tags": [
+                    "Folders"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "folder_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Folder deleted"
                     }
                 }
             }
@@ -1750,7 +1953,7 @@
         "/team/{team_id}/task": {
             "get": {
                 "operationId": "searchTeamTasks",
-                "summary": "Search/Filter Team Tasks",
+                "summary": "Search Tasks by Assignee (Step 3 - call after getTeamMembers)",
                 "description": "REQUIRED TOOL for getting tasks assigned to a user. WORKFLOW: 1) Call getWorkspaces to get team_id, 2) Call getTeamMembers with team_id to find the user's numeric ID from their name, 3) Call THIS ENDPOINT (searchTeamTasks) with assignees[] set to that user ID. You MUST complete all 3 steps when asked about a person's tasks. Example: For 'get tasks for John', find John's ID from getTeamMembers, then call searchTeamTasks with assignees[]=[john_id]. Without the assignees filter this returns ALL tasks which is slow.",
                 "tags": [
                     "Tasks"
@@ -1980,7 +2183,7 @@
         "/team/{team_id}/member": {
             "get": {
                 "operationId": "getTeamMembers",
-                "summary": "Get Team Members",
+                "summary": "Get User IDs by Name (Step 2 - then call searchTeamTasks)",
                 "description": "Get all members (users) in a workspace. IMPORTANT: When asked for tasks by person name, find their numeric 'id' from this response, then IMMEDIATELY call searchTeamTasks with assignees[] set to that ID. Do NOT stop after finding the user - proceed to get their tasks.",
                 "tags": [
                     "Members"
@@ -2006,7 +2209,7 @@
                                     "properties": {
                                         "members": {
                                             "type": "array",
-                                            "description": "Array of workspace members. Use member 'id' as assignee filter.",
+                                            "description": "Array of members. Find user by username, extract their 'id', then call searchTeamTasks with assignees[]=[id]",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
@@ -4952,6 +5155,326 @@
                 "responses": {
                     "200": {
                         "description": "Array of custom task types"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/user": {
+            "post": {
+                "operationId": "inviteUserToWorkspace",
+                "summary": "Invite User To Workspace",
+                "description": "Invite a user to a workspace by email.",
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "admin": {
+                                        "type": "boolean",
+                                        "description": "Set to true to make user a workspace admin"
+                                    },
+                                    "custom_role_id": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User invited"
+                    }
+                }
+            }
+        },
+        "/team/{team_id}/user/{user_id}": {
+            "get": {
+                "operationId": "getUser",
+                "summary": "Get User",
+                "description": "Get user details within a workspace.",
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "user_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User details"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "editUserOnWorkspace",
+                "summary": "Edit User On Workspace",
+                "description": "Update a user's role or permissions on a workspace.",
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "user_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string"
+                                    },
+                                    "admin": {
+                                        "type": "boolean"
+                                    },
+                                    "custom_role_id": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "removeUserFromWorkspace",
+                "summary": "Remove User From Workspace",
+                "description": "Remove a user from the workspace.",
+                "tags": [
+                    "Users"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "team_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "user_id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User removed from workspace"
+                    }
+                }
+            }
+        },
+        "/list/{list_id}/task/{task_id}": {
+            "post": {
+                "operationId": "addTaskToList",
+                "summary": "Add Task To List",
+                "description": "Add an existing task to a list (for tasks in multiple lists).",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task added to list"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "removeTaskFromList",
+                "summary": "Remove Task From List",
+                "description": "Remove a task from a list.",
+                "tags": [
+                    "Lists"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "list_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task removed from list"
+                    }
+                }
+            }
+        },
+        "/task/{task_id}/time_in_status": {
+            "get": {
+                "operationId": "getTaskTimeInStatus",
+                "summary": "Get Task Time In Status",
+                "description": "Get how long a task has been in each status.",
+                "tags": [
+                    "Tasks"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "task_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Time spent in each status"
+                    }
+                }
+            }
+        },
+        "/comment/{comment_id}/reply": {
+            "get": {
+                "operationId": "getThreadedComments",
+                "summary": "Get Threaded Comments",
+                "description": "Get replies to a comment.",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "comment_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of threaded comments"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createThreadedComment",
+                "summary": "Create Threaded Comment",
+                "description": "Reply to a comment.",
+                "tags": [
+                    "Comments"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "comment_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "comment_text"
+                                ],
+                                "properties": {
+                                    "comment_text": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reply created"
                     }
                 }
             }
