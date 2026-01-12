@@ -1,0 +1,16 @@
+---
+# LibreChat PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: librechat-pvc
+  namespace: apps
+  labels:
+    app: librechat
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 5Gi

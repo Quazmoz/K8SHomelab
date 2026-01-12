@@ -1,0 +1,132 @@
+---
+# LibreChat Deployment
+# Self-hosted AI chat interface with MCP support
+# Docs: https://librechat.ai
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: librechat
+  namespace: apps
+  labels:
+    app: librechat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: librechat
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: librechat
+    spec:
+      # Run on x86 node (not ARM or Oracle)
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: NotIn
+                values:
+                - arm
+                - arm64
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+      - name: librechat
+        image: ghcr.io/danny-avila/librechat:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3080
+          name: http
+        env:
+        # MongoDB connection (required)
+        - name: MONGO_URI
+          value: "mongodb://mongodb.apps.svc.cluster.local:27017/librechat"
+        # Security tokens - CHANGE THESE IN PRODUCTION
+        # Generate with: openssl rand -hex 32
+        - name: CREDS_KEY
+          value: "f34be427ebb29de8d88c107a71546019aff7c8e3b53e7e7c1975e26a8a4f4921"
+        - name: CREDS_IV
+          value: "e2341419ec3dd3d19bcf3b10f"
+        - name: JWT_SECRET
+          value: "16f8c0ef4a5d391b26034086c628469d3f9f497f08163ab9b40137092f2909ef"
+        - name: JWT_REFRESH_SECRET
+          value: "eaa5191f2914e30b9387fd84e254e4ba6fc51571f8d99e6e3e99fc5f71d3dda7"
+        # Application settings
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "3080"
+        - name: ALLOW_REGISTRATION
+          value: "true"
+        - name: ALLOW_SOCIAL_LOGIN
+          value: "false"
+        - name: ALLOW_SOCIAL_REGISTRATION
+          value: "false"
+        # Disable features not needed initially
+        - name: SEARCH
+          value: "false"
+        # Debug mode (set to false in production)
+        - name: DEBUG_LOGGING
+          value: "false"
+        volumeMounts:
+        - name: librechat-data
+          mountPath: /app/client/public/images
+        - name: librechat-config
+          mountPath: /app/librechat.yaml
+          subPath: librechat.yaml
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+      volumes:
+      - name: librechat-data
+        persistentVolumeClaim:
+          claimName: librechat-pvc
+      - name: librechat-config
+        configMap:
+          name: librechat-config
+
+---
+# LibreChat Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: librechat
+  namespace: apps
+  labels:
+    app: librechat
+spec:
+  type: ClusterIP
+  selector:
+    app: librechat
+  ports:
+  - name: http
+    port: 3080
+    targetPort: 3080
+    protocol: TCP

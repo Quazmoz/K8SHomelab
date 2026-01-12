@@ -24,6 +24,8 @@ resources:
   - ./authentik
   - ./freshrss
   - ./qdrant
+  - ./mongodb
+  - ./librechat
 
 
 

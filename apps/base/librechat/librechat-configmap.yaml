@@ -1,0 +1,76 @@
+---
+# LibreChat Configuration
+# MCP servers and application settings
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: librechat-config
+  namespace: apps
+  labels:
+    app: librechat
+data:
+  librechat.yaml: |
+    version: 1.2.1
+    cache: true
+    
+    # Interface settings
+    interface:
+      privacyPolicy:
+        externalUrl: ""
+        openNewTab: true
+      termsOfService:
+        externalUrl: ""
+        openNewTab: true
+    
+    # Rate limiting
+    rateLimits:
+      fileUploads:
+        ipMax: 100
+        ipWindowInMinutes: 60
+        userMax: 50
+        userWindowInMinutes: 60
+      conversationsImport:
+        ipMax: 100
+        ipWindowInMinutes: 60
+        userMax: 50
+        userWindowInMinutes: 60
+    
+    # Registration settings
+    registration:
+      socialLogins: []
+      allowedDomains: []
+    
+    # MCP Server Configuration
+    # These connect to your existing MCP servers in the cluster
+    mcpServers:
+      # Kubernetes cluster management
+      kubernetes:
+        type: sse
+        url: http://mcp-kubernetes.apps.svc.cluster.local:8080/sse
+        timeout: 30000
+      
+      # Prometheus metrics
+      prometheus:
+        type: sse  
+        url: http://mcp-prometheus.apps.svc.cluster.local:8080/sse
+        timeout: 30000
+    
+    # Endpoints configuration
+    # Configure your AI providers here or in the UI
+    endpoints:
+      # OpenAI compatible endpoints
+      openAI:
+        # Disabled by default - configure in UI or add API key
+        disabled: true
+      
+      # Azure OpenAI
+      azureOpenAI:
+        disabled: true
+      
+      # Anthropic Claude
+      anthropic:
+        disabled: true
+      
+      # Google
+      google:
+        disabled: true
