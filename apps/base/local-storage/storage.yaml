@@ -7,6 +7,15 @@ provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Retain
 ---
+# A StorageClass for slower SD card storage (cold data)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: slow-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
 # The Persistent Volume for Prometheus data
 apiVersion: v1
 kind: PersistentVolume
@@ -205,10 +214,11 @@ spec:
 
 ---
 # The Persistent Volume for LLaMA Factory data (models, datasets, outputs)
+# Uses slow-storage on SD card for cold model storage
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: llamafactory-local-pv
+  name: llamafactory-slow-pv
 spec:
   capacity:
     storage: 50Gi
@@ -216,9 +226,9 @@ spec:
   accessModes:
   - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: local-storage
+  storageClassName: slow-storage
   local:
-    path: /mnt/k8s-data/llamafactory
+    path: /mnt/sdcard/k8s-data/llamafactory
   nodeAffinity:
     required:
       nodeSelectorTerms:

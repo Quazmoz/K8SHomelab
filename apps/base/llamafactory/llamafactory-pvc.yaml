@@ -6,8 +6,8 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-storage
-  volumeName: llamafactory-local-pv
+  storageClassName: slow-storage
+  volumeName: llamafactory-slow-pv
   resources:
     requests:
       storage: 50Gi
