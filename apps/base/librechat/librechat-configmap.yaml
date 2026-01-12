@@ -55,22 +55,6 @@ data:
         url: http://mcp-prometheus.apps.svc.cluster.local:8080/sse
         timeout: 30000
     
-    # Endpoints configuration
-    # Configure your AI providers here or in the UI
-    endpoints:
-      # OpenAI compatible endpoints
-      openAI:
-        # Disabled by default - configure in UI or add API key
-        disabled: true
-      
-      # Azure OpenAI
-      azureOpenAI:
-        disabled: true
-      
-      # Anthropic Claude
-      anthropic:
-        disabled: true
-      
-      # Google
-      google:
-        disabled: true
+    # Note: Configure AI endpoints (OpenAI, Azure, Anthropic, etc.) via the LibreChat UI
+    # Settings -> AI Endpoints after first login
+

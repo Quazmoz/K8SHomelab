@@ -73,6 +73,12 @@ data:
             description: RSS Intelligence
             siteMonitor: http://freshrss.apps.svc.cluster.local:80
             statusStyle: dot
+        - LibreChat:
+            href: http://librechat.k8s.local
+            icon: mdi-chat-processing
+            description: Alt LLM Interface
+            siteMonitor: http://librechat.apps.svc.cluster.local:3080
+            statusStyle: dot
 
     - MCP Tools:
         - Azure:
@@ -417,7 +423,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v12-portfolio-bottom"
+        checksum/config: "v13-librechat"
     spec:
       serviceAccountName: homepage
       nodeSelector:
