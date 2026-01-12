@@ -881,12 +881,52 @@
             "get": {
                 "operationId": "getWorkspaces",
                 "summary": "Get Workspaces (Teams)",
+                "description": "Returns all workspaces (teams) accessible to the authenticated user. Each workspace has an 'id' field that should be used as 'team_id' when calling other endpoints like getSpaces. To list spaces in a workspace, use the getSpaces endpoint (/team/{team_id}/space) with the workspace id.",
                 "tags": [
                     "Teams"
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of workspaces"
+                        "description": "Object containing array of workspaces. Use the workspace 'id' as 'team_id' to get spaces via getSpaces endpoint.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "teams": {
+                                            "type": "array",
+                                            "description": "Array of workspaces. Each workspace id can be used to get spaces via /team/{team_id}/space",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Workspace ID. Use this as team_id when calling getSpaces and other team endpoints"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Workspace name"
+                                                    },
+                                                    "color": {
+                                                        "type": "string"
+                                                    },
+                                                    "avatar": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "members": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -918,7 +958,8 @@
         "/team/{team_id}/space": {
             "get": {
                 "operationId": "getSpaces",
-                "summary": "Get Spaces",
+                "summary": "Get Spaces in Workspace",
+                "description": "Returns all spaces in the specified workspace. First call getWorkspaces to get workspace IDs, then use those IDs here as team_id. Spaces are the top-level organizational containers within a workspace.",
                 "tags": [
                     "Spaces"
                 ],
@@ -927,6 +968,7 @@
                         "in": "path",
                         "name": "team_id",
                         "required": true,
+                        "description": "The workspace ID from getWorkspaces response (the 'id' field of a workspace/team)",
                         "schema": {
                             "type": "string"
                         }
@@ -934,14 +976,61 @@
                     {
                         "in": "query",
                         "name": "archived",
+                        "description": "Include archived spaces",
                         "schema": {
-                            "type": "boolean"
+                            "type": "boolean",
+                            "default": false
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of spaces"
+                        "description": "Object containing array of spaces in the workspace",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "spaces": {
+                                            "type": "array",
+                                            "description": "Array of spaces in this workspace",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "description": "Space ID. Use this as space_id for folder/list operations"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Space name"
+                                                    },
+                                                    "private": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "statuses": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "$ref": "#/components/schemas/Status"
+                                                        }
+                                                    },
+                                                    "multiple_assignees": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "features": {
+                                                        "type": "object",
+                                                        "description": "Enabled features for this space"
+                                                    },
+                                                    "archived": {
+                                                        "type": "boolean"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1530,7 +1619,8 @@
         "/team/{team_id}/task": {
             "get": {
                 "operationId": "searchTeamTasks",
-                "summary": "Search Team Tasks",
+                "summary": "Search/Filter Team Tasks",
+                "description": "Search and filter all tasks in a workspace. Use assignees[] to filter by user ID. First call getWorkspaces to get team_id, and getTeamMembers to get user IDs for filtering. Without filters, this returns ALL tasks which can be slow - always use filters when possible.",
                 "tags": [
                     "Tasks"
                 ],
@@ -1539,6 +1629,7 @@
                         "in": "path",
                         "name": "team_id",
                         "required": true,
+                        "description": "Workspace ID from getWorkspaces",
                         "schema": {
                             "type": "string"
                         }
@@ -1546,14 +1637,211 @@
                     {
                         "in": "query",
                         "name": "page",
+                        "description": "Page number for pagination (starts at 0)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "order_by",
+                        "description": "Order results by field",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "created",
+                                "updated",
+                                "due_date"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "reverse",
+                        "description": "Reverse the order",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "subtasks",
+                        "description": "Include subtasks",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "space_ids[]",
+                        "description": "Filter by space IDs",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project_ids[]",
+                        "description": "Filter by folder IDs",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "list_ids[]",
+                        "description": "Filter by list IDs",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "statuses[]",
+                        "description": "Filter by status names (e.g., 'open', 'in progress', 'complete')",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "include_closed",
+                        "description": "Include closed/completed tasks",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "assignees[]",
+                        "description": "Filter by assignee user IDs. Get user IDs from getTeamMembers endpoint.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "tags[]",
+                        "description": "Filter by tag names",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "due_date_gt",
+                        "description": "Due date greater than (Unix timestamp in ms)",
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "due_date_lt",
+                        "description": "Due date less than (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_created_gt",
+                        "description": "Created after (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_created_lt",
+                        "description": "Created before (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_updated_gt",
+                        "description": "Updated after (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_updated_lt",
+                        "description": "Updated before (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_done_gt",
+                        "description": "Completed after (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_done_lt",
+                        "description": "Completed before (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "custom_fields[]",
+                        "description": "Filter by custom field values as JSON",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of tasks"
+                        "description": "Array of tasks matching the filters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tasks": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Task"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
