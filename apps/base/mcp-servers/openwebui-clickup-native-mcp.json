@@ -1,0 +1,14 @@
+{
+    "type": "openapi",
+    "url": "http://mcpo.apps.svc.cluster.local:8000/clickup-native",
+    "path": "/openapi.json",
+    "auth_type": "",
+    "key": "",
+    "config": {
+        "enable": true
+    },
+    "info": {
+        "name": "ClickUp Native MCP",
+        "description": "Custom ClickUp MCP server for task and project management"
+    }
+}

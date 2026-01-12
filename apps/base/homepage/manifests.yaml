@@ -112,6 +112,16 @@ data:
             icon: mdi-clipboard-check
             description: Project Mgmt
             statusStyle: dot
+        - ClickUp Native:
+            href: http://mcpo.k8s.local/clickup-native/docs
+            icon: mdi-clipboard-check-outline
+            description: Custom MCP
+            statusStyle: dot
+        - MCPO:
+            href: http://mcpo.k8s.local
+            icon: mdi-server-network
+            description: MCP Gateway
+            statusStyle: dot
         - FreshRSS:
             href: http://mcpo.k8s.local/freshrss/docs
             icon: si-rss
@@ -423,7 +433,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v13-librechat"
+        checksum/config: "v14-clickup-native"
     spec:
       serviceAccountName: homepage
       nodeSelector:
