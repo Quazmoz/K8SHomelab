@@ -3,7 +3,7 @@
     "info": {
         "title": "ClickUp API v2",
         "version": "2.0.0",
-        "description": "ClickUp API for task and project management"
+        "description": "ClickUp API for task and project management. IMPORTANT WORKFLOWS: 1) To get tasks for a specific person: First call getWorkspaces to get workspace/team IDs, then call getTeamMembers with that team_id to find the user's numeric ID by their name, then call searchTeamTasks with assignees[] set to that user ID. 2) To list spaces: Call getWorkspaces first, then getSpaces with the team_id. 3) Hierarchy: Workspace (team) > Space > Folder > List > Task. Always complete the full workflow - do not stop after finding a user, proceed to fetch their tasks."
     },
     "servers": [
         {
@@ -1751,7 +1751,7 @@
             "get": {
                 "operationId": "searchTeamTasks",
                 "summary": "Search/Filter Team Tasks",
-                "description": "Search and filter all tasks in a workspace. Use assignees[] to filter by user ID. First call getWorkspaces to get team_id, and getTeamMembers to get user IDs for filtering. Without filters, this returns ALL tasks which can be slow - always use filters when possible.",
+                "description": "REQUIRED TOOL for getting tasks assigned to a user. WORKFLOW: 1) Call getWorkspaces to get team_id, 2) Call getTeamMembers with team_id to find the user's numeric ID from their name, 3) Call THIS ENDPOINT (searchTeamTasks) with assignees[] set to that user ID. You MUST complete all 3 steps when asked about a person's tasks. Example: For 'get tasks for John', find John's ID from getTeamMembers, then call searchTeamTasks with assignees[]=[john_id]. Without the assignees filter this returns ALL tasks which is slow.",
                 "tags": [
                     "Tasks"
                 ],
@@ -1981,7 +1981,7 @@
             "get": {
                 "operationId": "getTeamMembers",
                 "summary": "Get Team Members",
-                "description": "Get all members (users) in a workspace. Use member 'id' values as user IDs when filtering tasks by assignee in searchTeamTasks or getTasksInList.",
+                "description": "Get all members (users) in a workspace. IMPORTANT: When asked for tasks by person name, find their numeric 'id' from this response, then IMMEDIATELY call searchTeamTasks with assignees[] set to that ID. Do NOT stop after finding the user - proceed to get their tasks.",
                 "tags": [
                     "Members"
                 ],
