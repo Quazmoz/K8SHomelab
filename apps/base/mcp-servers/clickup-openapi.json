@@ -1361,6 +1361,7 @@
             "get": {
                 "operationId": "getTasksInList",
                 "summary": "Get Tasks in List",
+                "description": "Get all tasks in a list. Use filters to narrow down results. Without filters this returns all tasks which may be slow.",
                 "tags": [
                     "Tasks"
                 ],
@@ -1369,6 +1370,7 @@
                         "in": "path",
                         "name": "list_id",
                         "required": true,
+                        "description": "The list ID",
                         "schema": {
                             "type": "string"
                         }
@@ -1376,22 +1378,151 @@
                     {
                         "in": "query",
                         "name": "page",
+                        "description": "Page number for pagination (starts at 0)",
+                        "schema": {
+                            "type": "integer",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "order_by",
+                        "description": "Order results by field",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "created",
+                                "updated",
+                                "due_date"
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "reverse",
+                        "description": "Reverse the order",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "subtasks",
+                        "description": "Include subtasks in response",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "statuses[]",
+                        "description": "Filter by status names",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "include_closed",
+                        "description": "Include closed/completed tasks",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "assignees[]",
+                        "description": "Filter by assignee user IDs. Get user IDs from getTeamMembers.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "tags[]",
+                        "description": "Filter by tag names",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "due_date_gt",
+                        "description": "Due date greater than (Unix timestamp in ms)",
                         "schema": {
                             "type": "integer"
                         }
                     },
                     {
                         "in": "query",
-                        "name": "include_closed",
+                        "name": "due_date_lt",
+                        "description": "Due date less than (Unix timestamp in ms)",
                         "schema": {
-                            "type": "boolean"
-                        },
-                        "description": "Set to true to include completed tasks"
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_created_gt",
+                        "description": "Created after (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_created_lt",
+                        "description": "Created before (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_updated_gt",
+                        "description": "Updated after (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "date_updated_lt",
+                        "description": "Updated before (Unix timestamp in ms)",
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of tasks"
+                        "description": "Array of tasks matching the filters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "tasks": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Task"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -1850,6 +1981,7 @@
             "get": {
                 "operationId": "getTeamMembers",
                 "summary": "Get Team Members",
+                "description": "Get all members (users) in a workspace. Use member 'id' values as user IDs when filtering tasks by assignee in searchTeamTasks or getTasksInList.",
                 "tags": [
                     "Members"
                 ],
@@ -1858,6 +1990,7 @@
                         "in": "path",
                         "name": "team_id",
                         "required": true,
+                        "description": "Workspace ID from getWorkspaces",
                         "schema": {
                             "type": "string"
                         }
@@ -1865,7 +1998,55 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Array of team members"
+                        "description": "Object containing array of workspace members",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "members": {
+                                            "type": "array",
+                                            "description": "Array of workspace members. Use member 'id' as assignee filter.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "user": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "description": "User ID. Use this for assignee filtering in search endpoints"
+                                                            },
+                                                            "username": {
+                                                                "type": "string",
+                                                                "description": "User's display name"
+                                                            },
+                                                            "email": {
+                                                                "type": "string"
+                                                            },
+                                                            "color": {
+                                                                "type": "string"
+                                                            },
+                                                            "profilePicture": {
+                                                                "type": "string",
+                                                                "nullable": true
+                                                            },
+                                                            "initials": {
+                                                                "type": "string"
+                                                            },
+                                                            "role": {
+                                                                "type": "integer",
+                                                                "description": "Role type (1=owner, 2=admin, 3=member, 4=guest)"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
