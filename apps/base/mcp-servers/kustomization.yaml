@@ -14,3 +14,5 @@ resources:
   - groupme-backend.yaml
   # Tanium MCP server
   - tanium-mcp-server.yaml
+  # Custom ClickUp MCP server
+  - clickup-mcp-server.yaml

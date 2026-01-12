@@ -79,6 +79,15 @@ data:
             "--sse",
             "http://tanium-mcp-server.apps.svc.cluster.local:5000/sse"
           ]
+        },
+        "clickup-native": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "supergateway",
+            "--sse",
+            "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"
+          ]
         }
       }
     }
