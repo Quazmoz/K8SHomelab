@@ -1,9 +1,9 @@
 {
     "openapi": "3.0.3",
     "info": {
-        "title": "ClickUp API v2",
-        "version": "2.0.0",
-        "description": "ClickUp API for task and project management. IMPORTANT WORKFLOWS: 1) To get tasks for a specific person: First call getWorkspaces to get workspace/team IDs, then call getTeamMembers with that team_id to find the user's numeric ID by their name, then call searchTeamTasks with assignees[] set to that user ID. 2) To list spaces: Call getWorkspaces first, then getSpaces with the team_id. 3) Hierarchy: Workspace (team) > Space > Folder > List > Task. Always complete the full workflow - do not stop after finding a user, proceed to fetch their tasks."
+        "title": "ClickUp MCP Server",
+        "version": "2.1.0",
+        "description": "ClickUp MCP server usage rules:\n\nUse ClickUp Tools: When handling requests related to ClickUp, task management, project management, or to-do lists, always use your ClickUp tools.\n\nTask Query Workflow: When asked about tasks for a specific person, ALWAYS complete this 3-step workflow: 1) Call getWorkspaces to get workspace/team IDs, 2) Call getTeamMembers with team_id to find the user's numeric ID by their name, 3) Call searchTeamTasks with assignees[] set to that user ID. Do NOT stop after finding the user - proceed to fetch their tasks.\n\nHierarchy Understanding: ClickUp uses this hierarchy: Workspace (team) > Space > Folder > List > Task. Navigate down the hierarchy to find specific items.\n\nUse Filters: When searching tasks, always use filters (assignees, statuses, dates) to avoid slow responses. Never call searchTeamTasks without filters unless specifically asked for all tasks.\n\nCreating Tasks: To create a task, first get the list_id from getListsInFolder or getListsInSpace, then call createTaskInList with the list_id and task details.\n\nAssignee IDs: User IDs for assignees must be numeric integers obtained from getTeamMembers. Names cannot be used directly - always look up the ID first."
     },
     "servers": [
         {
@@ -1732,6 +1732,7 @@
             "post": {
                 "operationId": "createTaskInList",
                 "summary": "Create Task in List",
+                "description": "Create a new task in a list. The list_id can be obtained from getListsInFolder or getListsInSpace. Required field: name. Optional: description, priority (1=urgent, 4=low), due_date (Unix timestamp in ms), assignees (array of user IDs from getTeamMembers).",
                 "tags": [
                     "Tasks"
                 ],
@@ -1795,7 +1796,8 @@
         "/task/{task_id}": {
             "get": {
                 "operationId": "getTask",
-                "summary": "Get Task",
+                "summary": "Get Task Details",
+                "description": "Get full details of a single task by its ID. Returns all task properties including name, description, status, assignees, due dates, custom fields, etc. Use this after searchTeamTasks to get complete details of a specific task.",
                 "tags": [
                     "Tasks"
                 ],
@@ -1818,6 +1820,7 @@
             "put": {
                 "operationId": "updateTask",
                 "summary": "Update Task",
+                "description": "Update task properties like name, description, status, priority, due date, or assignees. Only include fields you want to change in the request body.",
                 "tags": [
                     "Tasks"
                 ],
@@ -1866,6 +1869,7 @@
             "delete": {
                 "operationId": "deleteTask",
                 "summary": "Delete Task",
+                "description": "Permanently delete a task. This action cannot be undone. Use with caution.",
                 "tags": [
                     "Tasks"
                 ],
