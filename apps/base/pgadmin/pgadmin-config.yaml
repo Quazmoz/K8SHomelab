@@ -13,7 +13,7 @@ data:
           "Host": "postgres-service.apps.svc.cluster.local",
           "Port": 5432,
           "MaintenanceDB": "postgres",
-          "Username": "postgres",
+          "Username": "grafana_user",
           "SSLMode": "prefer"
         }
       }
