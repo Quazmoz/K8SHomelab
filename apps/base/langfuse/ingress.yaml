@@ -6,12 +6,8 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
-    # Homepage integration
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/group: "AI & Automation"
-    gethomepage.dev/name: "Langfuse"
-    gethomepage.dev/icon: "langfuse"
-    gethomepage.dev/description: "LLM Engineering Platform"
+    # Homepage integration - disabled (Langfuse is for backend observability)
+    gethomepage.dev/enabled: "false"
 spec:
   rules:
   - host: langfuse.k8s.local
