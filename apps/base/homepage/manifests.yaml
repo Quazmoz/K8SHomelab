@@ -439,7 +439,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v15-remove-langfuse"
+        checksum/config: "v16-add-langfuse-devops"
     spec:
       serviceAccountName: homepage
       nodeSelector:
