@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: langfuse
+  namespace: apps
+  labels:
+    app: langfuse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: langfuse
+  template:
+    metadata:
+      labels:
+        app: langfuse
+    spec:
+      containers:
+      - name: langfuse
+        image: langfuse/langfuse:2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://langfuse:langfuse123@postgres.apps.svc.cluster.local:5432/langfuse"
+        - name: NEXTAUTH_URL
+          value: "http://langfuse.k8s.local"
+        - name: NEXTAUTH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-secrets
+              key: NEXTAUTH_SECRET
+        - name: SALT
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-secrets
+              key: SALT
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-secrets
+              key: ENCRYPTION_KEY
+        # Optional: Enable Redis for async text/analytics
+        - name: REDIS_HOST
+          value: "redis.apps.svc.cluster.local"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_AUTH
+          value: "" # Empty if no password
+        
+        # Initial Setup (Auto-provision admin)
+        - name: LANGFUSE_INIT_ORG_ID
+          value: "my-homelab-org"
+        - name: LANGFUSE_INIT_ORG_NAME
+          value: "My Homelab"
+        - name: LANGFUSE_INIT_PROJECT_ID
+          value: "homelab-project"
+        - name: LANGFUSE_INIT_PROJECT_NAME
+          value: "Homelab"
+        - name: LANGFUSE_INIT_PROJECT_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-secrets
+              key: LANGFUSE_INIT_PROJECT_PUBLIC_KEY
+        - name: LANGFUSE_INIT_PROJECT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-secrets
+              key: LANGFUSE_INIT_PROJECT_SECRET_KEY
+        - name: LANGFUSE_INIT_USER_EMAIL
+          value: "admin@k8s.local"
+        - name: LANGFUSE_INIT_USER_NAME
+          value: "Admin"
+        - name: LANGFUSE_INIT_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: langfuse-secrets
+              key: LANGFUSE_INIT_USER_PASSWORD
+        
+        # Telemetry
+        - name: TELEMETRY_ENABLED
+          value: "false"
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /api/public/health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/public/health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5

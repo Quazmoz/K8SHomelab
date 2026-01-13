@@ -79,6 +79,12 @@ data:
             description: Alt LLM Interface
             siteMonitor: http://librechat.apps.svc.cluster.local:3080
             statusStyle: dot
+        - Langfuse:
+            href: http://langfuse.k8s.local
+            icon: si-langfuse
+            description: LLM Engineering Platform
+            siteMonitor: http://langfuse.apps.svc.cluster.local:3000/api/public/health
+            statusStyle: dot
 
     - MCP Tools:
         - Azure:

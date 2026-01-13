@@ -41,4 +41,11 @@ data:
     GRANT ALL PRIVILEGES ON DATABASE freshrss TO freshrss;
     ALTER DATABASE freshrss OWNER TO freshrss;
 
+    -- Create Langfuse database and user
+    \c postgres
+    CREATE DATABASE langfuse;
+    CREATE USER langfuse WITH PASSWORD 'langfuse123';
+    GRANT ALL PRIVILEGES ON DATABASE langfuse TO langfuse;
+    ALTER DATABASE langfuse OWNER TO langfuse;
+
 
