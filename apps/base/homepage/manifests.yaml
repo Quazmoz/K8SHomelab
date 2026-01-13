@@ -184,6 +184,12 @@ data:
             description: Identity Provider
             siteMonitor: http://authentik-server.apps.svc.cluster.local:80
             statusStyle: dot
+        - Langfuse:
+            href: http://langfuse.k8s.local
+            icon: mdi-chart-timeline-variant
+            description: LLM Observability
+            siteMonitor: http://langfuse.apps.svc.cluster.local:3000/api/public/health
+            statusStyle: dot
 
     - Operations:
         - pgAdmin:
