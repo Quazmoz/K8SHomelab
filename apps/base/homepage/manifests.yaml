@@ -81,7 +81,7 @@ data:
             statusStyle: dot
         - Langfuse:
             href: http://langfuse.k8s.local
-            icon: langfuse.png
+            icon: mdi-chart-timeline-variant
             description: LLM Engineering Platform
             siteMonitor: http://langfuse.apps.svc.cluster.local:3000/api/public/health
             statusStyle: dot
