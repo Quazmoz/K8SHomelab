@@ -54,6 +54,8 @@ spec:
               value: "False"
             - name: PGADMIN_CONFIG_LOGIN_BANNER
               value: '"Homelab PostgreSQL Admin"'
+            - name: PGADMIN_SERVER_JSON_FILE
+              value: "/config/servers.json"
           resources:
             requests:
               memory: "64Mi"
@@ -73,3 +75,10 @@ spec:
               port: 80
             initialDelaySeconds: 30
             periodSeconds: 30
+          volumeMounts:
+            - name: servers-config
+              mountPath: /config
+      volumes:
+        - name: servers-config
+          configMap:
+            name: pgadmin-config
