@@ -27,6 +27,7 @@ resources:
   - ./mongodb
   - ./librechat
   - ./langfuse
+  - ./alloy
 
 
 

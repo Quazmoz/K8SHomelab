@@ -1,0 +1,450 @@
+# OpenWebUI Operations Dashboard
+# Real-time operational metrics: tokens, latency, errors, model availability
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-openwebui-operations
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  openwebui-operations.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [
+        {
+          "asDropdown": false,
+          "icon": "dashboard",
+          "includeVars": false,
+          "keepTime": true,
+          "tags": ["openwebui"],
+          "title": "OpenWebUI Dashboards",
+          "type": "dashboards"
+        },
+        {
+          "asDropdown": false,
+          "icon": "external link",
+          "targetBlank": false,
+          "title": "🏠 Overview",
+          "type": "link",
+          "url": "/d/homelab-overview"
+        }
+      ],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🚀 OpenWebUI Operations</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.9);'>Real-time Metrics • Token Usage • Latency • Errors • Model Performance</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 5, "w": 6, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "Total Tokens Used",
+          "description": "Total token consumption from Langfuse traces",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COALESCE(SUM((usage_details->>'input')::integer + (usage_details->>'output')::integer), 0) as tokens FROM observations WHERE type = 'GENERATION'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#3b82f6" },
+              "unit": "locale",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "blue", "value": null },
+                  { "color": "green", "value": 10000 },
+                  { "color": "yellow", "value": 100000 },
+                  { "color": "orange", "value": 500000 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value",
+            "graphMode": "area"
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 3 },
+          "type": "gauge",
+          "title": "Model Availability",
+          "description": "OpenWebUI service uptime",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "avg_over_time(up{job=\"kubernetes-pods\", pod=~\"openwebui.*\"}[24h]) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 90 },
+                  { "color": "green", "value": 99 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 3 },
+          "type": "stat",
+          "title": "Avg Response Latency",
+          "description": "Average LLM response time from Langfuse",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT ROUND(AVG(EXTRACT(EPOCH FROM (end_time - start_time)) * 1000)) as latency_ms FROM observations WHERE type = 'GENERATION' AND end_time IS NOT NULL AND start_time > NOW() - INTERVAL '24 hours'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 3000 },
+                  { "color": "orange", "value": 10000 },
+                  { "color": "red", "value": 30000 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 5, "w": 6, "x": 18, "y": 3 },
+          "type": "stat",
+          "title": "Error Rate (24h)",
+          "description": "Errors from Loki logs",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"openwebui\"} |~ \"error|ERROR|Error|exception|Exception\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 10 },
+                  { "color": "orange", "value": 50 },
+                  { "color": "red", "value": 100 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 5, "w": 6, "x": 0, "y": 8 },
+          "type": "stat",
+          "title": "Active Users (24h)",
+          "description": "Users with activity in last 24 hours",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(DISTINCT user_id) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#f97316" }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 8 },
+          "type": "stat",
+          "title": "Chats Today",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#22c55e" }
+            }
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 8 },
+          "type": "stat",
+          "title": "Generations Today",
+          "description": "LLM generation calls from Langfuse",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM observations WHERE type = 'GENERATION' AND start_time > NOW() - INTERVAL '24 hours'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#a855f7" }
+            }
+          }
+        },
+        {
+          "id": 9,
+          "gridPos": { "h": 5, "w": 6, "x": 18, "y": 8 },
+          "type": "stat",
+          "title": "Total Traces",
+          "description": "All traces in Langfuse",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(*) FROM traces",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#06b6d4" }
+            }
+          }
+        },
+        {
+          "id": 10,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+          "type": "timeseries",
+          "title": "Response Latency Trend",
+          "description": "Average response time over time",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT date_trunc('hour', start_time) as time, ROUND(AVG(EXTRACT(EPOCH FROM (end_time - start_time)) * 1000)) as \"Latency (ms)\" FROM observations WHERE type = 'GENERATION' AND end_time IS NOT NULL AND start_time > NOW() - INTERVAL '7 days' GROUP BY date_trunc('hour', start_time) ORDER BY time",
+              "format": "time_series"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "color": { "mode": "fixed", "fixedColor": "#8b5cf6" },
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2,
+                "gradientMode": "opacity",
+                "spanNulls": true
+              }
+            }
+          }
+        },
+        {
+          "id": 11,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+          "type": "timeseries",
+          "title": "Error Rate Trend",
+          "description": "Errors over time from logs",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by () (count_over_time({app=\"openwebui\"} |~ \"error|ERROR|exception\" [$__interval]))",
+              "legendFormat": "Errors",
+              "queryType": "range"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#ef4444" },
+              "custom": {
+                "fillOpacity": 30,
+                "lineWidth": 2,
+                "gradientMode": "opacity",
+                "drawStyle": "bars"
+              }
+            }
+          }
+        },
+        {
+          "id": 12,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
+          "type": "piechart",
+          "title": "Top Models by Usage",
+          "description": "Most used models from Langfuse",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COALESCE(model, 'Unknown') as model, COUNT(*) as count FROM observations WHERE type = 'GENERATION' GROUP BY model ORDER BY count DESC LIMIT 10",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right", "showLegend": true },
+            "pieType": "donut",
+            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": true },
+            "displayLabels": ["percent"]
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" }
+            }
+          }
+        },
+        {
+          "id": 13,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
+          "type": "barchart",
+          "title": "Token Usage by Model",
+          "description": "Token consumption per model",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COALESCE(model, 'Unknown') as model, SUM(COALESCE((usage_details->>'input')::integer, 0) + COALESCE((usage_details->>'output')::integer, 0)) as tokens FROM observations WHERE type = 'GENERATION' GROUP BY model ORDER BY tokens DESC LIMIT 8",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "orientation": "horizontal",
+            "showValue": "always"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "continuous-BlPu" }
+            }
+          }
+        },
+        {
+          "id": 14,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 29 },
+          "type": "timeseries",
+          "title": "Token Consumption Over Time",
+          "description": "Daily token usage trend",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT date_trunc('day', start_time) as time, SUM(COALESCE((usage_details->>'input')::integer, 0)) as \"Input Tokens\", SUM(COALESCE((usage_details->>'output')::integer, 0)) as \"Output Tokens\" FROM observations WHERE type = 'GENERATION' AND start_time > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', start_time) ORDER BY time",
+              "format": "time_series"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "locale",
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2,
+                "stacking": { "mode": "normal" },
+                "gradientMode": "opacity"
+              }
+            },
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Input Tokens" },
+                "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#3b82f6" } }]
+              },
+              {
+                "matcher": { "id": "byName", "options": "Output Tokens" },
+                "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#22c55e" } }]
+              }
+            ]
+          }
+        },
+        {
+          "id": 15,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 37 },
+          "type": "table",
+          "title": "Recent LLM Generations",
+          "description": "Latest model calls from Langfuse",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-Langfuse" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT start_time as \"Time\", COALESCE(model, 'Unknown') as \"Model\", COALESCE((usage_details->>'input')::integer, 0) as \"Input Tokens\", COALESCE((usage_details->>'output')::integer, 0) as \"Output Tokens\", ROUND(EXTRACT(EPOCH FROM (end_time - start_time)) * 1000)::integer as \"Latency (ms)\", level as \"Level\" FROM observations WHERE type = 'GENERATION' ORDER BY start_time DESC LIMIT 20",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Level" },
+                "properties": [
+                  { "id": "custom.width", "value": 80 },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      { "type": "value", "options": { "ERROR": { "color": "red", "index": 0 } } },
+                      { "type": "value", "options": { "WARNING": { "color": "yellow", "index": 1 } } },
+                      { "type": "value", "options": { "DEBUG": { "color": "blue", "index": 2 } } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "refresh": "1m",
+      "schemaVersion": 39,
+      "tags": ["openwebui", "operations", "langfuse", "llm"],
+      "templating": { "list": [] },
+      "time": { "from": "now-24h", "to": "now" },
+      "title": "OpenWebUI Operations",
+      "uid": "openwebui-operations",
+      "version": 1
+    }

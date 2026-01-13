@@ -13,4 +13,5 @@ resources:
   - openwebui-audit.yaml
   - openwebui-advanced.yaml
   - homelab-overview.yaml
+  - openwebui-operations.yaml
 
