@@ -1,5 +1,5 @@
 # OpenWebUI Advanced Metrics Dashboard
-# Deep insights: model usage, message counts, feedback, files, knowledge bases, and tool usage
+# Deep insights: model usage, files, knowledge bases, and tool usage
 # Note: OpenWebUI stores timestamps as bigint (Unix epoch in nanoseconds)
 apiVersion: v1
 kind: ConfigMap
@@ -43,7 +43,7 @@ data:
           "title": "",
           "options": {
             "mode": "html",
-            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🧠 OpenWebUI Advanced Metrics</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.9);'>Model Usage • Knowledge Bases • Files • Feedback • Tools</p></div>"
+            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🧠 OpenWebUI Advanced Metrics</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.9);'>Models • Knowledge Bases • Files • Tools</p></div>"
           }
         },
         {
@@ -55,7 +55,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM model WHERE is_active = true",
+              "rawSql": "SELECT COUNT(*) FROM model",
               "format": "table"
             }
           ],
@@ -170,7 +170,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COALESCE(chat::json->'models'->>0, 'Unknown') as model, COUNT(*) as count FROM chat WHERE chat IS NOT NULL GROUP BY chat::json->'models'->>0 ORDER BY count DESC LIMIT 10",
+              "rawSql": "SELECT COALESCE(chat->>'model', 'Unknown') as model, COUNT(*) as count FROM chat WHERE chat->>'model' IS NOT NULL GROUP BY chat->>'model' ORDER BY count DESC LIMIT 10",
               "format": "table"
             }
           ],
@@ -190,7 +190,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT REGEXP_REPLACE(COALESCE(chat::json->'models'->>0, 'Unknown'), '^models/', '') as model, COUNT(*) as chats FROM chat WHERE chat IS NOT NULL GROUP BY chat::json->'models'->>0 ORDER BY chats DESC LIMIT 8",
+              "rawSql": "SELECT REGEXP_REPLACE(COALESCE(chat->>'model', 'Unknown'), '^models/', '') as model, COUNT(*) as chats FROM chat WHERE chat->>'model' IS NOT NULL GROUP BY chat->>'model' ORDER BY chats DESC LIMIT 8",
               "format": "table"
             }
           ],
@@ -213,7 +213,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT name, base_model_id, CASE WHEN is_active THEN '✅' ELSE '❌' END as active, to_timestamp(created_at / 1000000000.0) as created FROM model ORDER BY created_at DESC LIMIT 15",
+              "rawSql": "SELECT name, base_model_id, to_timestamp(created_at / 1000000000.0) as created FROM model ORDER BY created_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -255,12 +255,12 @@ data:
           "id": 13,
           "gridPos": { "h": 4, "w": 6, "x": 6, "y": 23 },
           "type": "stat",
-          "title": "Chat Tags Used",
+          "title": "Unique Tags",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(DISTINCT tag_id) FROM chatidtag",
+              "rawSql": "SELECT COUNT(*) FROM tag",
               "format": "table"
             }
           ],
@@ -293,12 +293,12 @@ data:
           "id": 15,
           "gridPos": { "h": 4, "w": 6, "x": 18, "y": 23 },
           "type": "stat",
-          "title": "API Keys",
+          "title": "Functions",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM api_key",
+              "rawSql": "SELECT COUNT(*) FROM function",
               "format": "table"
             }
           ],
@@ -317,7 +317,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT k.id, k.name, k.description, (SELECT COUNT(*) FROM knowledge_file kf WHERE kf.knowledge_id = k.id) as files, to_timestamp(k.created_at / 1000000000.0) as created FROM knowledge k ORDER BY k.created_at DESC LIMIT 10",
+              "rawSql": "SELECT id, name, description, to_timestamp(created_at / 1000000000.0) as created FROM knowledge ORDER BY created_at DESC LIMIT 10",
               "format": "table"
             }
           ]
@@ -331,7 +331,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT filename, meta::json->>'content_type' as type, meta::json->>'size' as size, to_timestamp(created_at / 1000000000.0) as uploaded FROM file ORDER BY created_at DESC LIMIT 15",
+              "rawSql": "SELECT filename, to_timestamp(created_at / 1000000000.0) as uploaded FROM file ORDER BY created_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -353,21 +353,16 @@ data:
         {
           "id": 19,
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 43 },
-          "type": "piechart",
-          "title": "Tags Distribution",
+          "type": "table",
+          "title": "Tags",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT t.name, COUNT(ct.chat_id) as count FROM tag t LEFT JOIN chatidtag ct ON t.id = ct.tag_id GROUP BY t.name HAVING COUNT(ct.chat_id) > 0 ORDER BY count DESC LIMIT 10",
+              "rawSql": "SELECT name, user_id FROM tag ORDER BY name LIMIT 20",
               "format": "table"
             }
-          ],
-          "options": {
-            "legend": { "displayMode": "table", "placement": "right" },
-            "pieType": "pie",
-            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": true }
-          }
+          ]
         },
         {
           "id": 20,
@@ -397,5 +392,5 @@ data:
       "time": { "from": "now-30d", "to": "now" },
       "title": "OpenWebUI Advanced",
       "uid": "openwebui-advanced",
-      "version": 1
+      "version": 2
     }
