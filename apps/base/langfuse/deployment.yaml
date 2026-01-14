@@ -82,6 +82,21 @@ spec:
         # Telemetry
         - name: TELEMETRY_ENABLED
           value: "false"
+        
+        # ClickHouse Configuration (Required for v3)
+        - name: CLICKHOUSE_URL
+          value: "http://clickhouse.apps.svc.cluster.local:8123"
+        - name: CLICKHOUSE_MIGRATION_URL
+          value: "clickhouse://clickhouse.apps.svc.cluster.local:9000"
+        - name: CLICKHOUSE_USER
+          value: "default"
+        - name: CLICKHOUSE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-secrets
+              key: CLICKHOUSE_PASSWORD
+        - name: CLICKHOUSE_CLUSTER_ENABLED
+          value: "false"
 
         resources:
           requests:

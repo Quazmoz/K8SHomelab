@@ -220,6 +220,11 @@ data:
             icon: mdi-lan-connect
             description: Load Balancer
             statusStyle: dot
+        - ClickHouse:
+            icon: mdi-database-search
+            description: Analytics DB
+            siteMonitor: http://clickhouse.apps.svc.cluster.local:8123/ping
+            statusStyle: dot
 
     - Portfolio:
         - quinnfavo.com:
@@ -439,7 +444,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v16-add-langfuse-devops"
+        checksum/config: "v17-add-clickhouse"
     spec:
       serviceAccountName: homepage
       nodeSelector:

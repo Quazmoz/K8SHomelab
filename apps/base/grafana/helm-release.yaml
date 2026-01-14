@@ -77,6 +77,20 @@ spec:
             sslmode: "disable"
             maxOpenConns: 5
             maxIdleConns: 2
+        # ClickHouse for Langfuse v3 analytics
+        - name: ClickHouse-Langfuse
+          type: grafana-clickhouse-datasource
+          uid: ClickHouse-Langfuse
+          url: http://clickhouse.apps.svc.cluster.local:8123
+          jsonData:
+            defaultDatabase: default
+            username: default
+          secureJsonData:
+            password: "clickhouse123"
+
+    # --- Plugins ---
+    plugins:
+      - grafana-clickhouse-datasource
 
     # --- Persistence ---
     persistence:
