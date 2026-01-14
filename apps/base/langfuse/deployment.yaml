@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: langfuse
-        image: langfuse/langfuse:3
+        image: langfuse/langfuse:3.146.0
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
