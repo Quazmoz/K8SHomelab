@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: langfuse
-        image: langfuse/langfuse:3.146.0
+        image: langfuse/langfuse:3.85.0
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
@@ -50,34 +50,7 @@ spec:
         - name: REDIS_AUTH
           value: "" # Empty if no password
         
-        # Initial Setup (Auto-provision admin)
-        - name: LANGFUSE_INIT_ORG_ID
-          value: "my-homelab-org"
-        - name: LANGFUSE_INIT_ORG_NAME
-          value: "My Homelab"
-        - name: LANGFUSE_INIT_PROJECT_ID
-          value: "homelab-project"
-        - name: LANGFUSE_INIT_PROJECT_NAME
-          value: "Homelab"
-        - name: LANGFUSE_INIT_PROJECT_PUBLIC_KEY
-          valueFrom:
-            secretKeyRef:
-              name: langfuse-secrets
-              key: LANGFUSE_INIT_PROJECT_PUBLIC_KEY
-        - name: LANGFUSE_INIT_PROJECT_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: langfuse-secrets
-              key: LANGFUSE_INIT_PROJECT_SECRET_KEY
-        - name: LANGFUSE_INIT_USER_EMAIL
-          value: "admin@k8s.local"
-        - name: LANGFUSE_INIT_USER_NAME
-          value: "Admin"
-        - name: LANGFUSE_INIT_USER_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: langfuse-secrets
-              key: LANGFUSE_INIT_USER_PASSWORD
+        # Note: LANGFUSE_INIT_* vars removed - user already exists from v2
         
         # Telemetry
         - name: TELEMETRY_ENABLED
