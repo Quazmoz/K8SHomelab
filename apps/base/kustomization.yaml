@@ -20,14 +20,14 @@ resources:
   - ./openwebui
   - ./pgadmin
   - ./llamafactory
-  - ./uptime-kuma
-  - ./authentik
+#  - ./uptime-kuma  # Removed - not needed
+#  - ./authentik    # Removed - not needed
   - ./freshrss
   - ./qdrant
   - ./mongodb
   - ./librechat
-  - ./clickhouse
-  - ./langfuse
+#  - ./clickhouse   # Removed - was for Langfuse v3
+#  - ./langfuse     # Removed - using OpenWebUI native OTEL instead
   - ./alloy
 
 

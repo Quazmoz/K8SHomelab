@@ -76,10 +76,12 @@ spec:
           value: "prod"
         - name: ENABLE_SIGNUP
           value: "true"
-        # OpenTelemetry Metrics Export
+        # OpenTelemetry Metrics & Traces Export
         - name: ENABLE_OTEL
           value: "true"
         - name: ENABLE_OTEL_METRICS
+          value: "true"
+        - name: ENABLE_OTEL_TRACES
           value: "true"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://alloy.apps.svc.cluster.local:4317"

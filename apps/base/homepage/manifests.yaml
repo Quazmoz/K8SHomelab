@@ -178,18 +178,6 @@ data:
             description: Log Aggregation
             siteMonitor: http://loki.apps.svc.cluster.local:3100/ready
             statusStyle: dot
-        - Authentik:
-            href: http://auth.k8s.local
-            icon: authentik
-            description: Identity Provider
-            siteMonitor: http://authentik-server.apps.svc.cluster.local:80
-            statusStyle: dot
-        - Langfuse:
-            href: http://langfuse.k8s.local
-            icon: mdi-chart-timeline-variant
-            description: LLM Observability
-            siteMonitor: http://langfuse.apps.svc.cluster.local:3000/api/public/health
-            statusStyle: dot
 
     - Operations:
         - pgAdmin:
@@ -219,11 +207,6 @@ data:
         - MetalLB:
             icon: mdi-lan-connect
             description: Load Balancer
-            statusStyle: dot
-        - ClickHouse:
-            icon: mdi-database-search
-            description: Analytics DB
-            siteMonitor: http://clickhouse.apps.svc.cluster.local:8123/ping
             statusStyle: dot
 
     - Portfolio:
@@ -444,7 +427,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v17-add-clickhouse"
+        checksum/config: "v18-remove-langfuse-authentik"
     spec:
       serviceAccountName: homepage
       nodeSelector:
