@@ -97,6 +97,18 @@ spec:
               key: CLICKHOUSE_PASSWORD
         - name: CLICKHOUSE_CLUSTER_ENABLED
           value: "false"
+        
+        # Disable S3/MinIO (not deployed) - use database storage
+        - name: LANGFUSE_S3_EVENT_UPLOAD_ENABLED
+          value: "false"
+        - name: LANGFUSE_S3_MEDIA_UPLOAD_ENABLED
+          value: "false"
+        
+        # Next.js runtime configuration
+        - name: HOSTNAME
+          value: "0.0.0.0"
+        - name: PORT
+          value: "3000"
 
         resources:
           requests:
