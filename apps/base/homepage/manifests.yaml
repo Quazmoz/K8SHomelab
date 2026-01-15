@@ -208,6 +208,16 @@ data:
             icon: mdi-lan-connect
             description: Load Balancer
             statusStyle: dot
+        - MongoDB:
+            icon: si-mongodb
+            description: Document DB
+            statusStyle: dot
+        - Mongo Express:
+            href: http://mongo-express.k8s.local
+            icon: si-mongodb
+            description: MongoDB Admin
+            siteMonitor: http://mongo-express.apps.svc.cluster.local:8081
+            statusStyle: dot
 
     - Portfolio:
         - quinnfavo.com:
@@ -427,7 +437,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v18-remove-langfuse-authentik"
+        checksum/config: "v20-add-mongo-express"
     spec:
       serviceAccountName: homepage
       nodeSelector:

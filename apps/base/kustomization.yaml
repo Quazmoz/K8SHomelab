@@ -29,6 +29,7 @@ resources:
 #  - ./clickhouse   # Removed - was for Langfuse v3
 #  - ./langfuse     # Removed - using OpenWebUI native OTEL instead
   - ./alloy
+  - ./mongo-express
 
 
 
