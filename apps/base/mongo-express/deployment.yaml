@@ -22,11 +22,9 @@ spec:
         - containerPort: 8081
           name: http
         env:
-        - name: ME_CONFIG_MONGODB_SERVER
-          value: "mongodb.apps.svc.cluster.local"
-        - name: ME_CONFIG_MONGODB_PORT
-          value: "27017"
-        # No auth required - MongoDB is running without authentication
+        # Use URL to bypass the entrypoint script's hostname check
+        - name: ME_CONFIG_MONGODB_URL
+          value: "mongodb://mongodb.apps.svc.cluster.local:27017"
         - name: ME_CONFIG_MONGODB_ENABLE_ADMIN
           value: "true"
         - name: ME_CONFIG_BASICAUTH_USERNAME
