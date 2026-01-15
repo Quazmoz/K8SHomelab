@@ -38,24 +38,19 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "500m"
-        # Increased delays to give mongo-express time to start
+        # Use TCP socket probes instead of HTTP (basic auth blocks HTTP probes)
         startupProbe:
-          httpGet:
-            path: /
+          tcpSocket:
             port: 8081
           failureThreshold: 30
           periodSeconds: 10
         livenessProbe:
-          httpGet:
-            path: /
+          tcpSocket:
             port: 8081
           initialDelaySeconds: 60
           periodSeconds: 30
-          timeoutSeconds: 10
         readinessProbe:
-          httpGet:
-            path: /
+          tcpSocket:
             port: 8081
           initialDelaySeconds: 10
           periodSeconds: 10
-          timeoutSeconds: 5
