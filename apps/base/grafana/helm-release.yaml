@@ -64,6 +64,13 @@ spec:
             sslmode: "disable"
             maxOpenConns: 5
             maxIdleConns: 2
+        # MongoDB for LibreChat data
+        - name: MongoDB
+          type: grafana-mongodb-datasource
+          uid: mongodb
+          url: mongodb://mongodb.apps.svc.cluster.local:27017
+          jsonData:
+            database: librechat
 
     # --- Persistence ---
     persistence:
@@ -73,6 +80,10 @@ spec:
       size: 25Gi
       existingClaim: "grafana"
 
+    # --- Plugins ---
+    plugins:
+      - grafana-mongodb-datasource
+
     # --- Resources (best-effort) ---
     resources:
       requests:
@@ -81,3 +92,4 @@ spec:
       limits:
         cpu: 2000m
         memory: 2Gi
+

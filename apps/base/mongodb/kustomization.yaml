@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - mongodb-deployment.yaml
   - mongodb-pvc.yaml
+  - mongodb-exporter.yaml

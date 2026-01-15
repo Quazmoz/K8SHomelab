@@ -17,4 +17,5 @@ resources:
   - mcp-tools.yaml
   - n8n-workflows.yaml
   - ingress-traffic.yaml
+  - mongodb.yaml
 
