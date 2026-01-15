@@ -22,7 +22,7 @@ spec:
         - containerPort: 8081
           name: http
         env:
-        # Use URL to bypass the entrypoint script's hostname check
+        # Use URL to connect to MongoDB
         - name: ME_CONFIG_MONGODB_URL
           value: "mongodb://mongodb.apps.svc.cluster.local:27017"
         - name: ME_CONFIG_MONGODB_ENABLE_ADMIN
@@ -38,15 +38,24 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "500m"
+        # Increased delays to give mongo-express time to start
+        startupProbe:
+          httpGet:
+            path: /
+            port: 8081
+          failureThreshold: 30
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /
             port: 8081
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /
             port: 8081
-          initialDelaySeconds: 5
-          periodSeconds: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
