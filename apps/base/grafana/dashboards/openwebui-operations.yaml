@@ -1,5 +1,5 @@
 # OpenWebUI Operations Dashboard
-# Real-time operational metrics from PostgreSQL and Loki logs
+# Focus: Real-time health, errors, uptime, and operational metrics
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -42,20 +42,40 @@ data:
           "title": "",
           "options": {
             "mode": "html",
-            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🚀 OpenWebUI Operations</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.9);'>Usage Analytics • Activity Monitoring • Real-time Insights</p></div>"
+            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🚀 OpenWebUI Operations</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.9);'>Health • Errors • Uptime • Real-time Status</p></div>"
           }
         },
         {
           "id": 2,
           "gridPos": { "h": 5, "w": 6, "x": 0, "y": 3 },
           "type": "stat",
-          "title": "Active Users (24h)",
-          "description": "Count of unique users who have created or updated chat conversations in the last 24 hours. Indicates daily active usage and engagement with the platform.",
+          "title": "Chats Today",
+          "description": "Number of chat conversations created in the last 24 hours.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(DISTINCT user_id) FROM chat WHERE to_timestamp(updated_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#22c55e" }
+            }
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 3 },
+          "type": "stat",
+          "title": "Active Users (24h)",
+          "description": "Unique users with activity in the last 24 hours.",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT COUNT(DISTINCT user_id) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
               "format": "table"
             }
           ],
@@ -63,23 +83,19 @@ data:
             "defaults": {
               "color": { "mode": "fixed", "fixedColor": "#f97316" }
             }
-          },
-          "options": {
-            "reduceOptions": { "calcs": ["lastNotNull"] },
-            "colorMode": "value"
           }
         },
         {
-          "id": 3,
-          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 3 },
+          "id": 4,
+          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 3 },
           "type": "gauge",
           "title": "OpenWebUI Uptime",
-          "description": "Average availability of the OpenWebUI pod over the last 24 hours based on Kubernetes pod health metrics. 100% means the service was available continuously.",
+          "description": "Service availability based on pod readiness.",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
               "refId": "A",
-              "expr": "avg_over_time(up{job=\"kubernetes-pods\", pod=~\"openwebui.*\"}[24h]) * 100",
+              "expr": "avg_over_time(kube_pod_status_ready{namespace=\"apps\", pod=~\"openwebui.*\", condition=\"true\"}[24h]) * 100",
               "instant": true
             }
           ],
@@ -88,7 +104,6 @@ data:
               "unit": "percent",
               "min": 0,
               "max": 100,
-              "color": { "mode": "thresholds" },
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -101,56 +116,29 @@ data:
           }
         },
         {
-          "id": 4,
-          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 3 },
-          "type": "stat",
-          "title": "Chats Today",
-          "description": "Number of chat conversations created or updated in the last 24 hours. Reflects current day's conversation activity volume across all users.",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(updated_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
-              "format": "table"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#22c55e" }
-            }
-          }
-        },
-        {
           "id": 5,
           "gridPos": { "h": 5, "w": 6, "x": 18, "y": 3 },
           "type": "stat",
           "title": "Errors (24h)",
-          "description": "Count of error-level log entries from OpenWebUI in the last 24 hours. Includes exceptions, failed requests, and other error conditions captured in application logs.",
+          "description": "Error logs from OpenWebUI in the last 24 hours.",
           "datasource": { "type": "loki", "uid": "loki" },
           "targets": [
             {
               "refId": "A",
-              "expr": "sum(count_over_time({app=\"openwebui\"} |~ \"error|ERROR|Error|exception|Exception\" [24h]))",
-              "queryType": "instant"
+              "expr": "count_over_time({app=\"openwebui\"} |~ \"(?i)error|exception|failed\" [24h])"
             }
           ],
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "thresholds" },
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
                   { "color": "green", "value": null },
                   { "color": "yellow", "value": 10 },
-                  { "color": "orange", "value": 50 },
                   { "color": "red", "value": 100 }
                 ]
               }
             }
-          },
-          "options": {
-            "reduceOptions": { "calcs": ["lastNotNull"] },
-            "colorMode": "value"
           }
         },
         {
@@ -158,7 +146,7 @@ data:
           "gridPos": { "h": 5, "w": 6, "x": 0, "y": 8 },
           "type": "stat",
           "title": "Total Chats",
-          "description": "Total count of all chat conversations ever created in OpenWebUI across all users. Each chat represents a unique conversation thread.",
+          "description": "Total chat conversations in the database.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -169,7 +157,7 @@ data:
           ],
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#a855f7" }
+              "color": { "mode": "fixed", "fixedColor": "#06b6d4" }
             }
           }
         },
@@ -178,7 +166,7 @@ data:
           "gridPos": { "h": 5, "w": 6, "x": 6, "y": 8 },
           "type": "stat",
           "title": "Total Users",
-          "description": "Total number of registered user accounts in OpenWebUI. Includes all active and inactive users who have signed up.",
+          "description": "Total registered users.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -189,7 +177,7 @@ data:
           ],
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#06b6d4" }
+              "color": { "mode": "fixed", "fixedColor": "#8b5cf6" }
             }
           }
         },
@@ -198,7 +186,7 @@ data:
           "gridPos": { "h": 5, "w": 6, "x": 12, "y": 8 },
           "type": "stat",
           "title": "Archived Chats",
-          "description": "Number of conversations that users have archived. Archived chats are hidden from the main view but preserved for future reference.",
+          "description": "Chats that have been archived.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -218,7 +206,7 @@ data:
           "gridPos": { "h": 5, "w": 6, "x": 18, "y": 8 },
           "type": "stat",
           "title": "Custom Models",
-          "description": "Number of custom model configurations created. Custom models are user-defined wrappers around base LLMs with specific system prompts and parameters.",
+          "description": "Number of custom model configurations.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -237,25 +225,20 @@ data:
           "id": 10,
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
           "type": "timeseries",
-          "title": "Chat Activity Over Time",
-          "description": "Hourly breakdown of chat conversations over the last 7 days. Shows usage patterns including peak hours and daily trends to help understand when users are most active.",
+          "title": "Chat Activity (Hourly)",
+          "description": "Hourly chat creation over the last 24 hours for operational monitoring.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('hour', to_timestamp(updated_at / 1000000000.0)) as time, COUNT(*) as \"Chats\" FROM chat WHERE to_timestamp(updated_at / 1000000000.0) > NOW() - INTERVAL '7 days' GROUP BY time ORDER BY time",
+              "rawSql": "SELECT date_trunc('hour', to_timestamp(created_at / 1000000000.0)) as time, COUNT(*) as chats FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours' GROUP BY date_trunc('hour', to_timestamp(created_at / 1000000000.0)) ORDER BY time",
               "format": "time_series"
             }
           ],
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#8b5cf6" },
-              "custom": {
-                "fillOpacity": 20,
-                "lineWidth": 2,
-                "gradientMode": "opacity",
-                "spanNulls": true
-              }
+              "color": { "mode": "fixed", "fixedColor": "#22c55e" },
+              "custom": { "fillOpacity": 20, "lineWidth": 2, "gradientMode": "opacity" }
             }
           }
         },
@@ -264,156 +247,64 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
           "type": "timeseries",
           "title": "Error Rate Trend",
-          "description": "Timeline of application errors captured in logs. Spikes may indicate issues with LLM providers, network problems, or application bugs that need investigation.",
+          "description": "Error log frequency over time.",
           "datasource": { "type": "loki", "uid": "loki" },
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by () (count_over_time({app=\"openwebui\"} |~ \"error|ERROR|exception\" [$__interval]))",
-              "legendFormat": "Errors",
-              "queryType": "range"
+              "expr": "sum(count_over_time({app=\"openwebui\"} |~ \"(?i)error|exception\" [1h]))",
+              "legendFormat": "Errors"
             }
           ],
           "fieldConfig": {
             "defaults": {
               "color": { "mode": "fixed", "fixedColor": "#ef4444" },
-              "custom": {
-                "fillOpacity": 30,
-                "lineWidth": 2,
-                "gradientMode": "opacity",
-                "drawStyle": "bars"
-              }
+              "custom": { "fillOpacity": 30, "lineWidth": 2, "gradientMode": "opacity", "drawStyle": "bars" }
             }
           }
         },
         {
           "id": 12,
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
-          "type": "piechart",
-          "title": "Top Models by Usage",
-          "description": "Distribution of AI model usage across all conversations. Shows which LLM providers and models (GPT-4, Claude, Gemini, etc.) are most frequently used by your users.",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT REGEXP_REPLACE(COALESCE(meta->>'model', 'Unknown'), '^models/', '') as model, COUNT(*) as count FROM chat WHERE meta->>'model' IS NOT NULL GROUP BY meta->>'model' ORDER BY count DESC LIMIT 10",
-              "format": "table"
-            }
-          ],
-          "options": {
-            "legend": { "displayMode": "table", "placement": "right", "showLegend": true },
-            "pieType": "donut",
-            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": true },
-            "displayLabels": ["percent"]
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "palette-classic" }
-            }
-          }
-        },
-        {
-          "id": 13,
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
-          "type": "timeseries",
-          "title": "Daily Chat Volume",
-          "description": "Daily aggregate of chat conversations over the last 30 days. Useful for identifying weekly patterns, growth trends, and comparing day-over-day usage.",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT date_trunc('day', to_timestamp(updated_at / 1000000000.0)) as time, COUNT(*) as \"Chats\" FROM chat WHERE to_timestamp(updated_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY time ORDER BY time",
-              "format": "time_series"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#3b82f6" },
-              "custom": {
-                "fillOpacity": 20,
-                "lineWidth": 2,
-                "gradientMode": "opacity"
-              }
-            }
-          }
-        },
-        {
-          "id": 14,
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 29 },
           "type": "table",
           "title": "User Leaderboard",
-          "description": "Most active users ranked by number of conversations. Shows engagement levels across your user base. Helps identify power users and understand usage patterns.",
+          "description": "Most active users by chat count.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT u.name as \"User\", u.email as \"Email\", COUNT(c.id) as \"Chats\", MAX(to_timestamp(c.updated_at / 1000000000.0)) as \"Last Active\" FROM \"user\" u LEFT JOIN chat c ON u.id = c.user_id GROUP BY u.id, u.name, u.email ORDER BY COUNT(c.id) DESC LIMIT 10",
-              "format": "table"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "align": "left"
-              }
-            },
-            "overrides": [
-              {
-                "matcher": { "id": "byName", "options": "Chats" },
-                "properties": [
-                  { "id": "custom.width", "value": 80 },
-                  { "id": "color", "value": { "mode": "continuous-GrYlRd" } }
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "id": 15,
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 29 },
-          "type": "table",
-          "title": "Recent User Activity",
-          "description": "Most recently active users showing their latest conversation timestamps. Indicates current engagement and helps identify active sessions.",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT u.name as \"User\", c.title as \"Last Chat\", to_timestamp(c.updated_at / 1000000000.0) as \"Time\" FROM \"user\" u JOIN chat c ON u.id = c.user_id WHERE c.updated_at = (SELECT MAX(c2.updated_at) FROM chat c2 WHERE c2.user_id = u.id) ORDER BY c.updated_at DESC LIMIT 10",
+              "rawSql": "SELECT COALESCE(u.name, 'Unknown') as \"User\", COUNT(c.id) as \"Chats\", u.role as \"Role\" FROM \"user\" u LEFT JOIN chat c ON u.id = c.user_id GROUP BY u.id, u.name, u.role ORDER BY \"Chats\" DESC LIMIT 10",
               "format": "table"
             }
           ]
         },
         {
-          "id": 16,
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 37 },
+          "id": 13,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
           "type": "logs",
-          "title": "Recent OpenWebUI Logs",
-          "description": "Live stream of application logs from OpenWebUI. Shows recent activity, warnings, errors, and debug information. Useful for troubleshooting issues and monitoring real-time behavior.",
+          "title": "OpenWebUI Logs",
+          "description": "Real-time log stream from OpenWebUI pod.",
           "datasource": { "type": "loki", "uid": "loki" },
           "targets": [
             {
               "refId": "A",
-              "expr": "{app=\"openwebui\"}",
-              "queryType": "range"
+              "expr": "{app=\"openwebui\"}"
             }
           ],
           "options": {
             "showTime": true,
             "showLabels": false,
-            "showCommonLabels": false,
             "wrapLogMessage": true,
-            "prettifyLogMessage": false,
-            "enableLogDetails": true,
-            "sortOrder": "Descending"
+            "enableLogDetails": true
           }
         }
       ],
       "refresh": "1m",
       "schemaVersion": 39,
-      "tags": ["openwebui", "operations", "otel"],
+      "tags": ["openwebui", "operations"],
       "templating": { "list": [] },
       "time": { "from": "now-24h", "to": "now" },
       "title": "OpenWebUI Operations",
       "uid": "openwebui-operations",
-      "version": 5
+      "version": 1
     }
