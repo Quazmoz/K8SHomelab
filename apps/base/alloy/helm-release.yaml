@@ -21,7 +21,61 @@ spec:
       configMap:
         create: true
         content: |
-          // Receive OTLP data from OpenWebUI
+          // ========== KUBERNETES POD LOG SCRAPING ==========
+          // Discover pods for log scraping
+          discovery.kubernetes "pods" {
+            role = "pod"
+          }
+
+          // Relabel pod logs with useful labels
+          discovery.relabel "pods" {
+            targets = discovery.kubernetes.pods.targets
+            
+            // Keep only running pods
+            rule {
+              source_labels = ["__meta_kubernetes_pod_phase"]
+              regex         = "Pending|Succeeded|Failed|Unknown"
+              action        = "drop"
+            }
+            
+            // Set namespace label
+            rule {
+              source_labels = ["__meta_kubernetes_namespace"]
+              target_label  = "namespace"
+            }
+            
+            // Set pod label
+            rule {
+              source_labels = ["__meta_kubernetes_pod_name"]
+              target_label  = "pod"
+            }
+            
+            // Set app label from pod label if exists
+            rule {
+              source_labels = ["__meta_kubernetes_pod_label_app"]
+              target_label  = "app"
+            }
+            
+            // Set container label
+            rule {
+              source_labels = ["__meta_kubernetes_pod_container_name"]
+              target_label  = "container"
+            }
+            
+            // Set node label
+            rule {
+              source_labels = ["__meta_kubernetes_pod_node_name"]
+              target_label  = "node"
+            }
+          }
+
+          // Scrape pod logs
+          loki.source.kubernetes "pods" {
+            targets    = discovery.relabel.pods.output
+            forward_to = [loki.write.default.receiver]
+          }
+
+          // ========== OTEL RECEIVER (for OpenWebUI traces) ==========
           otelcol.receiver.otlp "default" {
             grpc {
               endpoint = "0.0.0.0:4317"
@@ -56,7 +110,7 @@ spec:
             }
           }
 
-          // Export logs to Loki
+          // Export OTEL logs to Loki
           otelcol.exporter.loki "default" {
             forward_to = [loki.write.default.receiver]
           }
