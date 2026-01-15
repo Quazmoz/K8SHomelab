@@ -1,6 +1,5 @@
 # OpenWebUI Advanced Metrics Dashboard
-# Deep insights: model usage, files, knowledge bases, and tool usage
-# Note: OpenWebUI stores timestamps as bigint (Unix epoch in nanoseconds)
+# Deep insights: models, files, knowledge bases, and tools
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -163,52 +162,9 @@ data:
         {
           "id": 8,
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
-          "type": "piechart",
-          "title": "Model Usage Distribution",
-          "description": "Which AI models are used most frequently",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT COALESCE(chat->>'model', 'Unknown') as model, COUNT(*) as count FROM chat WHERE chat->>'model' IS NOT NULL GROUP BY chat->>'model' ORDER BY count DESC LIMIT 10",
-              "format": "table"
-            }
-          ],
-          "options": {
-            "legend": { "displayMode": "table", "placement": "right", "showLegend": true },
-            "pieType": "donut",
-            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": true },
-            "displayLabels": ["percent"]
-          }
-        },
-        {
-          "id": 9,
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
-          "type": "barchart",
-          "title": "Top Models by Chat Count",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT REGEXP_REPLACE(COALESCE(chat->>'model', 'Unknown'), '^models/', '') as model, COUNT(*) as chats FROM chat WHERE chat->>'model' IS NOT NULL GROUP BY chat->>'model' ORDER BY chats DESC LIMIT 8",
-              "format": "table"
-            }
-          ],
-          "options": {
-            "orientation": "horizontal",
-            "showValue": "always"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "continuous-BlPu" }
-            }
-          }
-        },
-        {
-          "id": 10,
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
           "type": "table",
           "title": "Configured Models",
+          "description": "Custom models configured in OpenWebUI",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -219,10 +175,11 @@ data:
           ]
         },
         {
-          "id": 11,
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+          "id": 9,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
           "type": "table",
           "title": "Custom Tools",
+          "description": "Tools created for function calling",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -233,8 +190,8 @@ data:
           ]
         },
         {
-          "id": 12,
-          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 23 },
+          "id": 10,
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 15 },
           "type": "stat",
           "title": "Total Feedback",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
@@ -252,8 +209,8 @@ data:
           }
         },
         {
-          "id": 13,
-          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 23 },
+          "id": 11,
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 15 },
           "type": "stat",
           "title": "Unique Tags",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
@@ -271,8 +228,8 @@ data:
           }
         },
         {
-          "id": 14,
-          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 23 },
+          "id": 12,
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 15 },
           "type": "stat",
           "title": "User Memories",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
@@ -290,8 +247,8 @@ data:
           }
         },
         {
-          "id": 15,
-          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 23 },
+          "id": 13,
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 15 },
           "type": "stat",
           "title": "Functions",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
@@ -309,10 +266,11 @@ data:
           }
         },
         {
-          "id": 16,
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 27 },
+          "id": 14,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
           "type": "table",
           "title": "Knowledge Bases",
+          "description": "RAG knowledge bases",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -323,10 +281,11 @@ data:
           ]
         },
         {
-          "id": 17,
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 27 },
+          "id": 15,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
           "type": "table",
           "title": "Recent Files",
+          "description": "Uploaded files",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -337,10 +296,11 @@ data:
           ]
         },
         {
-          "id": 18,
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 35 },
+          "id": 16,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 27 },
           "type": "table",
-          "title": "Saved Prompts Library",
+          "title": "Saved Prompts",
+          "description": "Prompt library",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -351,10 +311,11 @@ data:
           ]
         },
         {
-          "id": 19,
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 43 },
+          "id": 17,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 27 },
           "type": "table",
           "title": "Tags",
+          "description": "Chat organization tags",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -365,22 +326,29 @@ data:
           ]
         },
         {
-          "id": 20,
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 43 },
+          "id": 18,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 35 },
           "type": "timeseries",
           "title": "File Uploads Over Time",
+          "description": "Daily file upload activity",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('day', to_timestamp(created_at / 1000000000.0)) as time, COUNT(*) as uploads FROM file WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY date_trunc('day', to_timestamp(created_at / 1000000000.0)) ORDER BY time",
+              "rawSql": "SELECT date_trunc('day', to_timestamp(created_at / 1000000000.0)) as time, COUNT(*) as \"Uploads\" FROM file WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY time ORDER BY time",
               "format": "time_series"
             }
           ],
           "fieldConfig": {
             "defaults": {
+              "unit": "short",
               "color": { "mode": "fixed", "fixedColor": "purple" },
-              "custom": { "fillOpacity": 30, "lineWidth": 2, "drawStyle": "bars" }
+              "custom": { 
+                "fillOpacity": 30, 
+                "lineWidth": 2, 
+                "drawStyle": "bars",
+                "spanNulls": true
+              }
             }
           }
         }
@@ -392,5 +360,5 @@ data:
       "time": { "from": "now-30d", "to": "now" },
       "title": "OpenWebUI Advanced",
       "uid": "openwebui-advanced",
-      "version": 2
+      "version": 3
     }

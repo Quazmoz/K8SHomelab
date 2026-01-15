@@ -166,12 +166,6 @@ data:
             widget:
               type: prometheus
               url: http://prometheus-server.apps.svc.cluster.local
-        - Uptime Kuma:
-            href: http://status.k8s.local
-            icon: uptime-kuma
-            description: Status Page
-            siteMonitor: http://uptime-kuma.apps.svc.cluster.local:3001
-            statusStyle: dot
         - Loki:
             href: http://grafana.k8s.local/explore?orgId=1&left=%7B%22datasource%22:%22loki%22%7D
             icon: loki
@@ -437,7 +431,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v20-add-mongo-express"
+        checksum/config: "v21-remove-uptime-kuma"
     spec:
       serviceAccountName: homepage
       nodeSelector:
