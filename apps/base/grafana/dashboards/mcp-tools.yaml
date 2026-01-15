@@ -1,0 +1,366 @@
+# MCP Tools Dashboard
+# Statistics for MCP tool invocations from mcpo logs
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-mcp-tools
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  mcp-tools.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [
+        {
+          "asDropdown": false,
+          "icon": "dashboard",
+          "includeVars": false,
+          "keepTime": true,
+          "tags": ["openwebui"],
+          "title": "OpenWebUI Dashboards",
+          "type": "dashboards"
+        },
+        {
+          "asDropdown": false,
+          "icon": "external link",
+          "targetBlank": false,
+          "title": "🏠 Overview",
+          "type": "link",
+          "url": "/d/homelab-overview"
+        }
+      ],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🔧 MCP Tools Dashboard</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.9);'>Tool Invocations • Server Health • API Requests</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 5, "w": 6, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "Tool Calls (24h)",
+          "description": "Total number of MCP tool invocations in the last 24 hours. Counts POST requests to mcpo endpoints which represent tool executions from AI assistants.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"POST\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#10b981" }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 3 },
+          "type": "stat",
+          "title": "API Requests (24h)",
+          "description": "Total HTTP requests to mcpo API in the last 24 hours. Includes GET requests for docs, health checks, and POST requests for tool executions.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"HTTP\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#3b82f6" }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 3 },
+          "type": "stat",
+          "title": "Errors (24h)",
+          "description": "Number of errors in mcpo logs over the last 24 hours. High counts may indicate connectivity issues with MCP servers or API failures.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"error|ERROR|Error|exception|Exception|failed|Failed\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 5 },
+                  { "color": "orange", "value": 20 },
+                  { "color": "red", "value": 50 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 5, "w": 6, "x": 18, "y": 3 },
+          "type": "gauge",
+          "title": "MCPO Uptime",
+          "description": "Availability of the mcpo service over the last 24 hours based on Kubernetes pod health metrics.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "avg_over_time(up{job=\"kubernetes-pods\", pod=~\"mcpo.*\"}[24h]) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 90 },
+                  { "color": "green", "value": 99 }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "type": "timeseries",
+          "title": "Tool Invocations Over Time",
+          "description": "Timeline of MCP tool calls showing usage patterns. Each bar represents POST requests to mcpo which trigger tool executions.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by () (count_over_time({app=\"mcpo\"} |~ \"POST\" [$__interval]))",
+              "legendFormat": "Tool Calls",
+              "queryType": "range"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#10b981" },
+              "custom": {
+                "fillOpacity": 30,
+                "lineWidth": 2,
+                "gradientMode": "opacity",
+                "drawStyle": "bars"
+              }
+            }
+          }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "type": "timeseries",
+          "title": "API Request Rate",
+          "description": "Rate of all HTTP requests to mcpo API over time. Helps identify peak usage periods and usage trends.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by () (count_over_time({app=\"mcpo\"} |~ \"HTTP\" [$__interval]))",
+              "legendFormat": "Requests",
+              "queryType": "range"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#3b82f6" },
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2,
+                "gradientMode": "opacity"
+              }
+            }
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 16 },
+          "type": "stat",
+          "title": "Kubernetes MCP Calls",
+          "description": "Requests to the Kubernetes MCP server for cluster management operations like listing pods, deployments, and other resources.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"kubernetes\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#6366f1" }
+            }
+          }
+        },
+        {
+          "id": 9,
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 16 },
+          "type": "stat",
+          "title": "ClickUp MCP Calls",
+          "description": "Requests to the ClickUp MCP server for task management operations like creating tasks, listing spaces, and managing projects.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"clickup\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#7c3aed" }
+            }
+          }
+        },
+        {
+          "id": 10,
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 16 },
+          "type": "stat",
+          "title": "PostgreSQL MCP Calls",
+          "description": "Requests to the PostgreSQL MCP server for database operations like querying tables and running SQL commands.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"postgres\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#0ea5e9" }
+            }
+          }
+        },
+        {
+          "id": 11,
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+          "type": "stat",
+          "title": "Azure MCP Calls",
+          "description": "Requests to the Azure MCP server for cloud resource management operations across Azure subscriptions.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"azure\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#0078d4" }
+            }
+          }
+        },
+        {
+          "id": 12,
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+          "type": "stat",
+          "title": "N8N MCP Calls",
+          "description": "Requests to the N8N MCP server for workflow automation operations like triggering workflows and managing integrations.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"n8n\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#ff6d5a" }
+            }
+          }
+        },
+        {
+          "id": 13,
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+          "type": "stat",
+          "title": "FreshRSS MCP Calls",
+          "description": "Requests to the FreshRSS MCP server for RSS feed operations like fetching latest articles and managing subscriptions.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"mcpo\"} |~ \"freshrss\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#22c55e" }
+            }
+          }
+        },
+        {
+          "id": 14,
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 32 },
+          "type": "logs",
+          "title": "MCPO Server Logs",
+          "description": "Live log stream from the mcpo MCP-to-OpenAPI proxy. Shows tool invocations, HTTP requests, and any errors. Useful for debugging MCP integrations.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "{app=\"mcpo\"}",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending"
+          }
+        }
+      ],
+      "refresh": "1m",
+      "schemaVersion": 39,
+      "tags": ["mcp", "tools", "mcpo", "openwebui"],
+      "templating": { "list": [] },
+      "time": { "from": "now-24h", "to": "now" },
+      "title": "MCP Tools",
+      "uid": "mcp-tools",
+      "version": 1
+    }

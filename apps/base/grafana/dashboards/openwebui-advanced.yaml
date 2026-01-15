@@ -50,6 +50,7 @@ data:
           "gridPos": { "h": 4, "w": 4, "x": 0, "y": 3 },
           "type": "stat",
           "title": "Custom Models",
+          "description": "Number of custom model configurations created in OpenWebUI. These are user-defined model aliases or configurations that wrap base LLM models with custom system prompts, parameters, or settings.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -69,6 +70,7 @@ data:
           "gridPos": { "h": 4, "w": 4, "x": 4, "y": 3 },
           "type": "stat",
           "title": "Knowledge Bases",
+          "description": "Number of RAG (Retrieval Augmented Generation) knowledge bases configured. Knowledge bases contain documents that can be searched during conversations to provide context-aware responses.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -88,6 +90,7 @@ data:
           "gridPos": { "h": 4, "w": 4, "x": 8, "y": 3 },
           "type": "stat",
           "title": "Documents",
+          "description": "Total number of documents indexed for search and retrieval. Documents are parsed text files used for knowledge base queries and context injection.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -107,6 +110,7 @@ data:
           "gridPos": { "h": 4, "w": 4, "x": 12, "y": 3 },
           "type": "stat",
           "title": "Uploaded Files",
+          "description": "Total files uploaded by users including images, PDFs, and other attachments. These files can be used in conversations or added to knowledge bases.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -126,6 +130,7 @@ data:
           "gridPos": { "h": 4, "w": 4, "x": 16, "y": 3 },
           "type": "stat",
           "title": "Custom Tools",
+          "description": "Number of custom function-calling tools created. Tools extend LLM capabilities by allowing models to execute code, call APIs, or perform actions during conversations.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -145,6 +150,7 @@ data:
           "gridPos": { "h": 4, "w": 4, "x": 20, "y": 3 },
           "type": "stat",
           "title": "Saved Prompts",
+          "description": "Number of reusable prompt templates saved in the prompt library. Prompts can be quickly inserted into conversations using slash commands.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -162,29 +168,35 @@ data:
         {
           "id": 8,
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 7 },
-          "type": "table",
-          "title": "Configured Models",
-          "description": "Custom models configured in OpenWebUI",
+          "type": "piechart",
+          "title": "Model Usage by Chat Count",
+          "description": "Distribution of which AI models are being used across all conversations. Shows the top 10 most frequently used models based on chat session metadata. Helps identify popular models and usage patterns.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT name, base_model_id, to_timestamp(created_at / 1000000000.0) as created FROM model ORDER BY created_at DESC LIMIT 15",
+              "rawSql": "SELECT REGEXP_REPLACE(COALESCE(meta->>'model', 'Unknown'), '^models/', '') as model, COUNT(*) as chats FROM chat WHERE meta->>'model' IS NOT NULL GROUP BY meta->>'model' ORDER BY chats DESC LIMIT 10",
               "format": "table"
             }
-          ]
+          ],
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right", "showLegend": true },
+            "pieType": "donut",
+            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": true },
+            "displayLabels": ["percent"]
+          }
         },
         {
           "id": 9,
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 7 },
           "type": "table",
-          "title": "Custom Tools",
-          "description": "Tools created for function calling",
+          "title": "Configured Models",
+          "description": "List of custom model configurations created in OpenWebUI. Shows the model name, the underlying base model ID (the actual LLM being used), and when it was created. Custom models allow setting default system prompts and parameters.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT id, name, to_timestamp(created_at / 1000000000.0) as created FROM tool ORDER BY created_at DESC LIMIT 15",
+              "rawSql": "SELECT name as \"Model Name\", base_model_id as \"Base Model\", to_timestamp(updated_at / 1000000000.0) as \"Last Updated\" FROM model ORDER BY updated_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -194,6 +206,7 @@ data:
           "gridPos": { "h": 4, "w": 6, "x": 0, "y": 15 },
           "type": "stat",
           "title": "Total Feedback",
+          "description": "Number of thumbs up/down feedback ratings left by users on AI responses. Feedback helps track response quality and can be used to improve model performance over time.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -213,6 +226,7 @@ data:
           "gridPos": { "h": 4, "w": 6, "x": 6, "y": 15 },
           "type": "stat",
           "title": "Unique Tags",
+          "description": "Number of unique tags created for organizing conversations. Tags allow users to categorize and filter their chat history for easier navigation.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -232,6 +246,7 @@ data:
           "gridPos": { "h": 4, "w": 6, "x": 12, "y": 15 },
           "type": "stat",
           "title": "User Memories",
+          "description": "Number of memory entries stored for users. Memories allow the AI to remember facts about users across conversations, enabling more personalized interactions.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -251,6 +266,7 @@ data:
           "gridPos": { "h": 4, "w": 6, "x": 18, "y": 15 },
           "type": "stat",
           "title": "Functions",
+          "description": "Number of custom functions registered. Functions are Python code snippets that can be called by models to extend their capabilities with custom logic or API integrations.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -270,12 +286,12 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
           "type": "table",
           "title": "Knowledge Bases",
-          "description": "RAG knowledge bases",
+          "description": "List of RAG knowledge bases with their names and descriptions. Knowledge bases enable the AI to search through your documents during conversations to provide accurate, contextual answers.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT id, name, description, to_timestamp(created_at / 1000000000.0) as created FROM knowledge ORDER BY created_at DESC LIMIT 10",
+              "rawSql": "SELECT name as \"Name\", description as \"Description\", to_timestamp(updated_at / 1000000000.0) as \"Last Updated\" FROM knowledge ORDER BY updated_at DESC LIMIT 10",
               "format": "table"
             }
           ]
@@ -285,12 +301,12 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
           "type": "table",
           "title": "Recent Files",
-          "description": "Uploaded files",
+          "description": "Most recently uploaded files showing filename and upload timestamp. Files can include images, PDFs, code files, and other documents that users share in conversations.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT filename, to_timestamp(created_at / 1000000000.0) as uploaded FROM file ORDER BY created_at DESC LIMIT 15",
+              "rawSql": "SELECT filename as \"Filename\", to_timestamp(updated_at / 1000000000.0) as \"Uploaded\" FROM file ORDER BY updated_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -299,13 +315,13 @@ data:
           "id": 16,
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 27 },
           "type": "table",
-          "title": "Saved Prompts",
-          "description": "Prompt library",
+          "title": "Custom Tools",
+          "description": "List of function-calling tools available to AI models. Tools enable models to perform actions like web searches, code execution, API calls, and other external integrations during conversations.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT title, command, to_timestamp(created_at / 1000000000.0) as created FROM prompt ORDER BY created_at DESC LIMIT 20",
+              "rawSql": "SELECT id as \"Tool ID\", name as \"Name\", to_timestamp(updated_at / 1000000000.0) as \"Last Updated\" FROM tool ORDER BY updated_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -315,12 +331,12 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 27 },
           "type": "table",
           "title": "Tags",
-          "description": "Chat organization tags",
+          "description": "Organization tags created by users to categorize their conversations. Tags enable filtering and grouping of related chats for better organization.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT name, user_id FROM tag ORDER BY name LIMIT 20",
+              "rawSql": "SELECT name as \"Tag Name\", user_id as \"User ID\" FROM tag ORDER BY name LIMIT 20",
               "format": "table"
             }
           ]
@@ -330,12 +346,12 @@ data:
           "gridPos": { "h": 8, "w": 24, "x": 0, "y": 35 },
           "type": "timeseries",
           "title": "File Uploads Over Time",
-          "description": "Daily file upload activity",
+          "description": "Daily trend of file uploads over the last 30 days. Shows upload activity patterns and can help identify peak usage periods or trends in file sharing behavior.",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('day', to_timestamp(created_at / 1000000000.0)) as time, COUNT(*) as \"Uploads\" FROM file WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY time ORDER BY time",
+              "rawSql": "SELECT date_trunc('day', to_timestamp(updated_at / 1000000000.0)) as time, COUNT(*) as \"Uploads\" FROM file WHERE to_timestamp(updated_at / 1000000000.0) > NOW() - INTERVAL '30 days' GROUP BY time ORDER BY time",
               "format": "time_series"
             }
           ],
@@ -360,5 +376,5 @@ data:
       "time": { "from": "now-30d", "to": "now" },
       "title": "OpenWebUI Advanced",
       "uid": "openwebui-advanced",
-      "version": 3
+      "version": 4
     }
