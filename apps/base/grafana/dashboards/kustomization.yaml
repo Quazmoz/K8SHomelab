@@ -15,4 +15,6 @@ resources:
   - homelab-overview.yaml
   - openwebui-operations.yaml
   - mcp-tools.yaml
+  - n8n-workflows.yaml
+  - ingress-traffic.yaml
 

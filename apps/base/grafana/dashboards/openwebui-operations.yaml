@@ -339,7 +339,53 @@ data:
         },
         {
           "id": 14,
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 29 },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 29 },
+          "type": "table",
+          "title": "User Leaderboard",
+          "description": "Most active users ranked by number of conversations. Shows engagement levels across your user base. Helps identify power users and understand usage patterns.",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT u.name as \"User\", u.email as \"Email\", COUNT(c.id) as \"Chats\", MAX(to_timestamp(c.updated_at / 1000000000.0)) as \"Last Active\" FROM \"user\" u LEFT JOIN chat c ON u.id = c.user_id GROUP BY u.id, u.name, u.email ORDER BY COUNT(c.id) DESC LIMIT 10",
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "left"
+              }
+            },
+            "overrides": [
+              {
+                "matcher": { "id": "byName", "options": "Chats" },
+                "properties": [
+                  { "id": "custom.width", "value": 80 },
+                  { "id": "color", "value": { "mode": "continuous-GrYlRd" } }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": 15,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 29 },
+          "type": "table",
+          "title": "Recent User Activity",
+          "description": "Most recently active users showing their latest conversation timestamps. Indicates current engagement and helps identify active sessions.",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT u.name as \"User\", c.title as \"Last Chat\", to_timestamp(c.updated_at / 1000000000.0) as \"Time\" FROM \"user\" u JOIN chat c ON u.id = c.user_id WHERE c.updated_at = (SELECT MAX(c2.updated_at) FROM chat c2 WHERE c2.user_id = u.id) ORDER BY c.updated_at DESC LIMIT 10",
+              "format": "table"
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 37 },
           "type": "logs",
           "title": "Recent OpenWebUI Logs",
           "description": "Live stream of application logs from OpenWebUI. Shows recent activity, warnings, errors, and debug information. Useful for troubleshooting issues and monitoring real-time behavior.",

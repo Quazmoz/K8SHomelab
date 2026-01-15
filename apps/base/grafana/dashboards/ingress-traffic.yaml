@@ -1,0 +1,321 @@
+# Ingress Traffic Dashboard
+# HTTP traffic metrics from ingress-nginx
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-ingress-traffic
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  ingress-traffic.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [
+        {
+          "asDropdown": false,
+          "icon": "external link",
+          "targetBlank": false,
+          "title": "🏠 Overview",
+          "type": "link",
+          "url": "/d/homelab-overview"
+        }
+      ],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #009639 0%, #00693e 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>🌐 Ingress Traffic</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.9);'>HTTP Requests • Response Times • App Usage</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 5, "w": 6, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "Total Requests (24h)",
+          "description": "Total HTTP requests handled by the ingress controller in the last 24 hours across all services.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(increase(nginx_ingress_controller_requests[24h]))",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#009639" },
+              "unit": "short"
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 3 },
+          "type": "stat",
+          "title": "Request Rate",
+          "description": "Current rate of HTTP requests per second across all ingress endpoints.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(nginx_ingress_controller_requests[5m]))",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#3b82f6" },
+              "unit": "reqps"
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 3 },
+          "type": "stat",
+          "title": "Error Rate (5xx)",
+          "description": "Current rate of server errors (5xx responses) per second. High rates indicate application issues.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(nginx_ingress_controller_requests{status=~\"5..\"}[5m]))",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "unit": "reqps",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 0.1 },
+                  { "color": "orange", "value": 0.5 },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 5, "w": 6, "x": 18, "y": 3 },
+          "type": "stat",
+          "title": "Avg Response Time",
+          "description": "Average response time across all ingress endpoints. Lower is better for user experience.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(nginx_ingress_controller_request_duration_seconds_sum[5m])) / sum(rate(nginx_ingress_controller_request_duration_seconds_count[5m]))",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "unit": "s",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 1 },
+                  { "color": "orange", "value": 3 },
+                  { "color": "red", "value": 5 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "type": "timeseries",
+          "title": "Request Rate Over Time",
+          "description": "HTTP request rate over time showing traffic patterns. Helps identify peak usage periods and traffic trends.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(rate(nginx_ingress_controller_requests[5m]))",
+              "legendFormat": "Requests/s",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#009639" },
+              "unit": "reqps",
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2,
+                "gradientMode": "opacity"
+              }
+            }
+          }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "type": "timeseries",
+          "title": "Response Time Distribution",
+          "description": "Response time percentiles (p50, p90, p99) showing latency distribution. P99 spikes indicate occasional slow requests.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "histogram_quantile(0.50, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p50",
+              "range": true
+            },
+            {
+              "refId": "B",
+              "expr": "histogram_quantile(0.90, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p90",
+              "range": true
+            },
+            {
+              "refId": "C",
+              "expr": "histogram_quantile(0.99, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p99",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "fillOpacity": 10,
+                "lineWidth": 2
+              }
+            }
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "type": "piechart",
+          "title": "Traffic by Host",
+          "description": "Distribution of HTTP requests across different ingress hosts. Shows which applications receive the most traffic.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (host) (increase(nginx_ingress_controller_requests[24h]))",
+              "legendFormat": "{{host}}",
+              "instant": true
+            }
+          ],
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right", "showLegend": true },
+            "pieType": "donut",
+            "reduceOptions": { "calcs": ["sum"], "fields": "", "values": true },
+            "displayLabels": ["percent"]
+          }
+        },
+        {
+          "id": 9,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "type": "barchart",
+          "title": "Top Endpoints by Traffic",
+          "description": "Most accessed endpoints/paths across all ingress hosts. Helps identify popular features and API endpoints.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "topk(10, sum by (host) (increase(nginx_ingress_controller_requests[24h])))",
+              "legendFormat": "{{host}}",
+              "instant": true
+            }
+          ],
+          "options": {
+            "orientation": "horizontal",
+            "showValue": "always"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "continuous-GrYlRd" }
+            }
+          }
+        },
+        {
+          "id": 10,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+          "type": "timeseries",
+          "title": "Status Codes Over Time",
+          "description": "HTTP response status codes over time. 2xx indicates success, 4xx client errors, 5xx server errors.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (status) (rate(nginx_ingress_controller_requests[5m]))",
+              "legendFormat": "{{status}}",
+              "range": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "custom": {
+                "fillOpacity": 20,
+                "lineWidth": 2,
+                "stacking": { "mode": "normal" }
+              }
+            },
+            "overrides": [
+              {
+                "matcher": { "id": "byRegexp", "options": "2.." },
+                "properties": [{ "id": "color", "value": { "fixedColor": "#22c55e", "mode": "fixed" } }]
+              },
+              {
+                "matcher": { "id": "byRegexp", "options": "3.." },
+                "properties": [{ "id": "color", "value": { "fixedColor": "#3b82f6", "mode": "fixed" } }]
+              },
+              {
+                "matcher": { "id": "byRegexp", "options": "4.." },
+                "properties": [{ "id": "color", "value": { "fixedColor": "#f97316", "mode": "fixed" } }]
+              },
+              {
+                "matcher": { "id": "byRegexp", "options": "5.." },
+                "properties": [{ "id": "color", "value": { "fixedColor": "#ef4444", "mode": "fixed" } }]
+              }
+            ]
+          }
+        }
+      ],
+      "refresh": "1m",
+      "schemaVersion": 39,
+      "tags": ["ingress", "nginx", "traffic", "http"],
+      "templating": { "list": [] },
+      "time": { "from": "now-24h", "to": "now" },
+      "title": "Ingress Traffic",
+      "uid": "ingress-traffic",
+      "version": 1
+    }

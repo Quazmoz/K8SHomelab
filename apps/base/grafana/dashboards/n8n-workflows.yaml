@@ -1,0 +1,237 @@
+# N8N Workflows Dashboard
+# Workflow execution metrics from Loki logs
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-n8n-workflows
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  n8n-workflows.json: |-
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [
+        {
+          "asDropdown": false,
+          "icon": "external link",
+          "targetBlank": false,
+          "title": "🏠 Overview",
+          "type": "link",
+          "url": "/d/homelab-overview"
+        }
+      ],
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+          "type": "text",
+          "title": "",
+          "options": {
+            "mode": "html",
+            "content": "<div style='text-align: center; padding: 10px; background: linear-gradient(135deg, #ff6d5a 0%, #d84315 100%); border-radius: 8px;'><h1 style='margin: 0; color: #fff;'>⚡ N8N Workflows</h1><p style='margin: 5px 0 0 0; color: rgba(255,255,255,0.9);'>Workflow Executions • Automations • Integration Health</p></div>"
+          }
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 5, "w": 6, "x": 0, "y": 3 },
+          "type": "stat",
+          "title": "Executions (24h)",
+          "description": "Total workflow executions in the last 24 hours. Counts execution events from N8N logs indicating automated workflows that have run.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"n8n\"} |~ \"Workflow|execution|executed\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#ff6d5a" }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 5, "w": 6, "x": 6, "y": 3 },
+          "type": "stat",
+          "title": "Webhook Triggers (24h)",
+          "description": "Number of webhook-triggered workflow executions. Webhooks are HTTP endpoints that trigger workflows from external services.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"n8n\"} |~ \"webhook|Webhook\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#3b82f6" }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 5, "w": 6, "x": 12, "y": 3 },
+          "type": "stat",
+          "title": "Errors (24h)",
+          "description": "Workflow execution errors in the last 24 hours. High counts may indicate failed integrations or misconfigured workflows.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(count_over_time({app=\"n8n\"} |~ \"error|ERROR|Error|failed|Failed\" [24h]))",
+              "queryType": "instant"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 5 },
+                  { "color": "orange", "value": 20 },
+                  { "color": "red", "value": 50 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "colorMode": "value"
+          }
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 5, "w": 6, "x": 18, "y": 3 },
+          "type": "gauge",
+          "title": "N8N Uptime",
+          "description": "Availability of the N8N service over the last 24 hours based on Kubernetes pod health metrics.",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "avg_over_time(up{job=\"kubernetes-pods\", pod=~\"n8n.*\"}[24h]) * 100",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 90 },
+                  { "color": "green", "value": 99 }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "type": "timeseries",
+          "title": "Workflow Executions Over Time",
+          "description": "Timeline of workflow executions showing automation activity patterns. Helps identify peak usage periods and trends.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by () (count_over_time({app=\"n8n\"} |~ \"Workflow|execution|executed\" [$__interval]))",
+              "legendFormat": "Executions",
+              "queryType": "range"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#ff6d5a" },
+              "custom": {
+                "fillOpacity": 30,
+                "lineWidth": 2,
+                "gradientMode": "opacity"
+              }
+            }
+          }
+        },
+        {
+          "id": 7,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "type": "timeseries",
+          "title": "Error Rate Over Time",
+          "description": "Timeline of workflow errors. Spikes may indicate integration issues with external services or workflow misconfigurations.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by () (count_over_time({app=\"n8n\"} |~ \"error|ERROR|failed\" [$__interval]))",
+              "legendFormat": "Errors",
+              "queryType": "range"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#ef4444" },
+              "custom": {
+                "fillOpacity": 30,
+                "lineWidth": 2,
+                "gradientMode": "opacity",
+                "drawStyle": "bars"
+              }
+            }
+          }
+        },
+        {
+          "id": 8,
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 16 },
+          "type": "logs",
+          "title": "N8N Logs",
+          "description": "Live log stream from N8N showing workflow executions, webhook triggers, errors, and debug information.",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "{app=\"n8n\"}",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending"
+          }
+        }
+      ],
+      "refresh": "1m",
+      "schemaVersion": 39,
+      "tags": ["n8n", "workflows", "automation"],
+      "templating": { "list": [] },
+      "time": { "from": "now-24h", "to": "now" },
+      "title": "N8N Workflows",
+      "uid": "n8n-workflows",
+      "version": 1
+    }
