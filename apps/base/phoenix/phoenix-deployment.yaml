@@ -1,0 +1,80 @@
+# Phoenix Deployment - LLM Observability Platform
+# Replaces Langfuse with simpler OpenTelemetry-native solution
+# Docs: https://docs.arize.com/phoenix
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix
+  namespace: apps
+  labels:
+    app: phoenix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix
+  template:
+    metadata:
+      labels:
+        app: phoenix
+    spec:
+      # Run on x86 node for performance
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: NotIn
+                values:
+                - arm
+                - arm64
+      containers:
+      - name: phoenix
+        image: arizephoenix/phoenix:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6006
+          name: http
+        - containerPort: 4317
+          name: grpc-otlp
+        - containerPort: 9090
+          name: prometheus
+        env:
+        # PostgreSQL backend (using existing postgres)
+        - name: PHOENIX_SQL_DATABASE_URL
+          value: "postgresql://grafana_user:passwordfortesting123@postgres-service:5432/phoenix"
+        # Working directory for any local caching
+        - name: PHOENIX_WORKING_DIR
+          value: "/data"
+        # Disable telemetry
+        - name: PHOENIX_DISABLE_TELEMETRY
+          value: "true"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 6006
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 6006
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: phoenix-data
+          mountPath: /data
+      volumes:
+      - name: phoenix-data
+        persistentVolumeClaim:
+          claimName: phoenix-pvc

@@ -26,11 +26,11 @@ resources:
   - ./qdrant
   - ./mongodb
   - ./librechat
-#  - ./clickhouse   # Removed - was for Langfuse v3
-#  - ./langfuse     # Removed - using OpenWebUI native OTEL instead
   - ./alloy
   - ./mongo-express
   - ./jupyter
+  - ./phoenix  # LLM Observability (replaces Langfuse)
+
 
 
 

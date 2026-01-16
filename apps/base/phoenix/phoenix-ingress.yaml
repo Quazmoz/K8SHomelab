@@ -1,0 +1,21 @@
+# Phoenix Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: phoenix-ingress
+  namespace: apps
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: phoenix.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: phoenix
+            port:
+              number: 6006

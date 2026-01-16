@@ -95,6 +95,7 @@ spec:
             output {
               metrics = [otelcol.exporter.prometheus.default.input]
               logs    = [otelcol.exporter.loki.default.input]
+              traces  = [otelcol.exporter.otlp.phoenix.input]
             }
           }
 
@@ -113,6 +114,16 @@ spec:
           // Export OTEL logs to Loki
           otelcol.exporter.loki "default" {
             forward_to = [loki.write.default.receiver]
+          }
+
+          // Export traces to Phoenix (LLM Observability)
+          otelcol.exporter.otlp "phoenix" {
+            client {
+              endpoint = "phoenix.apps.svc.cluster.local:4317"
+              tls {
+                insecure = true
+              }
+            }
           }
 
           // Write to Loki
