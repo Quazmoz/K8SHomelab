@@ -10,4 +10,5 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  storageClassName: local-path
+  storageClassName: local-storage
+  volumeName: phoenix-local-pv

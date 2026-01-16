@@ -85,6 +85,12 @@ data:
             description: Python Notebooks
             siteMonitor: http://jupyter-svc.apps.svc.cluster.local:8888
             statusStyle: dot
+        - Phoenix:
+            href: http://phoenix.k8s.local
+            icon: mdi-chart-timeline-variant
+            description: LLM Observability
+            siteMonitor: http://phoenix.apps.svc.cluster.local:6006
+            statusStyle: dot
 
     - MCP Tools:
         - Azure:
@@ -437,7 +443,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v21-remove-uptime-kuma"
+        checksum/config: "v22-add-phoenix"
     spec:
       serviceAccountName: homepage
       nodeSelector:

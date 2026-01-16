@@ -5,8 +5,6 @@ resources:
   - node-health.yaml
   - pod-resources.yaml
   - storage.yaml
-  # Networking (consolidated: network.yaml → node-health.yaml, nginx-ingress.yaml → ingress-traffic.yaml)
-  - ingress-traffic.yaml
   # Logs
   - loki-logs.yaml
   # Databases
