@@ -196,7 +196,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT name as \"Model Name\", base_model_id as \"Base Model\", to_timestamp(updated_at / 1000000000.0) as \"Last Updated\" FROM model ORDER BY updated_at DESC LIMIT 15",
+              "rawSql": "SELECT name as \"Model Name\", base_model_id as \"Base Model\" FROM model ORDER BY updated_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -291,7 +291,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT name as \"Name\", description as \"Description\", to_timestamp(updated_at / 1000000000.0) as \"Last Updated\" FROM knowledge ORDER BY updated_at DESC LIMIT 10",
+              "rawSql": "SELECT name as \"Name\", description as \"Description\" FROM knowledge ORDER BY updated_at DESC LIMIT 10",
               "format": "table"
             }
           ]
@@ -306,7 +306,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT filename as \"Filename\", to_timestamp(updated_at / 1000000000.0) as \"Uploaded\" FROM file ORDER BY updated_at DESC LIMIT 15",
+              "rawSql": "SELECT filename as \"Filename\" FROM file ORDER BY updated_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -321,7 +321,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT id as \"Tool ID\", name as \"Name\", to_timestamp(updated_at / 1000000000.0) as \"Last Updated\" FROM tool ORDER BY updated_at DESC LIMIT 15",
+              "rawSql": "SELECT id as \"Tool ID\", name as \"Name\" FROM tool ORDER BY updated_at DESC LIMIT 15",
               "format": "table"
             }
           ]
@@ -378,3 +378,4 @@ data:
       "uid": "openwebui-advanced",
       "version": 4
     }
+

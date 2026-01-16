@@ -132,9 +132,7 @@ spec:
               url = "http://loki.apps.svc.cluster.local:3100/loki/api/v1/push"
             }
           }
-
-    # Expose OTLP ports
-    alloy:
+      # Extra ports for OTLP receivers
       extraPorts:
         - name: otlp-grpc
           port: 4317
