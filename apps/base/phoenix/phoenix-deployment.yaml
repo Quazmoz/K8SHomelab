@@ -41,6 +41,11 @@ spec:
         - containerPort: 9090
           name: prometheus
         env:
+        # Override Kubernetes-injected PHOENIX_PORT (service collision)
+        - name: PHOENIX_PORT
+          value: "6006"
+        - name: PHOENIX_HOST
+          value: "0.0.0.0"
         # PostgreSQL backend (using existing postgres)
         - name: PHOENIX_SQL_DATABASE_URL
           value: "postgresql://grafana_user:passwordfortesting123@postgres-service:5432/phoenix"
