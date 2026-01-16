@@ -35,7 +35,7 @@ spec:
       initContainers:
       # Install LangChain dependencies on startup
       - name: install-deps
-        image: jupyter/scipy-notebook:latest
+        image: quay.io/jupyter/scipy-notebook:python-3.12
         command:
         - /bin/bash
         - -c
@@ -62,7 +62,7 @@ spec:
             cpu: "1000m"
       containers:
       - name: jupyter
-        image: jupyter/scipy-notebook:latest
+        image: quay.io/jupyter/scipy-notebook:python-3.12
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8888
