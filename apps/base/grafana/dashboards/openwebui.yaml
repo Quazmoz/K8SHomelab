@@ -54,7 +54,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '24 hours'",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at ) > NOW() - INTERVAL '24 hours'",
               "format": "table"
             }
           ],
@@ -73,7 +73,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at / 1000000000.0) > NOW() - INTERVAL '7 days'",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at ) > NOW() - INTERVAL '7 days'",
               "format": "table"
             }
           ],
@@ -159,7 +159,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "count_over_time({app=\"openwebui\"} |~ \"(?i)error|exception|failed\" [24h])"
+              "expr": "sum(count_over_time({app=\"openwebui\"} |~ \"(?i)error|exception|failed\" [24h]))"
             }
           ],
           "fieldConfig": {
@@ -173,6 +173,9 @@ data:
                 ]
               }
             }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] }
           }
         },
         {
@@ -184,7 +187,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('day', to_timestamp(updated_at / 1000000000.0)) as time, COUNT(*) as \"Chats\" FROM chat WHERE to_timestamp(updated_at / 1000000000.0) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY 1 ORDER BY 1",
+              "rawSql": "SELECT date_trunc('day', to_timestamp(updated_at )) as time, COUNT(*) as \"Chats\" FROM chat WHERE to_timestamp(updated_at ) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY 1 ORDER BY 1",
               "format": "time_series"
             }
           ],
@@ -204,7 +207,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT date_trunc('day', to_timestamp(updated_at / 1000000000.0)) as time, COUNT(DISTINCT user_id) as \"Users\" FROM chat WHERE to_timestamp(updated_at / 1000000000.0) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY 1 ORDER BY 1",
+              "rawSql": "SELECT date_trunc('day', to_timestamp(updated_at )) as time, COUNT(DISTINCT user_id) as \"Users\" FROM chat WHERE to_timestamp(updated_at ) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY 1 ORDER BY 1",
               "format": "time_series"
             }
           ],
@@ -244,7 +247,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT CASE EXTRACT(DOW FROM to_timestamp(updated_at / 1000000000.0))::integer WHEN 0 THEN 'Sun' WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' END as day, COUNT(*) as chats FROM chat WHERE to_timestamp(updated_at / 1000000000.0) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY EXTRACT(DOW FROM to_timestamp(updated_at / 1000000000.0)) ORDER BY EXTRACT(DOW FROM to_timestamp(updated_at / 1000000000.0))",
+              "rawSql": "SELECT CASE EXTRACT(DOW FROM to_timestamp(updated_at ))::integer WHEN 0 THEN 'Sun' WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' END as day, COUNT(*) as chats FROM chat WHERE to_timestamp(updated_at ) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY EXTRACT(DOW FROM to_timestamp(updated_at )) ORDER BY EXTRACT(DOW FROM to_timestamp(updated_at ))",
               "format": "table"
             }
           ],
@@ -296,7 +299,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT to_timestamp(c.updated_at / 1000000000.0) as \"Time\", u.name as \"User\", c.title as \"Chat\", CASE WHEN c.pinned THEN '📌' ELSE '' END || CASE WHEN c.archived THEN '📦' ELSE '' END as \"Status\" FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 15",
+              "rawSql": "SELECT to_timestamp(c.updated_at ) as \"Time\", u.name as \"User\", c.title as \"Chat\", CASE WHEN c.pinned THEN '📌' ELSE '' END || CASE WHEN c.archived THEN '📦' ELSE '' END as \"Status\" FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 15",
               "format": "table"
             }
           ],
@@ -337,3 +340,4 @@ data:
       "uid": "openwebui",
       "version": 1
     }
+
