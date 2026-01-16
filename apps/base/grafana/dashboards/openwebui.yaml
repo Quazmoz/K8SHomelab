@@ -181,21 +181,25 @@ data:
         {
           "id": 8,
           "gridPos": { "h": 7, "w": 12, "x": 0, "y": 7 },
-          "type": "timeseries",
-          "title": "Chat Activity (by ID range)",
-          "description": "Chat distribution by ID ranges - shows when chats were created relative to each other",
+          "type": "barchart",
+          "title": "Model Usage (Top 10)",
+          "description": "Most popular models based on chat metadata",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT (id / 10)::int * 10 as id_range, COUNT(*) as chats FROM chat GROUP BY (id / 10)::int ORDER BY id_range",
+              "rawSql": "SELECT REGEXP_REPLACE(COALESCE(meta->>'model', 'Unknown'), '^models/', '') as model, COUNT(*) as chats FROM chat WHERE meta->>'model' IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT 10",
               "format": "table"
             }
           ],
+          "options": {
+            "orientation": "horizontal",
+            "showValue": "always"
+          },
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#7C3AED" },
-              "custom": { "fillOpacity": 30, "lineWidth": 2, "drawStyle": "bars" }
+              "color": { "mode": "group", "fixedColor": "#7C3AED" },
+              "custom": { "fillOpacity": 80 }
             }
           }
         },
