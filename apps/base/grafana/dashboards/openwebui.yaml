@@ -1,6 +1,5 @@
 # OpenWebUI Dashboard (Consolidated)
 # Combines: Operations (health, errors, logs) + Audit (activity trends, user analysis)
-# Replaces: openwebui-operations.yaml, openwebui-audit.yaml, openwebui-analytics.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -49,12 +48,12 @@ data:
           "id": 2,
           "gridPos": { "h": 4, "w": 4, "x": 0, "y": 3 },
           "type": "stat",
-          "title": "Chats Today",
+          "title": "Total Chats",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at ) > NOW() - INTERVAL '24 hours'",
+              "rawSql": "SELECT COUNT(*) FROM chat",
               "format": "table"
             }
           ],
@@ -68,12 +67,12 @@ data:
           "id": 3,
           "gridPos": { "h": 4, "w": 4, "x": 4, "y": 3 },
           "type": "stat",
-          "title": "This Week",
+          "title": "Total Users",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat WHERE to_timestamp(created_at ) > NOW() - INTERVAL '7 days'",
+              "rawSql": "SELECT COUNT(*) FROM \"user\"",
               "format": "table"
             }
           ],
@@ -87,18 +86,18 @@ data:
           "id": 4,
           "gridPos": { "h": 4, "w": 4, "x": 8, "y": 3 },
           "type": "stat",
-          "title": "Total Chats",
+          "title": "Archived",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM chat",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE archived = true",
               "format": "table"
             }
           ],
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#06b6d4" }
+              "color": { "mode": "fixed", "fixedColor": "#6b7280" }
             }
           }
         },
@@ -106,12 +105,12 @@ data:
           "id": 5,
           "gridPos": { "h": 4, "w": 4, "x": 12, "y": 3 },
           "type": "stat",
-          "title": "Total Users",
+          "title": "Pinned",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT COUNT(*) FROM \"user\"",
+              "rawSql": "SELECT COUNT(*) FROM chat WHERE pinned = true",
               "format": "table"
             }
           ],
@@ -180,47 +179,7 @@ data:
         },
         {
           "id": 8,
-          "gridPos": { "h": 7, "w": 12, "x": 0, "y": 7 },
-          "type": "timeseries",
-          "title": "Chat Activity Trend",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT date_trunc('day', to_timestamp(updated_at )) as time, COUNT(*) as \"Chats\" FROM chat WHERE to_timestamp(updated_at ) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY 1 ORDER BY 1",
-              "format": "time_series"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#7C3AED" },
-              "custom": { "fillOpacity": 30, "lineWidth": 2, "gradientMode": "opacity" }
-            }
-          }
-        },
-        {
-          "id": 9,
-          "gridPos": { "h": 7, "w": 12, "x": 12, "y": 7 },
-          "type": "timeseries",
-          "title": "Active Users Trend",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT date_trunc('day', to_timestamp(updated_at )) as time, COUNT(DISTINCT user_id) as \"Users\" FROM chat WHERE to_timestamp(updated_at ) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY 1 ORDER BY 1",
-              "format": "time_series"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "fixed", "fixedColor": "#22c55e" },
-              "custom": { "fillOpacity": 30, "lineWidth": 2, "drawStyle": "bars" }
-            }
-          }
-        },
-        {
-          "id": 10,
-          "gridPos": { "h": 7, "w": 8, "x": 0, "y": 14 },
+          "gridPos": { "h": 7, "w": 8, "x": 0, "y": 7 },
           "type": "piechart",
           "title": "User Activity Distribution",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
@@ -239,26 +198,27 @@ data:
           }
         },
         {
-          "id": 11,
-          "gridPos": { "h": 7, "w": 8, "x": 8, "y": 14 },
-          "type": "barchart",
-          "title": "Activity by Day of Week",
+          "id": 9,
+          "gridPos": { "h": 7, "w": 8, "x": 8, "y": 7 },
+          "type": "piechart",
+          "title": "User Roles",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT CASE EXTRACT(DOW FROM to_timestamp(updated_at ))::integer WHEN 0 THEN 'Sun' WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' END as day, COUNT(*) as chats FROM chat WHERE to_timestamp(updated_at ) BETWEEN $__timeFrom() AND $__timeTo() GROUP BY EXTRACT(DOW FROM to_timestamp(updated_at )) ORDER BY EXTRACT(DOW FROM to_timestamp(updated_at ))",
+              "rawSql": "SELECT role, COUNT(*) as count FROM \"user\" GROUP BY role",
               "format": "table"
             }
           ],
-          "options": { "orientation": "vertical", "showValue": "always" },
-          "fieldConfig": {
-            "defaults": { "color": { "mode": "continuous-GrYlRd" } }
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right" },
+            "pieType": "pie",
+            "reduceOptions": { "calcs": ["sum"], "values": true }
           }
         },
         {
-          "id": 12,
-          "gridPos": { "h": 7, "w": 8, "x": 16, "y": 14 },
+          "id": 10,
+          "gridPos": { "h": 7, "w": 8, "x": 16, "y": 7 },
           "type": "timeseries",
           "title": "Error Rate Trend",
           "datasource": { "type": "loki", "uid": "loki" },
@@ -277,8 +237,8 @@ data:
           }
         },
         {
-          "id": 13,
-          "gridPos": { "h": 7, "w": 12, "x": 0, "y": 21 },
+          "id": 11,
+          "gridPos": { "h": 7, "w": 12, "x": 0, "y": 14 },
           "type": "table",
           "title": "User Leaderboard",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
@@ -291,29 +251,29 @@ data:
           ]
         },
         {
-          "id": 14,
-          "gridPos": { "h": 7, "w": 12, "x": 12, "y": 21 },
+          "id": 12,
+          "gridPos": { "h": 7, "w": 12, "x": 12, "y": 14 },
           "type": "table",
-          "title": "Recent Activity",
+          "title": "Recent Chats",
+          "description": "Most recently active chats (ordered by ID descending)",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT to_timestamp(c.updated_at ) as \"Time\", u.name as \"User\", c.title as \"Chat\", CASE WHEN c.pinned THEN '📌' ELSE '' END || CASE WHEN c.archived THEN '📦' ELSE '' END as \"Status\" FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.updated_at DESC LIMIT 15",
+              "rawSql": "SELECT u.name as \"User\", c.title as \"Chat\", CASE WHEN c.pinned THEN '📌' ELSE '' END || CASE WHEN c.archived THEN '📦' ELSE '' END as \"Status\" FROM chat c LEFT JOIN \"user\" u ON c.user_id = u.id ORDER BY c.id DESC LIMIT 15",
               "format": "table"
             }
           ],
           "fieldConfig": {
             "overrides": [
-              { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 150 }] },
               { "matcher": { "id": "byName", "options": "User" }, "properties": [{ "id": "custom.width", "value": 120 }] },
               { "matcher": { "id": "byName", "options": "Status" }, "properties": [{ "id": "custom.width", "value": 60 }] }
             ]
           }
         },
         {
-          "id": 15,
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 28 },
+          "id": 13,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 21 },
           "type": "logs",
           "title": "OpenWebUI Logs",
           "datasource": { "type": "loki", "uid": "loki" },
@@ -340,4 +300,3 @@ data:
       "uid": "openwebui",
       "version": 1
     }
-
