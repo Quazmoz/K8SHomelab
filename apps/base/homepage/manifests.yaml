@@ -79,6 +79,12 @@ data:
             description: Alt LLM Interface
             siteMonitor: http://librechat.apps.svc.cluster.local:3080
             statusStyle: dot
+        - Jupyter:
+            href: http://jupyter.k8s.local
+            icon: si-jupyter
+            description: Python Notebooks
+            siteMonitor: http://jupyter.apps.svc.cluster.local:8888
+            statusStyle: dot
 
     - MCP Tools:
         - Azure:

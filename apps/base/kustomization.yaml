@@ -30,6 +30,7 @@ resources:
 #  - ./langfuse     # Removed - using OpenWebUI native OTEL instead
   - ./alloy
   - ./mongo-express
+  - ./jupyter
 
 
 

@@ -1,0 +1,349 @@
+# N8N LangChain RAG Workflow with Qdrant
+# This ConfigMap + Job imports a sample RAG workflow into N8N
+# The workflow demonstrates document embedding and retrieval with Qdrant
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: n8n-langchain-rag-workflow
+  namespace: apps
+data:
+  langchain-rag-qdrant.json: |
+    {
+      "name": "LangChain RAG with Qdrant",
+      "nodes": [
+        {
+          "parameters": {
+            "httpMethod": "POST",
+            "path": "rag-query",
+            "responseMode": "responseNode",
+            "options": {}
+          },
+          "id": "webhook",
+          "name": "RAG Query Webhook",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 2,
+          "position": [250, 300],
+          "webhookId": "rag-query"
+        },
+        {
+          "parameters": {
+            "modelId": {
+              "__rl": true,
+              "value": "gpt-3.5-turbo",
+              "mode": "list",
+              "cachedResultName": "gpt-3.5-turbo"
+            },
+            "options": {}
+          },
+          "id": "openai-chat",
+          "name": "OpenAI Chat Model",
+          "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+          "typeVersion": 1,
+          "position": [500, 500],
+          "credentials": {
+            "openAiApi": {
+              "id": "",
+              "name": "OpenAI API"
+            }
+          }
+        },
+        {
+          "parameters": {
+            "model": "text-embedding-ada-002",
+            "options": {}
+          },
+          "id": "openai-embeddings",
+          "name": "OpenAI Embeddings",
+          "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+          "typeVersion": 1,
+          "position": [500, 700],
+          "credentials": {
+            "openAiApi": {
+              "id": "",
+              "name": "OpenAI API"
+            }
+          }
+        },
+        {
+          "parameters": {
+            "qdrantCollection": {
+              "__rl": true,
+              "value": "langchain_demo",
+              "mode": "list"
+            },
+            "options": {}
+          },
+          "id": "qdrant-store",
+          "name": "Qdrant Vector Store",
+          "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+          "typeVersion": 1,
+          "position": [700, 600],
+          "credentials": {
+            "qdrantApi": {
+              "id": "",
+              "name": "Qdrant API"
+            }
+          }
+        },
+        {
+          "parameters": {
+            "topK": 4
+          },
+          "id": "retriever",
+          "name": "Vector Store Retriever",
+          "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+          "typeVersion": 1,
+          "position": [900, 600]
+        },
+        {
+          "parameters": {
+            "promptType": "define",
+            "text": "={{ $json.body.question }}",
+            "options": {}
+          },
+          "id": "qa-chain",
+          "name": "RAG QA Chain",
+          "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
+          "typeVersion": 1.3,
+          "position": [700, 300]
+        },
+        {
+          "parameters": {
+            "respondWith": "json",
+            "responseBody": "={{ JSON.stringify({ answer: $json.text, sources: $json.sourceDocuments }) }}",
+            "options": {}
+          },
+          "id": "respond",
+          "name": "Respond to Webhook",
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1.1,
+          "position": [950, 300]
+        }
+      ],
+      "connections": {
+        "RAG Query Webhook": {
+          "main": [[{"node": "RAG QA Chain", "type": "main", "index": 0}]]
+        },
+        "OpenAI Chat Model": {
+          "ai_languageModel": [[{"node": "RAG QA Chain", "type": "ai_languageModel", "index": 0}]]
+        },
+        "OpenAI Embeddings": {
+          "ai_embedding": [[{"node": "Qdrant Vector Store", "type": "ai_embedding", "index": 0}]]
+        },
+        "Qdrant Vector Store": {
+          "ai_vectorStore": [[{"node": "Vector Store Retriever", "type": "ai_vectorStore", "index": 0}]]
+        },
+        "Vector Store Retriever": {
+          "ai_retriever": [[{"node": "RAG QA Chain", "type": "ai_retriever", "index": 0}]]
+        },
+        "RAG QA Chain": {
+          "main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]
+        }
+      },
+      "settings": {
+        "executionOrder": "v1"
+      },
+      "active": false,
+      "meta": {
+        "instanceId": "homelab-rag-demo"
+      }
+    }
+
+  # Document ingestion workflow for loading documents into Qdrant
+  langchain-ingest-qdrant.json: |
+    {
+      "name": "LangChain Document Ingestion",
+      "nodes": [
+        {
+          "parameters": {
+            "httpMethod": "POST",
+            "path": "ingest-documents",
+            "responseMode": "responseNode",
+            "options": {}
+          },
+          "id": "webhook",
+          "name": "Ingest Webhook",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 2,
+          "position": [250, 300],
+          "webhookId": "ingest-documents"
+        },
+        {
+          "parameters": {
+            "documentContents": "={{ $json.body.text }}",
+            "options": {}
+          },
+          "id": "doc-loader",
+          "name": "Document Loader",
+          "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+          "typeVersion": 1,
+          "position": [450, 300]
+        },
+        {
+          "parameters": {
+            "chunkSize": 1000,
+            "chunkOverlap": 200
+          },
+          "id": "text-splitter",
+          "name": "Text Splitter",
+          "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+          "typeVersion": 1,
+          "position": [450, 500]
+        },
+        {
+          "parameters": {
+            "model": "text-embedding-ada-002",
+            "options": {}
+          },
+          "id": "openai-embeddings",
+          "name": "OpenAI Embeddings",
+          "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+          "typeVersion": 1,
+          "position": [650, 500],
+          "credentials": {
+            "openAiApi": {
+              "id": "",
+              "name": "OpenAI API"
+            }
+          }
+        },
+        {
+          "parameters": {
+            "mode": "insert",
+            "qdrantCollection": {
+              "__rl": true,
+              "value": "langchain_demo",
+              "mode": "list"
+            },
+            "options": {}
+          },
+          "id": "qdrant-insert",
+          "name": "Qdrant Insert",
+          "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+          "typeVersion": 1,
+          "position": [650, 300],
+          "credentials": {
+            "qdrantApi": {
+              "id": "",
+              "name": "Qdrant API"
+            }
+          }
+        },
+        {
+          "parameters": {
+            "respondWith": "json",
+            "responseBody": "={{ JSON.stringify({ success: true, message: 'Documents ingested into Qdrant' }) }}",
+            "options": {}
+          },
+          "id": "respond",
+          "name": "Respond",
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1.1,
+          "position": [850, 300]
+        }
+      ],
+      "connections": {
+        "Ingest Webhook": {
+          "main": [[{"node": "Document Loader", "type": "main", "index": 0}]]
+        },
+        "Document Loader": {
+          "ai_document": [[{"node": "Qdrant Insert", "type": "ai_document", "index": 0}]]
+        },
+        "Text Splitter": {
+          "ai_textSplitter": [[{"node": "Document Loader", "type": "ai_textSplitter", "index": 0}]]
+        },
+        "OpenAI Embeddings": {
+          "ai_embedding": [[{"node": "Qdrant Insert", "type": "ai_embedding", "index": 0}]]
+        },
+        "Qdrant Insert": {
+          "main": [[{"node": "Respond", "type": "main", "index": 0}]]
+        }
+      },
+      "settings": {
+        "executionOrder": "v1"
+      },
+      "active": false,
+      "meta": {
+        "instanceId": "homelab-ingest-demo"
+      }
+    }
+
+  import-rag-workflows.sh: |
+    #!/bin/sh
+    set -e
+    
+    N8N_URL="${N8N_API_URL:-http://n8n.apps.svc.cluster.local:5678}"
+    
+    echo "Waiting for n8n to be ready..."
+    until curl -sf "$N8N_URL/healthz" > /dev/null 2>&1; do
+      echo "n8n not ready, waiting..."
+      sleep 5
+    done
+    
+    echo "n8n is ready. Importing LangChain RAG workflows..."
+    
+    for file in /workflows/*.json; do
+      name=$(basename "$file" .json)
+      echo "Importing workflow: $name"
+      
+      # Try to create, if exists it will fail, that's OK
+      response=$(curl -sf -X POST "$N8N_URL/api/v1/workflows" \
+        -H "Content-Type: application/json" \
+        -H "X-N8N-API-KEY: $N8N_API_KEY" \
+        -d @"$file" 2>&1) && echo "Created: $name" || echo "Workflow $name may already exist: $response"
+    done
+    
+    echo "LangChain RAG workflow import complete!"
+    echo ""
+    echo "NEXT STEPS:"
+    echo "1. Open n8n at http://n8n.k8s.local"
+    echo "2. Go to Credentials and add:"
+    echo "   - OpenAI API (your API key)"
+    echo "   - Qdrant API (URL: http://qdrant.apps.svc.cluster.local:6333)"
+    echo "3. Open the workflows and connect the credentials"
+    echo "4. Activate the workflows to start using them!"
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: n8n-import-rag-workflows-v1
+  namespace: apps
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: import
+        image: curlimages/curl:8.5.0
+        command: ["/bin/sh", "/scripts/import-rag-workflows.sh"]
+        env:
+        - name: N8N_API_URL
+          value: "http://n8n.apps.svc.cluster.local:5678"
+        - name: N8N_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: n8n-credentials
+              key: N8N_API_KEY
+        volumeMounts:
+        - name: workflows
+          mountPath: /workflows
+        - name: scripts
+          mountPath: /scripts
+      volumes:
+      - name: workflows
+        configMap:
+          name: n8n-langchain-rag-workflow
+          items:
+          - key: langchain-rag-qdrant.json
+            path: langchain-rag-qdrant.json
+          - key: langchain-ingest-qdrant.json
+            path: langchain-ingest-qdrant.json
+      - name: scripts
+        configMap:
+          name: n8n-langchain-rag-workflow
+          items:
+          - key: import-rag-workflows.sh
+            path: import-rag-workflows.sh
+            mode: 0755

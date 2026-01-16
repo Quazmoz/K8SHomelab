@@ -1,0 +1,131 @@
+# Jupyter Notebook Deployment
+# Interactive Python environment for LangChain & RAG experimentation
+# Access: http://jupyter.k8s.local (token: langchain)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter
+  namespace: apps
+  labels:
+    app: jupyter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyter
+  template:
+    metadata:
+      labels:
+        app: jupyter
+    spec:
+      # Run on x86 node for better performance
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - quinn-hpprobook430g6
+      securityContext:
+        fsGroup: 100
+        runAsUser: 1000
+        runAsGroup: 100
+      initContainers:
+      # Install LangChain dependencies on startup
+      - name: install-deps
+        image: jupyter/scipy-notebook:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          pip install --user --no-cache-dir \
+            langchain \
+            langchain-community \
+            langchain-openai \
+            qdrant-client \
+            openai \
+            tiktoken \
+            sentence-transformers \
+            pypdf \
+            chromadb
+        volumeMounts:
+        - name: jupyter-data
+          mountPath: /home/jovyan
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "100m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      containers:
+      - name: jupyter
+        image: jupyter/scipy-notebook:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+          name: http
+        env:
+        # Authentication token for notebook access
+        - name: JUPYTER_TOKEN
+          value: "langchain"
+        # Enable JupyterLab interface
+        - name: JUPYTER_ENABLE_LAB
+          value: "yes"
+        # Qdrant connection for RAG examples
+        - name: QDRANT_HOST
+          value: "qdrant.apps.svc.cluster.local"
+        - name: QDRANT_PORT
+          value: "6333"
+        args:
+        - start-notebook.sh
+        - --NotebookApp.token=$(JUPYTER_TOKEN)
+        - --NotebookApp.allow_origin='*'
+        - --NotebookApp.base_url=/
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /api
+            port: 8888
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api
+            port: 8888
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        volumeMounts:
+        - name: jupyter-data
+          mountPath: /home/jovyan
+      volumes:
+      - name: jupyter-data
+        persistentVolumeClaim:
+          claimName: jupyter-pvc
+
+---
+# Jupyter Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyter
+  namespace: apps
+  labels:
+    app: jupyter
+spec:
+  type: ClusterIP
+  selector:
+    app: jupyter
+  ports:
+  - name: http
+    port: 8888
+    targetPort: 8888
+    protocol: TCP
