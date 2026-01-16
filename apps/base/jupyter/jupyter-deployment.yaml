@@ -68,6 +68,9 @@ spec:
         - containerPort: 8888
           name: http
         env:
+        # Override Kubernetes-injected JUPYTER_PORT (service collision)
+        - name: JUPYTER_PORT
+          value: "8888"
         # Authentication token for notebook access
         - name: JUPYTER_TOKEN
           value: "langchain"
@@ -113,10 +116,11 @@ spec:
 
 ---
 # Jupyter Service
+# Named jupyter-svc to avoid env var collision with JUPYTER_PORT
 apiVersion: v1
 kind: Service
 metadata:
-  name: jupyter
+  name: jupyter-svc
   namespace: apps
   labels:
     app: jupyter

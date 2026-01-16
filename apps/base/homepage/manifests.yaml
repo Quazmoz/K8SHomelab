@@ -83,7 +83,7 @@ data:
             href: http://jupyter.k8s.local
             icon: si-jupyter
             description: Python Notebooks
-            siteMonitor: http://jupyter.apps.svc.cluster.local:8888
+            siteMonitor: http://jupyter-svc.apps.svc.cluster.local:8888
             statusStyle: dot
 
     - MCP Tools:
