@@ -1,5 +1,6 @@
 # OpenWebUI Dashboard (Consolidated)
 # Combines: Operations (health, errors, logs) + Audit (activity trends, user analysis)
+# Note: OpenWebUI stores timestamps as BigInteger (nanoseconds since epoch)
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -179,46 +180,28 @@ data:
         },
         {
           "id": 8,
-          "gridPos": { "h": 7, "w": 8, "x": 0, "y": 7 },
-          "type": "piechart",
-          "title": "User Activity Distribution",
+          "gridPos": { "h": 7, "w": 12, "x": 0, "y": 7 },
+          "type": "timeseries",
+          "title": "Chat Activity (by ID range)",
+          "description": "Chat distribution by ID ranges - shows when chats were created relative to each other",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
               "refId": "A",
-              "rawSql": "SELECT u.name, COUNT(c.id) as conversations FROM chat c JOIN \"user\" u ON c.user_id = u.id GROUP BY u.name ORDER BY conversations DESC LIMIT 8",
+              "rawSql": "SELECT (id / 10)::int * 10 as id_range, COUNT(*) as chats FROM chat GROUP BY (id / 10)::int ORDER BY id_range",
               "format": "table"
             }
           ],
-          "options": {
-            "legend": { "displayMode": "table", "placement": "right" },
-            "pieType": "donut",
-            "reduceOptions": { "calcs": ["sum"], "values": true },
-            "displayLabels": ["percent"]
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "fixed", "fixedColor": "#7C3AED" },
+              "custom": { "fillOpacity": 30, "lineWidth": 2, "drawStyle": "bars" }
+            }
           }
         },
         {
           "id": 9,
-          "gridPos": { "h": 7, "w": 8, "x": 8, "y": 7 },
-          "type": "piechart",
-          "title": "User Roles",
-          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
-          "targets": [
-            {
-              "refId": "A",
-              "rawSql": "SELECT role, COUNT(*) as count FROM \"user\" GROUP BY role",
-              "format": "table"
-            }
-          ],
-          "options": {
-            "legend": { "displayMode": "table", "placement": "right" },
-            "pieType": "pie",
-            "reduceOptions": { "calcs": ["sum"], "values": true }
-          }
-        },
-        {
-          "id": 10,
-          "gridPos": { "h": 7, "w": 8, "x": 16, "y": 7 },
+          "gridPos": { "h": 7, "w": 12, "x": 12, "y": 7 },
           "type": "timeseries",
           "title": "Error Rate Trend",
           "datasource": { "type": "loki", "uid": "loki" },
@@ -237,8 +220,68 @@ data:
           }
         },
         {
+          "id": 10,
+          "gridPos": { "h": 7, "w": 8, "x": 0, "y": 14 },
+          "type": "piechart",
+          "title": "User Activity Distribution",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT u.name, COUNT(c.id) as conversations FROM chat c JOIN \"user\" u ON c.user_id = u.id GROUP BY u.name ORDER BY conversations DESC LIMIT 8",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right" },
+            "pieType": "donut",
+            "reduceOptions": { "calcs": ["sum"], "values": true },
+            "displayLabels": ["percent"]
+          }
+        },
+        {
           "id": 11,
-          "gridPos": { "h": 7, "w": 12, "x": 0, "y": 14 },
+          "gridPos": { "h": 7, "w": 8, "x": 8, "y": 14 },
+          "type": "piechart",
+          "title": "User Roles",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT role, COUNT(*) as count FROM \"user\" GROUP BY role",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right" },
+            "pieType": "pie",
+            "reduceOptions": { "calcs": ["sum"], "values": true }
+          }
+        },
+        {
+          "id": 12,
+          "gridPos": { "h": 7, "w": 8, "x": 16, "y": 14 },
+          "type": "barchart",
+          "title": "Top Chat Titles",
+          "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
+          "targets": [
+            {
+              "refId": "A",
+              "rawSql": "SELECT LEFT(title, 30) as title, COUNT(*) as count FROM chat WHERE title IS NOT NULL AND title != '' GROUP BY LEFT(title, 30) ORDER BY count DESC LIMIT 10",
+              "format": "table"
+            }
+          ],
+          "options": {
+            "orientation": "horizontal",
+            "showValue": "always"
+          },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "continuous-GrYlRd" } }
+          }
+        },
+        {
+          "id": 13,
+          "gridPos": { "h": 7, "w": 12, "x": 0, "y": 21 },
           "type": "table",
           "title": "User Leaderboard",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
@@ -251,11 +294,11 @@ data:
           ]
         },
         {
-          "id": 12,
-          "gridPos": { "h": 7, "w": 12, "x": 12, "y": 14 },
+          "id": 14,
+          "gridPos": { "h": 7, "w": 12, "x": 12, "y": 21 },
           "type": "table",
           "title": "Recent Chats",
-          "description": "Most recently active chats (ordered by ID descending)",
+          "description": "Most recently created chats (by ID)",
           "datasource": { "type": "postgres", "uid": "PostgreSQL-OpenWebUI" },
           "targets": [
             {
@@ -272,8 +315,8 @@ data:
           }
         },
         {
-          "id": 13,
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 21 },
+          "id": 15,
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 28 },
           "type": "logs",
           "title": "OpenWebUI Logs",
           "datasource": { "type": "loki", "uid": "loki" },
