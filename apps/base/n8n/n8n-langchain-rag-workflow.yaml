@@ -316,7 +316,7 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: import
-        image: curlimages/curl:8.5.0
+        image: curlimages/curl:8.18.0
         command: ["/bin/sh", "/scripts/import-rag-workflows.sh"]
         env:
         - name: N8N_API_URL

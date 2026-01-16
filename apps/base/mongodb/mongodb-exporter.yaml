@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: mongodb-exporter
-        image: percona/mongodb_exporter:0.40
+        image: percona/mongodb_exporter:0.47.2
         args:
           - "--mongodb.uri=mongodb://mongodb.apps.svc.cluster.local:27017"
           - "--collect-all"

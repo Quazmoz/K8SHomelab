@@ -151,7 +151,7 @@ spec:
         # These are the important flags for self-signed certificates and non-standard setups
         - --kubelet-insecure-tls
         - --kubelet-preferred-address-types=InternalIP
-        image: registry.k8s.io/metrics-server/metrics-server:v0.6.4
+        image: registry.k8s.io/metrics-server/metrics-server:v0.8.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

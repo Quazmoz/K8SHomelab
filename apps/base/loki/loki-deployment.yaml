@@ -38,7 +38,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: loki
-          image: grafana/loki:3.5.9
+          image: grafana/loki:3.6.3
           args:
             - "-config.file=/etc/loki/config.yaml"
             - "-validation.allow-structured-metadata=false"
