@@ -12,7 +12,7 @@ resources:
   - ingress.yaml
   # Custom GroupMe backend
   - groupme-backend.yaml
-  # Tanium MCP server
-  - tanium-mcp-server.yaml
+  # Tanium MCP server - disabled (token expired)
+  # - tanium-mcp-server.yaml
   # Custom ClickUp MCP server
   - clickup-mcp-server.yaml
