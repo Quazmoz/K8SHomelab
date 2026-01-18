@@ -11,3 +11,4 @@ resources:
   - n8n-ingress.yaml
   - n8n-groupme-workflows.yaml
   - n8n-langchain-rag-workflow.yaml
+  - n8n-interview-agent-workflows.yaml

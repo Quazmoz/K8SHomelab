@@ -1,0 +1,337 @@
+# N8N Interview Agent Workflows
+# Scrapes Quinn's professional profile for an MLOps/AI Engineering interview agent
+# Uses Gemini for embeddings and Q&A generation, Qdrant for vector storage
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: n8n-interview-agent-workflows
+  namespace: apps
+data:
+  # Workflow 1: Profile Scraper - Fetches content from portfolio sites
+  profile-scraper.json: |
+    {
+      "name": "Interview Agent - Profile Scraper",
+      "nodes": [
+        {
+          "parameters": {
+            "rule": {
+              "interval": [{"field": "weeks", "weeksInterval": 1}]
+            }
+          },
+          "id": "schedule",
+          "name": "Weekly Scrape",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [100, 300]
+        },
+        {
+          "parameters": {},
+          "id": "manual",
+          "name": "Manual Trigger",
+          "type": "n8n-nodes-base.manualTrigger",
+          "typeVersion": 1,
+          "position": [100, 450]
+        },
+        {
+          "parameters": {
+            "values": {
+              "string": [
+                {"name": "urls", "value": "https://quinn-favo.lovable.app,https://ai.quinnfavo.com,https://universe.quinnfavo.com,https://quinnfavo.com,https://devopstoolkit.quinnfavo.com"}
+              ]
+            }
+          },
+          "id": "set-urls",
+          "name": "Set Profile URLs",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3.4,
+          "position": [300, 370]
+        },
+        {
+          "parameters": {
+            "fieldToSplitOut": "urls",
+            "options": {"disableDotNotation": true}
+          },
+          "id": "split",
+          "name": "Split URLs",
+          "type": "n8n-nodes-base.splitOut",
+          "typeVersion": 1,
+          "position": [500, 370]
+        },
+        {
+          "parameters": {
+            "url": "={{ $json.urls }}",
+            "options": {
+              "timeout": 30000,
+              "response": {"response": {"fullResponse": true}}
+            }
+          },
+          "id": "http-request",
+          "name": "Fetch Page",
+          "type": "n8n-nodes-base.httpRequest",
+          "typeVersion": 4.2,
+          "position": [700, 370]
+        },
+        {
+          "parameters": {
+            "operation": "extractHtmlContent",
+            "extractionValues": {
+              "values": [
+                {"key": "title", "cssSelector": "title"},
+                {"key": "body", "cssSelector": "body", "returnValue": "text"},
+                {"key": "meta_description", "cssSelector": "meta[name='description']", "returnAttribute": "content"},
+                {"key": "og_description", "cssSelector": "meta[property='og:description']", "returnAttribute": "content"}
+              ]
+            }
+          },
+          "id": "html-extract",
+          "name": "Extract Content",
+          "type": "n8n-nodes-base.html",
+          "typeVersion": 1.2,
+          "position": [900, 370]
+        },
+        {
+          "parameters": {
+            "jsCode": "// Clean and structure the scraped content\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const url = item.json.urls || 'unknown';\n  const title = item.json.title || '';\n  const body = (item.json.body || '').replace(/\\s+/g, ' ').trim();\n  const description = item.json.meta_description || item.json.og_description || '';\n  \n  // Skip if no meaningful content\n  if (body.length < 50) continue;\n  \n  // Add MLOps/AI Engineering context tags\n  const content = `# ${title}\\n\\n${description}\\n\\n${body}`;\n  \n  results.push({\n    json: {\n      url,\n      title,\n      description,\n      content,\n      content_type: 'portfolio',\n      scraped_at: new Date().toISOString(),\n      tags: ['mlops', 'ai-engineering', 'devops', 'cloud', 'kubernetes']\n    }\n  });\n}\n\nreturn results;"
+          },
+          "id": "code-clean",
+          "name": "Clean Content",
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [1100, 370]
+        },
+        {
+          "parameters": {
+            "operation": "insert",
+            "schema": {"fromValue": "public"},
+            "table": {"fromValue": "interview_agent_content"},
+            "columns": {"value": {"url": "={{ $json.url }}", "title": "={{ $json.title }}", "content": "={{ $json.content }}", "content_type": "={{ $json.content_type }}", "scraped_at": "={{ $json.scraped_at }}", "processed": false}}
+          },
+          "id": "postgres-insert",
+          "name": "Store in Postgres",
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.5,
+          "position": [1300, 370],
+          "credentials": {
+            "postgres": {"id": "", "name": "Postgres Homelab"}
+          }
+        }
+      ],
+      "connections": {
+        "Weekly Scrape": {"main": [[{"node": "Set Profile URLs", "type": "main", "index": 0}]]},
+        "Manual Trigger": {"main": [[{"node": "Set Profile URLs", "type": "main", "index": 0}]]},
+        "Set Profile URLs": {"main": [[{"node": "Split URLs", "type": "main", "index": 0}]]},
+        "Split URLs": {"main": [[{"node": "Fetch Page", "type": "main", "index": 0}]]},
+        "Fetch Page": {"main": [[{"node": "Extract Content", "type": "main", "index": 0}]]},
+        "Extract Content": {"main": [[{"node": "Clean Content", "type": "main", "index": 0}]]},
+        "Clean Content": {"main": [[{"node": "Store in Postgres", "type": "main", "index": 0}]]}
+      },
+      "settings": {"executionOrder": "v1"},
+      "meta": {"instanceId": "interview-agent-scraper"}
+    }
+
+  # Workflow 2: RAG Ingestion - Chunks and embeds content into Qdrant
+  rag-ingestion.json: |
+    {
+      "name": "Interview Agent - RAG Ingestion",
+      "nodes": [
+        {
+          "parameters": {},
+          "id": "manual",
+          "name": "Manual Trigger",
+          "type": "n8n-nodes-base.manualTrigger",
+          "typeVersion": 1,
+          "position": [100, 300]
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "SELECT id, url, title, content FROM interview_agent_content WHERE processed = false"
+          },
+          "id": "postgres-fetch",
+          "name": "Fetch Unprocessed",
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.5,
+          "position": [300, 300],
+          "credentials": {
+            "postgres": {"id": "", "name": "Postgres Homelab"}
+          }
+        },
+        {
+          "parameters": {
+            "chunkSize": 800,
+            "chunkOverlap": 150
+          },
+          "id": "text-splitter",
+          "name": "Chunk Text",
+          "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+          "typeVersion": 1,
+          "position": [500, 500]
+        },
+        {
+          "parameters": {
+            "documentContents": "={{ $json.content }}",
+            "options": {
+              "metadata": {
+                "metadataValues": [
+                  {"name": "url", "value": "={{ $json.url }}"},
+                  {"name": "title", "value": "={{ $json.title }}"},
+                  {"name": "source_id", "value": "={{ $json.id }}"},
+                  {"name": "topic", "value": "mlops-ai-engineering"}
+                ]
+              }
+            }
+          },
+          "id": "doc-loader",
+          "name": "Load Document",
+          "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+          "typeVersion": 1,
+          "position": [500, 300]
+        },
+        {
+          "parameters": {
+            "model": "models/text-embedding-004",
+            "options": {}
+          },
+          "id": "gemini-embeddings",
+          "name": "Gemini Embeddings",
+          "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+          "typeVersion": 1,
+          "position": [700, 500],
+          "credentials": {
+            "googleGeminiApi": {"id": "", "name": "Gemini API"}
+          }
+        },
+        {
+          "parameters": {
+            "mode": "insert",
+            "qdrantCollection": {"__rl": true, "value": "quinn_profile", "mode": "list"},
+            "options": {}
+          },
+          "id": "qdrant-insert",
+          "name": "Insert to Qdrant",
+          "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+          "typeVersion": 1,
+          "position": [700, 300],
+          "credentials": {
+            "qdrantApi": {"id": "", "name": "Qdrant Homelab"}
+          }
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "UPDATE interview_agent_content SET processed = true WHERE id = {{ $json.source_id }}"
+          },
+          "id": "postgres-update",
+          "name": "Mark Processed",
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.5,
+          "position": [900, 300],
+          "credentials": {
+            "postgres": {"id": "", "name": "Postgres Homelab"}
+          }
+        }
+      ],
+      "connections": {
+        "Manual Trigger": {"main": [[{"node": "Fetch Unprocessed", "type": "main", "index": 0}]]},
+        "Fetch Unprocessed": {"main": [[{"node": "Load Document", "type": "main", "index": 0}]]},
+        "Chunk Text": {"ai_textSplitter": [[{"node": "Load Document", "type": "ai_textSplitter", "index": 0}]]},
+        "Load Document": {"ai_document": [[{"node": "Insert to Qdrant", "type": "ai_document", "index": 0}]]},
+        "Gemini Embeddings": {"ai_embedding": [[{"node": "Insert to Qdrant", "type": "ai_embedding", "index": 0}]]},
+        "Insert to Qdrant": {"main": [[{"node": "Mark Processed", "type": "main", "index": 0}]]}
+      },
+      "settings": {"executionOrder": "v1"},
+      "meta": {"instanceId": "interview-agent-rag"}
+    }
+
+  # Workflow 3: Interview Q&A Generator - Creates fine-tuning data
+  qa-generator.json: |
+    {
+      "name": "Interview Agent - Q&A Generator",
+      "nodes": [
+        {
+          "parameters": {},
+          "id": "manual",
+          "name": "Manual Trigger",
+          "type": "n8n-nodes-base.manualTrigger",
+          "typeVersion": 1,
+          "position": [100, 300]
+        },
+        {
+          "parameters": {
+            "operation": "executeQuery",
+            "query": "SELECT DISTINCT url, title, content FROM interview_agent_content WHERE processed = true LIMIT 20"
+          },
+          "id": "postgres-fetch",
+          "name": "Fetch Content",
+          "type": "n8n-nodes-base.postgres",
+          "typeVersion": 2.5,
+          "position": [300, 300],
+          "credentials": {
+            "postgres": {"id": "", "name": "Postgres Homelab"}
+          }
+        },
+        {
+          "parameters": {
+            "modelId": {"__rl": true, "value": "models/gemini-1.5-flash", "mode": "list"},
+            "promptType": "define",
+            "text": "You are helping create interview training data for an AI that will interview on behalf of Quinn Favo, a Senior DevOps & Cloud Architect specializing in MLOps and AI Engineering.\n\nBased on this content from Quinn's portfolio:\n\n---\nTitle: {{ $json.title }}\nURL: {{ $json.url }}\nContent: {{ $json.content }}\n---\n\nGenerate 5 realistic technical interview questions and answers that Quinn would give. Focus on:\n- MLOps practices (CI/CD for ML, model deployment, monitoring)\n- AI Engineering (LLMs, RAG, fine-tuning, vector databases)\n- DevOps/Cloud (Kubernetes, Azure, AWS, automation)\n- Leadership and architecture decisions\n\nFormat as JSON array:\n[\n  {\"instruction\": \"<interview question>\", \"input\": \"\", \"output\": \"<Quinn's detailed answer>\"}\n]\n\nMake answers sound natural, technical, and personalized to Quinn's experience. Include specific technologies, projects, and achievements where relevant.",
+            "options": {}
+          },
+          "id": "gemini-qa",
+          "name": "Generate Q&A",
+          "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+          "typeVersion": 1,
+          "position": [500, 300],
+          "credentials": {
+            "googleGeminiApi": {"id": "", "name": "Gemini API"}
+          }
+        },
+        {
+          "parameters": {
+            "jsCode": "// Parse and collect all Q&A pairs\nconst items = $input.all();\nlet allQA = [];\n\nfor (const item of items) {\n  try {\n    // Extract JSON from Gemini response\n    let text = item.json.text || item.json.content || '';\n    // Find JSON array in response\n    const jsonMatch = text.match(/\\[\\s*\\{[\\s\\S]*\\}\\s*\\]/);\n    if (jsonMatch) {\n      const qa = JSON.parse(jsonMatch[0]);\n      allQA = allQA.concat(qa);\n    }\n  } catch (e) {\n    console.log('Parse error:', e.message);\n  }\n}\n\n// Return as single item for file write\nreturn [{ json: { qa_pairs: allQA, count: allQA.length, generated_at: new Date().toISOString() } }];"
+          },
+          "id": "code-parse",
+          "name": "Parse Q&A",
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2,
+          "position": [700, 300]
+        },
+        {
+          "parameters": {
+            "operation": "write",
+            "fileName": "/data/quinn_interview_qa.json",
+            "fileContent": "={{ JSON.stringify($json.qa_pairs, null, 2) }}"
+          },
+          "id": "write-file",
+          "name": "Save for LlamaFactory",
+          "type": "n8n-nodes-base.readWriteFile",
+          "typeVersion": 1,
+          "position": [900, 300]
+        }
+      ],
+      "connections": {
+        "Manual Trigger": {"main": [[{"node": "Fetch Content", "type": "main", "index": 0}]]},
+        "Fetch Content": {"main": [[{"node": "Generate Q&A", "type": "main", "index": 0}]]},
+        "Generate Q&A": {"main": [[{"node": "Parse Q&A", "type": "main", "index": 0}]]},
+        "Parse Q&A": {"main": [[{"node": "Save for LlamaFactory", "type": "main", "index": 0}]]}
+      },
+      "settings": {"executionOrder": "v1"},
+      "meta": {"instanceId": "interview-agent-qa"}
+    }
+
+  # SQL schema for the interview agent content table
+  schema.sql: |
+    -- Run this in PostgreSQL to create the required table
+    CREATE TABLE IF NOT EXISTS interview_agent_content (
+      id SERIAL PRIMARY KEY,
+      url TEXT NOT NULL,
+      title TEXT,
+      content TEXT NOT NULL,
+      content_type VARCHAR(50) DEFAULT 'portfolio',
+      scraped_at TIMESTAMP DEFAULT NOW(),
+      processed BOOLEAN DEFAULT FALSE,
+      UNIQUE(url)
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_interview_content_processed 
+    ON interview_agent_content(processed);
