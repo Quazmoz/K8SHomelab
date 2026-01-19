@@ -87,6 +87,30 @@ spec:
           value: "http://alloy.apps.svc.cluster.local:4317"
         - name: OTEL_SERVICE_NAME
           value: "openwebui"
+        
+        # ========== RAG Configuration (Qdrant Vector Store) ==========
+        # Enable RAG with Qdrant as the vector database
+        - name: RAG_EMBEDDING_ENGINE
+          value: "openai"  # Uses configured OpenAI-compatible API for embeddings
+        - name: RAG_EMBEDDING_MODEL
+          value: "text-embedding-3-small"  # Or text-embedding-ada-002
+        # Qdrant Vector Store
+        - name: VECTOR_DB
+          value: "qdrant"
+        - name: QDRANT_URI
+          value: "http://qdrant.apps.svc.cluster.local:6333"
+        # RAG settings
+        - name: RAG_TOP_K
+          value: "5"  # Number of chunks to retrieve
+        - name: CHUNK_SIZE
+          value: "1000"
+        - name: CHUNK_OVERLAP
+          value: "100"
+        # Enable document upload
+        - name: ENABLE_RAG_WEB_LOADER
+          value: "true"
+        - name: ENABLE_RAG_WEB_SEARCH
+          value: "true"
         resources:
           requests:
             memory: "128Mi"
