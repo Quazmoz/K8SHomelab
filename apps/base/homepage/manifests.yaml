@@ -93,61 +93,11 @@ data:
             statusStyle: dot
 
     - MCP Tools:
-        - Azure:
-            href: http://mcpo.k8s.local/azure/docs
-            icon: azure
-            description: Cloud Management
-            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/azure/docs
-            statusStyle: dot
-        - Kubernetes:
-            href: http://mcpo.k8s.local/kubernetes/docs
-            icon: kubernetes
-            description: Cluster Ops
-            statusStyle: dot
-        - Prometheus:
-            href: http://mcpo.k8s.local/prometheus/docs
-            icon: prometheus.png
-            description: Metrics API
-            statusStyle: dot
-        - PostgreSQL:
-            href: http://mcpo.k8s.local/postgres/docs
-            icon: si-postgresql
-            description: Database API
-            statusStyle: dot
-        - n8n:
-            href: http://mcpo.k8s.local/n8n/docs
-            icon: n8n.png
-            description: Workflows API
-            statusStyle: dot
-        - ClickUp:
-            href: http://mcpo.k8s.local/clickup/docs
-            icon: mdi-clipboard-check
-            description: Project Mgmt
-            statusStyle: dot
-        - ClickUp Native:
-            href: http://mcpo.k8s.local/clickup-native/docs
-            icon: mdi-clipboard-check-outline
-            description: Custom MCP
-            statusStyle: dot
-        - MCPO:
-            href: http://mcpo.k8s.local
-            icon: mdi-server-network
-            description: MCP Gateway
-            statusStyle: dot
-        - FreshRSS:
-            href: http://mcpo.k8s.local/freshrss/docs
-            icon: si-rss
-            description: RSS API
-            statusStyle: dot
-        - GroupMe:
-            href: http://mcpo.k8s.local/groupme/docs
-            icon: mdi-forum
-            description: Messaging API
-            statusStyle: dot
-        - Tanium:
-            href: http://mcpo.k8s.local/tanium/docs
-            icon: mdi-shield-lock
-            description: Security API
+        - Context Forge:
+            href: http://mcp.k8s.local
+            icon: mdi-connection
+            description: MCP Gateway & Admin
+            siteMonitor: http://context-forge.apps.svc.cluster.local:4444/health
             statusStyle: dot
 
     - DevOps:
@@ -443,7 +393,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v22-add-phoenix"
+        checksum/config: "v23-context-forge"
     spec:
       serviceAccountName: homepage
       nodeSelector:
