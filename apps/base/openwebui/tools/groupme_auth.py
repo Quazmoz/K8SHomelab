@@ -20,28 +20,51 @@ class Tools:
         self.valves = self.Valves()
         self.user_valves = self.UserValves()
 
-    def _get_user_valves(self, __user__: dict) -> UserValves:
-        """Safely extract user valves."""
-        try:
-            valves_dict = __user__.get("valves", {})
-            return self.UserValves(**valves_dict)
-        except Exception:
-            return self.UserValves()
+    def _get_token(self, __user__: dict) -> str:
+        """Extract token from user valves using multiple methods."""
+        # Method 1: Direct valves dict
+        if "valves" in __user__:
+            valves = __user__["valves"]
+            if isinstance(valves, dict) and "REGISTRATION_TOKEN" in valves:
+                return valves.get("REGISTRATION_TOKEN", "")
+            if hasattr(valves, "REGISTRATION_TOKEN"):
+                return valves.REGISTRATION_TOKEN
+        
+        # Method 2: user_valves attribute
+        if "user_valves" in __user__:
+            uv = __user__["user_valves"]
+            if isinstance(uv, dict) and "REGISTRATION_TOKEN" in uv:
+                return uv.get("REGISTRATION_TOKEN", "")
+            if hasattr(uv, "REGISTRATION_TOKEN"):
+                return uv.REGISTRATION_TOKEN
+        
+        # Method 3: Check self.user_valves (set by OpenWebUI directly)
+        if hasattr(self, "user_valves") and self.user_valves:
+            if hasattr(self.user_valves, "REGISTRATION_TOKEN"):
+                return self.user_valves.REGISTRATION_TOKEN
+            if isinstance(self.user_valves, dict):
+                return self.user_valves.get("REGISTRATION_TOKEN", "")
+        
+        return ""
 
     async def register_token(self, __user__: dict = {}) -> str:
         """
         Securely register the token you saved in the Tool Settings (UserValves).
+        Go to Workspace > Tools > Auth Registration > click the gear icon and paste your token.
         """
-        user_valves = self._get_user_valves(__user__)
-        token = user_valves.REGISTRATION_TOKEN
+        token = self._get_token(__user__)
 
         if not token:
-            return "❌ Error: No token found. Please go to **Workspace > Tools > Auth Registration > Gear Icon** and paste your token in the 'REGISTRATION_TOKEN' field."
+            # Debug info
+            debug_keys = list(__user__.keys()) if __user__ else []
+            return f"❌ No token found. Please go to **Workspace > Tools > Auth Registration > Gear Icon** and paste your token in 'REGISTRATION_TOKEN'. (Debug: user keys={debug_keys})"
 
         # Get OpenWebUI JWT from the user context
-        jwt = __user__.get("token", "")
+        jwt = __user__.get("token", "") or __user__.get("jwt", "")
+        user_email = __user__.get("email", "")
+        
         if not jwt:
-            return "Error: Could not retrieve your OpenWebUI session token. Please try refreshing the page."
+            return "❌ Could not retrieve your session token. Please refresh the page and try again."
 
         url = self.valves.BACKEND_URL
         headers = {
@@ -49,14 +72,16 @@ class Tools:
             "Content-Type": "application/json"
         }
         payload = {
-            "groupme_token": token
+            "groupme_token": token,
+            "user_email": user_email
         }
 
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=10)
             if response.status_code == 200:
-                return "✅ Success! Your GroupMe token has been securely registered. It is now encrypted in the backend database. You can clear the token from the settings now."
+                return f"✅ Success! Your GroupMe token has been registered for {user_email}. You can now clear the token from settings."
             else:
                 return f"❌ Registration failed (Status {response.status_code}): {response.text}"
         except Exception as e:
             return f"❌ Connection error: {str(e)}"
+
