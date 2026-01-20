@@ -73,7 +73,7 @@ spec:
               name: postgres-credentials
               key: POSTGRES_PASSWORD
         - name: DATABASE_URL
-          value: "postgresql+asyncpg://grafana_user:$(DB_PASSWORD)@postgres-service.apps.svc.cluster.local:5432/context_forge"
+          value: "postgresql://grafana_user:$(DB_PASSWORD)@postgres-service.apps.svc.cluster.local:5432/context_forge"
         
         # Admin UI
         - name: MCPGATEWAY_UI_ENABLED
