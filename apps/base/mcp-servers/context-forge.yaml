@@ -22,6 +22,8 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: local-storage
+  volumeName: context-forge-local-pv
   resources:
     requests:
       storage: 1Gi

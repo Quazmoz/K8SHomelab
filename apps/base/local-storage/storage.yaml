@@ -385,5 +385,29 @@ spec:
       - matchExpressions:
         - key: kubernetes.io/hostname
           operator: In
+          - quinn-hpprobook430g6
+
+---
+# The Persistent Volume for Context Forge data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: context-forge-local-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/context-forge
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
           values:
           - quinn-hpprobook430g6
