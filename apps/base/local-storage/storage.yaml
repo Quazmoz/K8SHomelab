@@ -385,6 +385,7 @@ spec:
       - matchExpressions:
         - key: kubernetes.io/hostname
           operator: In
+          values:
           - quinn-hpprobook430g6
 
 ---
