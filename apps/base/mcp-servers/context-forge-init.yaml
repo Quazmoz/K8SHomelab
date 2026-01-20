@@ -74,7 +74,7 @@ data:
         for server in SERVERS:
             print(f"   👉 Registering {server['name']}...")
             try:
-                resp = requests.post(f"{API_URL}/servers", headers=headers, json=server)
+                resp = requests.post(f"{API_URL}/servers", headers=headers, json={"server": server})
                 if resp.status_code in [200, 201]:
                     print(f"      ✅ Success!")
                 elif resp.status_code in [400, 409]:
@@ -95,7 +95,7 @@ data:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: context-forge-init-v2
+  name: context-forge-init-v3
   namespace: apps
   labels:
     app: context-forge-init
