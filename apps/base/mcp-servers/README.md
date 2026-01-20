@@ -2,116 +2,121 @@
 
 Model Context Protocol (MCP) tools for OpenWebUI integration via **Context Forge**.
 
-## Overview
-
-| Component | Description | Port | Ingress Host |
-|-----------|-------------|------|--------------|
-| **Context Forge** | MCP Gateway with per-user auth | 4444 | `mcp.k8s.local` |
-| **GroupMe Backend** | GroupMe MCP server (Go) | 5000 | Internal only |
-| **ClickUp MCP** | ClickUp MCP server | 5000 | Internal only |
-
-## Architecture
+## System Architecture
 
 ```mermaid
-graph LR
-    A[OpenWebUI] --> B[Context Forge]
-    B --> C[GroupMe Backend]
-    B --> D[ClickUp MCP]
-    B --> E[Azure/Postgres/etc - stdio]
-    C --> F[(Redis - Token Storage)]
+graph TD
+    subgraph "K8s Cluster"
+        OWUI[OpenWebUI]
+        CF[Context Forge (Gateway)]
+        
+        subgraph "Backends"
+            GM[GroupMe Backend]
+            CU[ClickUp MCP]
+            N8N[n8n Workflow]
+        end
+        
+        subgraph "Storage"
+            Redis[(Redis)]
+            Postgres[(Postgres)]
+        end
+        
+        OWUI --"MCP /mcp (Streamable HTTP)"--> CF
+        CF --"SSE"--> GM
+        CF --"SSE"--> CU
+        CF --"HTTP"--> N8N
+        
+        GM --"Store/Read Tokens"--> Redis
+        CF --"Config/Logs"--> Postgres
+    end
 ```
 
-## MCP Servers
+## Signal Flows
 
-### SSE Servers (Backend Services)
+### 1. User Authentication (Token Registration)
 
-| Server | Internal URL | Per-User Auth |
-|--------|--------------|---------------|
-| **GroupMe** | `http://groupme-backend.apps.svc.cluster.local:5000/sse` | ✅ via `X-Authenticated-User` |
-| **ClickUp Native** | `http://clickup-mcp-server.apps.svc.cluster.local:5000/sse` | ❌ |
-| **n8n** | `http://n8n.apps.svc.cluster.local:5678/mcp-server/http` | ❌ (uses N8N_MCP_TOKEN) |
+How a user's GroupMe token is securely registered without ever being exposed in chat history.
 
-### stdio Servers (Spawned by Context Forge)
+```mermaid
+sequenceDiagram
+    participant User
+    participant OWUI as OpenWebUI
+    participant Tool as Auth Tool (Python)
+    participant GM as GroupMe Backend
+    participant Redis
 
-| Server | Package | Description |
-|--------|---------|-------------|
-| **Azure** | `@azure/mcp@latest` | Azure resource management |
-| **Postgres** | `@henkey/postgres-mcp-server` | Database inspection |
-| **Kubernetes** | `kubernetes-mcp-server@latest` | Cluster management |
-| **Prometheus** | `prometheus-mcp-server` | Metrics queries |
-| **ClickUp** | `@ivotoby/openapi-mcp-server` | ClickUp via OpenAPI |
-
-## Quick Start
-
-### 1. Create Secrets
-
-```bash
-# Context Forge secrets
-kubectl create secret generic context-forge-secrets -n apps \
-  --from-literal=JWT_SECRET_KEY="$(openssl rand -hex 32)" \
-  --from-literal=BASIC_AUTH_PASSWORD="$(openssl rand -base64 24)" \
-  --from-literal=PLATFORM_ADMIN_PASSWORD="$(openssl rand -base64 24)"
+    User->>OWUI: Enter Token in "UserValves" (Settings)
+    User->>OWUI: Message: "Register my token"
+    OWUI->>Tool: Execute register_token()
+    Note over Tool: Extracts token from UserValves<br>(NOT from chat message)
+    
+    Tool->>GM: POST /auth/register
+    Note right of Tool: Headers:<br>X-User-Email: user@example.com
+    Note right of Tool: Body:<br>{ "groupme_token": "..." }
+    
+    GM->>GM: Encrypt Token (AES-256)
+    GM->>Redis: SET user:email:token <encrypted_token>
+    GM-->>Tool: 200 OK
+    Tool-->>OWUI: "Token registered successfully"
+    OWUI-->>User: "Token registered successfully"
 ```
 
-### 2. Deploy
+### 2. Tool Execution (MCP Request)
 
-```bash
-git add -A && git commit -m "Deploy Context Forge" && git push
-flux reconcile kustomization apps --with-source
+How OpenWebUI calls a GroupMe tool using the authenticated user's credentials.
+
+```mermaid
+sequenceDiagram
+    participant OWUI as OpenWebUI
+    participant CF as Context Forge
+    participant GM as GroupMe Backend
+    participant Redis
+    participant API as GroupMe API
+
+    OWUI->>CF: POST /mcp/ (JSON-RPC)
+    Note right of OWUI: Request: list_groups<br>Header: Authorization Bearer <JWT>
+    
+    CF->>CF: Validate JWT
+    CF->>GM: Forward Request (SSE)
+    Note right of CF: Adds Header:<br>X-Authenticated-User: user@example.com
+    
+    GM->>Redis: GET user:email:token
+    Redis-->>GM: <encrypted_token>
+    GM->>GM: Decrypt Token
+    
+    GM->>API: GET https://api.groupme.com/...
+    Note right of GM: Header:<br>X-Access-Token: <decrypted_token>
+    
+    API-->>GM: JSON Response
+    GM-->>CF: JSON-RPC Result
+    CF-->>OWUI: JSON-RPC Result
 ```
 
-### 3. Get Admin Token
+## Component Details
 
-```bash
-kubectl exec -it deploy/context-forge -n apps -- \
-  python3 -m mcpgateway.utils.create_jwt_token \
-  --username admin@localhost --exp 0 --secret <JWT_SECRET_KEY>
-```
+| Component | Description | Port | Internal URL | Auth Type |
+|-----------|-------------|------|--------------|-----------|
+| **Context Forge** | Gateway/Router | 4444 | `http://context-forge.apps.svc.cluster.local:4444` | Bearer JWT |
+| **GroupMe** | Backend Service | 5000 | `http://groupme-backend.apps.svc.cluster.local:5000` | Header (`X-Authenticated-User`) |
+| **ClickUp** | MCP Server | 5000 | `http://clickup-mcp-server.apps.svc.cluster.local:5000` | None (Shared Key) |
 
-### 4. Register MCP Servers
+## Quick Start for GroupMe Auth
 
-Access the Admin UI at `http://mcp.k8s.local/admin` and register servers, or use the API:
+1.  **Configure Token**:
+    *   In OpenWebUI, go to **Workspace** -> **Tools** -> **Auth Registration**.
+    *   Click the **Gear Icon** (User Settings).
+    *   Paste your GroupMe Access Token in `REGISTRATION_TOKEN`.
+    *   Click **Save**.
 
-```bash
-# Register GroupMe
-curl -X POST http://mcp.k8s.local/servers \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "groupme", "type": "sse", "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse"}'
-```
+2.  **Register**:
+    *   Open a new chat.
+    *   Type: **"Register my GroupMe token"**.
+    *   Wait for success message.
 
-### 5. Configure OpenWebUI
+3.  **Cleanup**:
+    *   Go back to **Workspace** -> **Tools** -> **Auth Registration** settings.
+    *   Delete your token from `REGISTRATION_TOKEN` (it's now safely stored in the backend).
 
-1. Go to **Admin Settings** → **External Tools**
-2. Add Context Forge SSE endpoint: `http://context-forge.apps.svc.cluster.local:4444/sse`
-3. Or import from the OpenAPI spec: `http://mcp.k8s.local/openapi.json`
-
-## Per-User Authentication (GroupMe)
-
-GroupMe uses per-user token authentication:
-
-1. **User registers token** via backend API:
-   ```bash
-   POST /auth/register
-   Authorization: Bearer <OpenWebUI JWT>
-   Body: {"groupme_token": "..."}
-   ```
-
-2. **Context Forge** passes `X-Authenticated-User` header to GroupMe backend
-
-3. **GroupMe Backend** looks up encrypted token from Redis using user ID
-
-## Files
-
-| File | Purpose |
-|------|---------|
-| `context-forge.yaml` | Context Forge deployment, service, ingress |
-| `context-forge-servers.yaml` | Server registration documentation |
-| `groupme-backend.yaml` | GroupMe MCP backend (Go) |
-| `clickup-mcp-server.yaml` | ClickUp MCP server |
-
-## References
-
-- [Context Forge](https://ibm.github.io/mcp-context-forge/)
-- [MCP Specification](https://spec.modelcontextprotocol.io/)
-- [OpenWebUI Tools](https://docs.openwebui.com/features/plugin/tools)
+4.  **Use Tools**:
+    *   "List my GroupMe groups"
+    *   "Send a message to 'Family': Hello!"
