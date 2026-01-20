@@ -101,6 +101,8 @@ spec:
               key: PLATFORM_ADMIN_PASSWORD
         - name: PLATFORM_ADMIN_FULL_NAME
           value: "Platform Administrator"
+        - name: SECURE_COOKIES
+          value: "false"
         
         # Header Passthrough for per-user auth (GroupMe backend)
         - name: ENABLE_HEADER_PASSTHROUGH
@@ -216,7 +218,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
     # Homepage annotations
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "MCP Tools"
     gethomepage.dev/name: "Context Forge"
     gethomepage.dev/icon: "mdi-connection"
