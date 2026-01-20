@@ -25,24 +25,49 @@
    kubectl get pods -n apps -l app=context-forge
    ```
 
-4. **Register MCP Servers**
+4. **Register MCP Servers (via UI)**
    
-   Get your admin bearer token:
-   ```bash
-   kubectl exec -it deploy/context-forge -n apps -- \
-     python3 -m mcpgateway.utils.create_jwt_token \
-     --username admin@localhost --exp 0 --secret <JWT_SECRET_KEY_FROM_STEP_1>
-   ```
-   *(Replace `<JWT_SECRET_KEY...>` with the actual value from the secret)*
+   Go to `http://mcp.k8s.local/admin` -> **Add Server**:
 
-   Then use the `register.sh` script (or curl) to register your servers:
-   ```bash
-   # Register GroupMe
-   curl -X POST http://mcp.k8s.local/servers \
-     -H "Authorization: Bearer $TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{"name": "groupme", "type": "sse", "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse"}'
-   ```
+   ### SSE Servers (Remote)
+   | Name | Type | URL | Headers / Notes |
+   |------|------|-----|-----------------|
+   | **groupme** | SSE | `http://groupme-backend.apps.svc.cluster.local:5000/sse` | **Passthrough**: `X-Authenticated-User` |
+   | **clickup-native** | SSE | `http://clickup-mcp-server.apps.svc.cluster.local:5000/sse` | |
+   | **n8n** | SSE | `http://n8n.apps.svc.cluster.local:5678/mcp-server/http` | Header: `Authorization: Bearer <YOUR_N8N_TOKEN>` |
+
+   ### Stdio Servers (Local/Container)
+   For these, select **Type: Stdio**.
+
+   **Azure**
+   *   **Command**: `npx`
+   *   **Args**: `-y @azure/mcp@latest server start`
+   *   *(Env vars are auto-injected from deployment)*
+
+   **Kubernetes**
+   *   **Command**: `npx`
+   *   **Args**: `-y kubernetes-mcp-server@latest`
+
+   **PostgreSQL**
+   *   **Command**: `npx`
+   *   **Args**: `-y @henkey/postgres-mcp-server`
+   *   **Env Vars**:
+       *   `POSTGRES_HOST`: `postgres.apps.svc.cluster.local`
+       *   `POSTGRES_USER`: `grafana_user`
+       *   `POSTGRES_PASSWORD`: `passwordfortesting123`
+       *   `POSTGRES_DATABASE`: `postgres`
+
+   **Prometheus**
+   *   **Command**: `npx`
+   *   **Args**: `-y prometheus-mcp-server`
+   *   **Env Vars**:
+       *   `PROMETHEUS_URL`: `http://prometheus-server.apps.svc.cluster.local`
+
+   **FreshRSS**
+   *   **Command**: `npx`
+   *   **Args**: `-y mcp-server-fetch`
+   *   **Env Vars**:
+       *   `FETCH_URL`: `http://freshrss.apps.svc.cluster.local/api/greader.php`
 
 5. **Configure OpenWebUI**
    - Go to **Admin Settings > External Tools**.
