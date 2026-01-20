@@ -1,0 +1,13 @@
+{
+    "type": "mcp",
+    "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse",
+    "auth_type": "",
+    "key": "",
+    "config": {
+        "enable": true
+    },
+    "info": {
+        "name": "GroupMe Direct",
+        "description": "GroupMe MCP tools (direct SSE connection)"
+    }
+}

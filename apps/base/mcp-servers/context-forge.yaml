@@ -110,6 +110,12 @@ spec:
         - name: SECURE_COOKIES
           value: "false"
         
+        # MCP Transport Settings (enable all transports for OpenWebUI compatibility)
+        - name: TRANSPORT_TYPE
+          value: "all"
+        - name: JSON_RESPONSE_ENABLED
+          value: "true"
+        
         # Header Passthrough for per-user auth (GroupMe backend)
         - name: ENABLE_HEADER_PASSTHROUGH
           value: "true"

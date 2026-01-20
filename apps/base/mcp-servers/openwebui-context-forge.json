@@ -1,0 +1,13 @@
+{
+    "type": "mcp",
+    "url": "http://context-forge.apps.svc.cluster.local:4444/sse",
+    "auth_type": "basic",
+    "key": "admin:REPLACE_WITH_BASIC_AUTH_PASSWORD",
+    "config": {
+        "enable": true
+    },
+    "info": {
+        "name": "Context Forge",
+        "description": "MCP Gateway - All tools (GroupMe, Azure, Kubernetes, Postgres, Prometheus, ClickUp)"
+    }
+}
