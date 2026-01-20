@@ -36,6 +36,19 @@ spec:
           value: "sse"
         - name: PORT
           value: "5000"
+        # Multi-user mode settings (enables /auth/register endpoint)
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: groupme-mcp-secret
+              key: ENCRYPTION_KEY
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: groupme-mcp-secret
+              key: JWT_SECRET
+        - name: REDIS_URL
+          value: "redis://redis-service.apps.svc.cluster.local:6379"
         livenessProbe:
           httpGet:
             path: /health
