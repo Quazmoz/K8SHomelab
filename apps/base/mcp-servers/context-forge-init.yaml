@@ -50,16 +50,22 @@ data:
             print("❌ JWT_SECRET_KEY not set")
             sys.exit(1)
         
-        # Use PyJWT directly since we have it
-        import jwt
-        from datetime import datetime, timedelta
-        payload = {
-            "sub": "admin@localhost",
-            "exp": datetime.utcnow() + timedelta(hours=1),
-            "iat": datetime.utcnow()
-        }
-        token = jwt.encode(payload, secret, algorithm="HS256")
-        return token
+        # Use the internal mcpgateway utility
+        try:
+            result = subprocess.check_output([
+                sys.executable, "-m", "mcpgateway.utils.create_jwt_token",
+                "--username", "admin@localhost",
+                "--exp", "0",
+                "--secret", secret
+            ], text=True, stderr=subprocess.DEVNULL).strip()
+            # Filter for the actual token (starts with eyJ)
+            for line in result.split('\n'):
+                if line.startswith('eyJ'):
+                    return line
+            return result
+        except Exception as e:
+            print(f"❌ Token generation failed: {e}")
+            sys.exit(1)
 
     def register(token):
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
@@ -89,7 +95,7 @@ data:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: context-forge-init-v1
+  name: context-forge-init-v2
   namespace: apps
   labels:
     app: context-forge-init
@@ -101,12 +107,9 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: register
-        image: python:3.12-slim
-        command: ["sh", "-c"]
-        args:
-          - |
-            pip install requests pyjwt -q
-            python /scripts/register_servers.py
+        image: ghcr.io/ibm/mcp-context-forge:1.0.0-BETA-1
+        command: ["/app/.venv/bin/python3"]
+        args: ["/scripts/register_servers.py"]
         env:
         - name: JWT_SECRET_KEY
           valueFrom:
