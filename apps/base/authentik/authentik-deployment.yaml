@@ -44,8 +44,8 @@ spec:
             name: authentik-config
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "10m"
+            memory: "256Mi"
+            cpu: "100m"
           limits:
             memory: "2Gi"
             cpu: "2000m"
@@ -110,8 +110,8 @@ spec:
             name: authentik-config
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "10m"
+            memory: "256Mi"
+            cpu: "100m"
           limits:
             memory: "1Gi"
             cpu: "2000m"

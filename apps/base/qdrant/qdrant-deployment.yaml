@@ -28,11 +28,11 @@ spec:
           value: "6334"
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "50m"
+            memory: "512Mi"
+            cpu: "100m"
           limits:
-            memory: "2Gi"
-            cpu: "1000m"
+            memory: "4Gi"
+            cpu: "2000m"
         volumeMounts:
         - name: qdrant-storage
           mountPath: /qdrant/storage

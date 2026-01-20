@@ -40,8 +40,8 @@ spec:
           mountPath: /home/node/.n8n
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "10m"
+            memory: "256Mi"
+            cpu: "100m"
           limits:
             cpu: 2000m
             memory: 2Gi

@@ -50,10 +50,10 @@ spec:
           timeoutSeconds: 3
         resources:
           requests:
-            memory: "32Mi"
-            cpu: "10m"
+            memory: "64Mi"
+            cpu: "25m"
           limits:
-            memory: "256Mi"
+            memory: "512Mi"
             cpu: "500m"
         volumeMounts:
         - name: redis-data
