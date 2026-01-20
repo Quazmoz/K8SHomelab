@@ -59,21 +59,21 @@ class Tools:
             debug_keys = list(__user__.keys()) if __user__ else []
             return f"❌ No token found. Please go to **Workspace > Tools > Auth Registration > Gear Icon** and paste your token in 'REGISTRATION_TOKEN'. (Debug: user keys={debug_keys})"
 
-        # Get OpenWebUI JWT from the user context
-        jwt = __user__.get("token", "") or __user__.get("jwt", "")
-        user_email = __user__.get("email", "")
+        # Get user identity
+        user_email = __user__.get("email", "") or __user__.get("id", "") or __user__.get("name", "")
         
-        if not jwt:
-            return "❌ Could not retrieve your session token. Please refresh the page and try again."
+        if not user_email:
+            debug_keys = list(__user__.keys()) if __user__ else []
+            return f"❌ Could not determine your user identity. (Debug: user keys={debug_keys})"
 
         url = self.valves.BACKEND_URL
         headers = {
-            "Authorization": f"Bearer {jwt}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-User-Email": user_email
         }
         payload = {
             "groupme_token": token,
-            "user_email": user_email
+            "user_id": user_email
         }
 
         try:
