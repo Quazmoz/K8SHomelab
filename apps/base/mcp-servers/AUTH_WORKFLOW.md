@@ -9,54 +9,46 @@ Unlike simple API wrapping, this setup ensures that **user tokens are never expo
 ```mermaid
 sequenceDiagram
     participant User
-    participant OpenWebUI
-    participant ContextForge
+    participant UserValves as OpenWebUI (Valves)
+    participant AuthTool
     participant GroupMeBackend
     participant Redis
-    participant GroupMeAPI
 
-    Note over User, Redis: 1. Registration (One-Time)
-    User->>GroupMeBackend: POST /auth/register (Token + JWT)
+    Note over User, Redis: 1. Secure Registration
+    User->>UserValves: Paste Token in Settings (Not Chat)
+    User->>AuthTool: "Register my token" (Command)
+    AuthTool->>UserValves: Read REGISTRATION_TOKEN
+    AuthTool->>GroupMeBackend: POST /auth/register (Token + JWT)
     GroupMeBackend->>Redis: SET "user:{id}:groupme" = Encrypted(Token)
-    GroupMeBackend-->>User: 200 OK
-
-    Note over User, Redis: 2. Usage (Runtime)
-    User->>OpenWebUI: "List my groups"
-    OpenWebUI->>ContextForge: SSE Request (Headers: Authorization, X-User-ID)
-    ContextForge->>GroupMeBackend: Forward Request (Header: X-Authenticated-User)
-    GroupMeBackend->>Redis: GET "user:{id}:groupme"
-    Redis-->>GroupMeBackend: Encrypted Token
-    GroupMeBackend->>GroupMeBackend: Decrypt Token
-    GroupMeBackend->>GroupMeAPI: GET /groups (Header: X-Access-Token: <Token>)
-    GroupMeAPI-->>GroupMeBackend: Group Data
-    GroupMeBackend-->>OpenWebUI: Tool Result
+    GroupMeBackend-->>AuthTool: "Success!"
+    AuthTool-->>User: "Success! You can now clear the token."
 ```
 
-## 🔑 Key Concepts
+## 🔐 User Setup Guide
 
-1.  **Identity Propagation**: OpenWebUI authenticates the user. Context Forge trusts this identity and forwards it as the `X-Authenticated-User` header.
-2.  **Secure Storage**: GroupMe Access Tokens are stored in **Redis** (internal to the cluster), encrypted at rest.
-3.  **No Leaks**: The LLM never sees the raw Access Token, only the tool outputs.
+### Step 1: Get Your Token
+1.  Log in to [dev.groupme.com](https://dev.groupme.com).
+2.  Click **Access Token** in the top right.
+3.  Copy your access token.
 
-## 🛠️ User Setup Guide
+### Step 2: Securely Save Token
+1.  In Open WebUI, go to **Workspace > Tools**.
+2.  Find **Auth Registration** and click the **Gear Icon** (User Settings).
+3.  Paste your token into the **REGISTRATION_TOKEN** field.
+4.  Click **Save**.
 
-For a user to enable GroupMe tools, they must perform this one-time registration:
+### Step 3: Register
+1.  In a chat, simply type:
+    
+    > Register Token
 
-1.  **Get GroupMe Token**: Log in to [dev.groupme.com](https://dev.groupme.com) and copy your Access Token.
-2.  **Register Token**:
-    Run this command from your terminal (or use a helper tool if configured):
+2.  The AI will confirm: *"✅ Success! Your GroupMe token has been securely registered."*
 
-    ```bash
-    # Replace keys and token with your actual values
-    curl -X POST http://groupme-backend.apps.svc.cluster.local:5000/auth/register \
-      -H "Authorization: Bearer <YOUR_OPENWEBUI_JWT>" \
-      -H "Content-Type: application/json" \
-      -d '{"groupme_token": "YOUR_GROUPME_ACCESS_TOKEN"}'
-    ```
+3.  (Optional) You can now go back to **Step 2** and clear the token field for extra security.
 
-3.  **Verify**: The backend will return `{"status": "registered"}`.
+---
 
-## ⚙️ Configuration Verification
+## 🛠️ Verification
 
 Ensure your **Context Forge** deployment has header passthrough enabled:
 
