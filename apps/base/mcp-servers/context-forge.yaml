@@ -1,0 +1,234 @@
+# Context Forge - MCP Gateway
+# Replaces mcpo for centralized MCP server management with per-user auth
+# Docs: https://ibm.github.io/mcp-context-forge/
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: context-forge-secrets
+  namespace: apps
+type: Opaque
+stringData:
+  # Generate with: openssl rand -hex 32
+  JWT_SECRET_KEY: "REPLACE_WITH_SECURE_KEY_32_CHARS_MIN"
+  BASIC_AUTH_PASSWORD: "REPLACE_WITH_SECURE_PASSWORD"
+  PLATFORM_ADMIN_PASSWORD: "REPLACE_WITH_SECURE_PASSWORD"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: context-forge-data
+  namespace: apps
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: context-forge
+  namespace: apps
+  labels:
+    app: context-forge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: context-forge
+  template:
+    metadata:
+      labels:
+        app: context-forge
+    spec:
+      # Match existing mcpo node selector for consistency
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      serviceAccountName: context-forge
+      containers:
+      - name: context-forge
+        image: ghcr.io/ibm/mcp-context-forge:1.0.0-BETA-1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4444
+          name: http
+        env:
+        # Core settings
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "4444"
+        - name: LOG_LEVEL
+          value: "INFO"
+        
+        # Database (SQLite, persisted)
+        - name: DATABASE_URL
+          value: "sqlite:////data/mcp.db"
+        
+        # Admin UI
+        - name: MCPGATEWAY_UI_ENABLED
+          value: "true"
+        - name: MCPGATEWAY_ADMIN_API_ENABLED
+          value: "true"
+        
+        # Authentication
+        - name: AUTH_REQUIRED
+          value: "true"
+        - name: BASIC_AUTH_USER
+          value: "admin"
+        - name: BASIC_AUTH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: context-forge-secrets
+              key: BASIC_AUTH_PASSWORD
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: context-forge-secrets
+              key: JWT_SECRET_KEY
+        
+        # Platform Admin
+        - name: PLATFORM_ADMIN_EMAIL
+          value: "admin@localhost"
+        - name: PLATFORM_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: context-forge-secrets
+              key: PLATFORM_ADMIN_PASSWORD
+        - name: PLATFORM_ADMIN_FULL_NAME
+          value: "Platform Administrator"
+        
+        # Header Passthrough for per-user auth (GroupMe backend)
+        - name: ENABLE_HEADER_PASSTHROUGH
+          value: "true"
+        - name: DEFAULT_PASSTHROUGH_HEADERS
+          value: '["X-Authenticated-User", "Authorization"]'
+        
+        # Pass through existing MCP credentials for servers that need them
+        # Azure MCP
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_TENANT_ID
+              optional: true
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_ID
+              optional: true
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_SECRET
+              optional: true
+        - name: AZURE_SUBSCRIPTION_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_SUBSCRIPTION_ID
+              optional: true
+        # n8n MCP
+        - name: N8N_MCP_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: n8n-mcp-credentials
+              key: N8N_MCP_TOKEN
+              optional: true
+        # ClickUp MCP
+        - name: CLICKUP_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: clickup-mcp-credentials
+              key: CLICKUP_API_KEY
+              optional: true
+        
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4444
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4444
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+        
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: context-forge-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: context-forge
+  namespace: apps
+  labels:
+    app: context-forge
+spec:
+  type: ClusterIP
+  selector:
+    app: context-forge
+  ports:
+  - port: 4444
+    targetPort: 4444
+    name: http
+---
+# Internal ingress (same pattern as mcpo)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: context-forge-ingress
+  namespace: apps
+  labels:
+    app: context-forge
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization, X-Authenticated-User"
+    # SSE support
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    # Homepage annotations
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "MCP Tools"
+    gethomepage.dev/name: "Context Forge"
+    gethomepage.dev/icon: "mdi-connection"
+    gethomepage.dev/description: "MCP Gateway with per-user auth"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: mcp.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: context-forge
+            port:
+              number: 4444

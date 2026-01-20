@@ -2,17 +2,22 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: apps
 resources:
-  # mcpo config for multiple MCP servers
-  - mcpo-config.yaml
-  # mcpo RBAC for Kubernetes API access
-  - mcpo-rbac.yaml
-  # mcpo - MCP-to-OpenAPI proxy
-  - mcpo-deployment.yaml
-  # Ingress for mcpo
-  - ingress.yaml
-  # Custom GroupMe backend
+  # Context Forge - MCP Gateway (replaces mcpo)
+  - context-forge.yaml
+  # Context Forge server registration documentation
+  - context-forge-servers.yaml
+  # Context Forge RBAC (for Kubernetes MCP)
+  - context-forge-rbac.yaml
+  # Custom GroupMe backend (SSE MCP server)
   - groupme-backend.yaml
+  # Custom ClickUp MCP server (SSE)
+  - clickup-mcp-server.yaml
   # Tanium MCP server - disabled (token expired)
   # - tanium-mcp-server.yaml
-  # Custom ClickUp MCP server
-  - clickup-mcp-server.yaml
+  
+  # --- Legacy mcpo resources (DEPRECATED - remove after migration) ---
+  # - mcpo-config.yaml
+  # - mcpo-rbac.yaml  
+  # - mcpo-deployment.yaml
+  # - ingress.yaml
+

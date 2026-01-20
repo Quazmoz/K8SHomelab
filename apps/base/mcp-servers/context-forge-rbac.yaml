@@ -1,0 +1,60 @@
+# ServiceAccount for Context Forge
+# Required for 'kubernetes-mcp-server' to access cluster resources
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: context-forge
+  namespace: apps
+---
+# ClusterRole with read access to common resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: context-forge-cluster-reader
+rules:
+# Core API resources
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps", "secrets", "namespaces", "nodes", "persistentvolumes", "persistentvolumeclaims", "events", "endpoints", "resourcequotas", "limitranges"]
+  verbs: ["get", "list", "watch"]
+# Pods logs and exec
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+# Apps API
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+  verbs: ["get", "list", "watch"]
+# Batch jobs
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch"]
+# Networking
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses", "networkpolicies", "ingressclasses"]
+  verbs: ["get", "list", "watch"]
+# Storage
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses", "volumeattachments"]
+  verbs: ["get", "list", "watch"]
+# Metrics API
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes", "pods"]
+  verbs: ["get", "list"]
+# Flux CD resources
+- apiGroups: ["source.toolkit.fluxcd.io", "kustomize.toolkit.fluxcd.io", "helm.toolkit.fluxcd.io", "notification.toolkit.fluxcd.io"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: context-forge-cluster-reader-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: context-forge-cluster-reader
+subjects:
+- kind: ServiceAccount
+  name: context-forge
+  namespace: apps
