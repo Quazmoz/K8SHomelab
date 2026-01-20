@@ -1,0 +1,122 @@
+# Context Forge Server Registration Init Job
+# Automatically registers MCP servers after Context Forge starts
+# This Job runs once per deployment (using ttlSecondsAfterFinished for cleanup)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: context-forge-init-scripts
+  namespace: apps
+data:
+  register_servers.py: |
+    import json
+    import os
+    import sys
+    import subprocess
+    import requests
+    import time
+
+    API_URL = "http://context-forge.apps.svc.cluster.local:4444"
+    SERVERS = [
+        # SSE Servers
+        {"name": "groupme", "type": "sse", "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse", "passthrough_headers": ["X-Authenticated-User"]},
+        {"name": "clickup-native", "type": "sse", "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"},
+        # Stdio Servers
+        {"name": "azure", "type": "stdio", "command": "npx", "args": ["-y", "@azure/mcp@latest", "server", "start"]},
+        {"name": "kubernetes", "type": "stdio", "command": "npx", "args": ["-y", "kubernetes-mcp-server@latest"]},
+        {"name": "postgres", "type": "stdio", "command": "npx", "args": ["-y", "@henkey/postgres-mcp-server"], "env": {"POSTGRES_HOST": "postgres.apps.svc.cluster.local", "POSTGRES_USER": "grafana_user", "POSTGRES_PASSWORD": "passwordfortesting123", "POSTGRES_DATABASE": "postgres", "POSTGRES_PORT": "5432"}},
+        {"name": "prometheus", "type": "stdio", "command": "npx", "args": ["-y", "prometheus-mcp-server"], "env": {"PROMETHEUS_URL": "http://prometheus-server.apps.svc.cluster.local"}},
+        {"name": "freshrss", "type": "stdio", "command": "npx", "args": ["-y", "mcp-server-fetch"], "env": {"FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"}},
+        {"name": "clickup-openapi", "type": "stdio", "command": "npx", "args": ["-y", "@ivotoby/openapi-mcp-server", "--api-base-url", "https://api.clickup.com/api/v2", "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"]}
+    ]
+
+    def wait_for_context_forge():
+        print("⏳ Waiting for Context Forge to be ready...")
+        for i in range(60):  # Wait up to 5 minutes
+            try:
+                resp = requests.get(f"{API_URL}/health", timeout=5)
+                if resp.status_code == 200:
+                    print("✅ Context Forge is ready!")
+                    return True
+            except Exception:
+                pass
+            time.sleep(5)
+        print("❌ Context Forge did not become ready in time")
+        return False
+
+    def get_token():
+        print("🔑 Generating Token...")
+        secret = os.environ.get("JWT_SECRET_KEY", "")
+        if not secret:
+            print("❌ JWT_SECRET_KEY not set")
+            sys.exit(1)
+        
+        # Use PyJWT directly since we have it
+        import jwt
+        from datetime import datetime, timedelta
+        payload = {
+            "sub": "admin@localhost",
+            "exp": datetime.utcnow() + timedelta(hours=1),
+            "iat": datetime.utcnow()
+        }
+        token = jwt.encode(payload, secret, algorithm="HS256")
+        return token
+
+    def register(token):
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        print(f"📡 Registering servers with {API_URL}...")
+        
+        for server in SERVERS:
+            print(f"   👉 Registering {server['name']}...")
+            try:
+                resp = requests.post(f"{API_URL}/servers", headers=headers, json=server)
+                if resp.status_code in [200, 201]:
+                    print(f"      ✅ Success!")
+                elif resp.status_code in [400, 409]:
+                    print(f"      🔹 Already Registered")
+                else:
+                    print(f"      ⚠️  Failed: {resp.status_code} - {resp.text[:200]}")
+            except Exception as e:
+                print(f"      ❌ Network Error: {e}")
+
+    if __name__ == "__main__":
+        if wait_for_context_forge():
+            token = get_token()
+            register(token)
+        else:
+            sys.exit(1)
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: context-forge-init-v1
+  namespace: apps
+  labels:
+    app: context-forge-init
+spec:
+  ttlSecondsAfterFinished: 300  # Clean up 5 min after completion
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: register
+        image: python:3.12-slim
+        command: ["sh", "-c"]
+        args:
+          - |
+            pip install requests pyjwt -q
+            python /scripts/register_servers.py
+        env:
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: context-forge-secrets
+              key: JWT_SECRET_KEY
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      volumes:
+      - name: scripts
+        configMap:
+          name: context-forge-init-scripts

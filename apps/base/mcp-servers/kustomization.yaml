@@ -8,6 +8,8 @@ resources:
   - context-forge-servers.yaml
   # Context Forge RBAC (for Kubernetes MCP)
   - context-forge-rbac.yaml
+  # Context Forge init job (auto-registers servers on startup)
+  - context-forge-init.yaml
   # Custom GroupMe backend (SSE MCP server)
   - groupme-backend.yaml
   # Custom ClickUp MCP server (SSE)
