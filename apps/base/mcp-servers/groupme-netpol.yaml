@@ -26,6 +26,9 @@ spec:
     - podSelector:
         matchLabels:
           app: context-forge
+    - podSelector:
+        matchLabels:
+          app: openwebui
     ports:
     - protocol: TCP
       port: 5000
