@@ -100,22 +100,22 @@ data:
             siteMonitor: http://context-forge.apps.svc.cluster.local:4444/health
             statusStyle: dot
         - Azure MCP:
-            href: http://mcpo.k8s.local/docs
+            href: http://mcpo.k8s.local/azure/docs
             icon: mdi-microsoft-azure
             description: Azure Integration
-            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/openapi.json
+            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/azure/openapi.json
             statusStyle: dot
         - Kubernetes MCP:
-            href: http://mcpo.k8s.local/docs
+            href: http://mcpo.k8s.local/kubernetes/docs
             icon: si-kubernetes
             description: K8s Management
-            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/openapi.json
+            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/kubernetes/openapi.json
             statusStyle: dot
         - Postgres MCP:
-            href: http://mcpo.k8s.local/docs
+            href: http://mcpo.k8s.local/postgres/docs
             icon: si-postgresql
             description: Database Tool
-            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/openapi.json
+            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/postgres/openapi.json
             statusStyle: dot
 
     - DevOps:
