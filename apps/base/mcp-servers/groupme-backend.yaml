@@ -33,7 +33,7 @@ spec:
               name: groupme-mcp-secret
               key: GROUPME_ACCESS_TOKEN
         - name: MCP_TRANSPORT
-          value: "sse"
+          value: "streamable-http"
         - name: PORT
           value: "5000"
         # Multi-user mode settings (enables /auth/register endpoint)
@@ -47,8 +47,14 @@ spec:
             secretKeyRef:
               name: groupme-mcp-secret
               key: JWT_SECRET
-        - name: REDIS_URL
-          value: "redis://redis-service.apps.svc.cluster.local:6379"
+        # Database for token storage (Postgres instead of Redis)
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: POSTGRES_PASSWORD
+        - name: DATABASE_URL
+          value: "postgresql://grafana_user:$(DB_PASSWORD)@postgres-service.apps.svc.cluster.local:5432/groupme_tokens"
         livenessProbe:
           httpGet:
             path: /health
