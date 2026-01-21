@@ -54,7 +54,7 @@ spec:
               name: postgres-credentials
               key: POSTGRES_PASSWORD
         - name: DATABASE_URL
-          value: "postgresql://grafana_user:$(DB_PASSWORD)@postgres-service.apps.svc.cluster.local:5432/groupme_tokens"
+          value: "postgresql://grafana_user:$(DB_PASSWORD)@postgres-service.apps.svc.cluster.local:5432/groupme_tokens?sslmode=disable"
         livenessProbe:
           httpGet:
             path: /health
