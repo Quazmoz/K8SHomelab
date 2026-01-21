@@ -71,6 +71,8 @@ spec:
         # Ollama configuration (if using local Ollama)
         - name: OLLAMA_BASE_URL
           value: ""
+        - name: ENABLE_OLLAMA_API
+          value: "false"
         # General settings
         - name: ENV
           value: "prod"
