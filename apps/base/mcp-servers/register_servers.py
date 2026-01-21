@@ -10,17 +10,10 @@ import time
 API_URL = "http://localhost:4444"
 SERVERS = [
     # SSE Servers
-    {
-        "name": "groupme",
-        "type": "sse",
-        "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse",
-        "passthrough_headers": ["X-Authenticated-User"]
-    },
-    {
-        "name": "clickup-native",
-        "type": "sse",
-        "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"
-    },
+    # SSE Servers - Manually managed by user
+    # {"name": "groupme", ...},
+    # {"name": "clickup-native", ...},
+
     # Stdio Servers
     {
         "name": "azure",
@@ -71,20 +64,7 @@ SERVERS = [
             "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
         }
     },
-        {
-        "name": "clickup-openapi",
-        "type": "stdio",
-        "command": "npx",
-        "args": [
-            "-y", 
-            "@ivotoby/openapi-mcp-server", 
-            "--api-base-url", "https://api.clickup.com/api/v2",
-            "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"
-        ],
-        "env": {
-             "CLICKUP_API_KEY": os.environ.get("CLICKUP_API_KEY", "") # Will pick up from pod env if set
-        }
-    }
+    # {"name": "clickup-openapi", ...}
 ]
 
 def get_token():
