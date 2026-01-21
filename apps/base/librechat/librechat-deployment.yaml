@@ -41,7 +41,7 @@ spec:
         runAsGroup: 1000
       containers:
       - name: librechat
-        image: ghcr.io/danny-avila/librechat:latest
+        image: ghcr.io/danny-avila/librechat@sha256:a59f7c1eea70a48ff886ae629c7bb6d0ad0c356530483721351452c65da3c3aa
         imagePullPolicy: Always
         ports:
         - containerPort: 3080

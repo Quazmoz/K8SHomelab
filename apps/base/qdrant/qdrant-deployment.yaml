@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: qdrant
-        image: qdrant/qdrant:latest
+        image: qdrant/qdrant@sha256:0425e3e03e7fd9b3dc95c4214546afe19de2eb2e28ca621441a56663ac6e1f46
         ports:
         - containerPort: 6333
           name: http

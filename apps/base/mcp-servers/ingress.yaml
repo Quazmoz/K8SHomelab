@@ -14,11 +14,12 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
     # Homepage annotations
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "AI & Automation"
     gethomepage.dev/name: "MCP Servers"
     gethomepage.dev/icon: "openai"
     gethomepage.dev/description: "MCP Tools via OpenAPI"
+    gethomepage.dev/href: "http://mcpo.k8s.local/docs"
 spec:
   ingressClassName: nginx
   rules:

@@ -59,6 +59,24 @@ spec:
         # Default database
         - name: POSTGRES_DB
           value: "postgres"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
         resources:
           requests:
             memory: "512Mi"

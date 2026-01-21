@@ -22,7 +22,7 @@ spec:
         kubernetes.io/hostname: quinn-hpprobook430g6
       containers:
       - name: redisinsight
-        image: redis/redisinsight:latest
+        image: redis/redisinsight@sha256:b7aa18e73329ebb2e3d9e949b8d35193bf5415ef35c16fd9a50e6f832922b296
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5540
