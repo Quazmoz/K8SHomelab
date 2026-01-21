@@ -55,6 +55,7 @@ data:
             "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"
           ]
         },
+
         "freshrss": {
           "command": "npx",
           "args": ["-y", "mcp-server-fetch"],
@@ -62,23 +63,6 @@ data:
             "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
           }
         },
-        "groupme": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "supergateway",
-            "--sse",
-            "http://groupme-backend.apps.svc.cluster.local:5000/sse"
-          ]
-        },
-        "clickup-native": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "supergateway",
-            "--sse",
-            "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"
-          ]
-        }
+
       }
     }

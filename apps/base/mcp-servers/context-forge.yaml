@@ -169,6 +169,7 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
+
         
         livenessProbe:
           httpGet:
@@ -197,6 +198,7 @@ spec:
       - name: data
         persistentVolumeClaim:
           claimName: context-forge-data
+
 ---
 apiVersion: v1
 kind: Service

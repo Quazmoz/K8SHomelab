@@ -18,9 +18,9 @@ resources:
   # Tanium MCP server - disabled (token expired)
   # - tanium-mcp-server.yaml
   
-  # --- Legacy mcpo resources (DEPRECATED - remove after migration) ---
-  # - mcpo-config.yaml
-  # - mcpo-rbac.yaml  
-  # - mcpo-deployment.yaml
-  # - ingress.yaml
+  # --- Hybrid Architecture: mcpo for Node.js tools ---
+  - mcpo-config.yaml
+  - mcpo-rbac.yaml  
+  - mcpo-deployment.yaml
+  - ingress.yaml
 

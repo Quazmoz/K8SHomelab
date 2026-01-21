@@ -14,56 +14,23 @@ SERVERS = [
     # {"name": "groupme", ...},
     # {"name": "clickup-native", ...},
 
-    # Stdio Servers
-    {
-        "name": "azure",
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "@azure/mcp@latest", "server", "start"],
-        "env": {
-            "AZURE_TENANT_ID": os.environ.get("AZURE_TENANT_ID", ""),
-            "AZURE_CLIENT_ID": os.environ.get("AZURE_CLIENT_ID", ""),
-            "AZURE_CLIENT_SECRET": os.environ.get("AZURE_CLIENT_SECRET", ""),
-            "AZURE_SUBSCRIPTION_ID": os.environ.get("AZURE_SUBSCRIPTION_ID", "")
-        }
-    },
-    {
-        "name": "kubernetes",
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "kubernetes-mcp-server@latest"]
-    },
-    {
-        "name": "postgres",
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "@henkey/postgres-mcp-server"],
-        "env": {
-            "POSTGRES_HOST": "postgres.apps.svc.cluster.local",
-            "POSTGRES_USER": "grafana_user",
-            "POSTGRES_PASSWORD": "passwordfortesting123", 
-            "POSTGRES_DATABASE": "postgres",
-            "POSTGRES_PORT": "5432"
-        }
-    },
-    {
-        "name": "prometheus",
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "prometheus-mcp-server"],
-        "env": {
-            "PROMETHEUS_URL": "http://prometheus-server.apps.svc.cluster.local"
-        }
-    },
-    {
-        "name": "freshrss",
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "mcp-server-fetch"],
-        "env": {
-            "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
-        }
-    },
+    # Stdio Servers - Moved to mcpo
+    # {"name": "azure", ...},
+    # {"name": "kubernetes", ...},
+    # {"name": "postgres", ...},
+    # {"name": "prometheus", ...},
+    # {"name": "freshrss", ...}, 
+
+    # {
+    #     "name": "freshrss",
+    #     "type": "stdio",
+    #     "command": "npx",
+    #     "args": ["-y", "mcp-server-fetch"],
+    #     "env": {
+    #         "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
+    #     }
+    # },
+
     # {"name": "clickup-openapi", ...}
 ]
 
