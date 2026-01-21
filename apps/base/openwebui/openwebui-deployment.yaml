@@ -62,7 +62,10 @@ spec:
           value: "true"
         # Default admin email (change this)
         - name: WEBUI_SECRET_KEY
-          value: "your-secret-key-change-me"
+          valueFrom:
+            secretKeyRef:
+              name: openwebui-secret
+              key: WEBUI_SECRET_KEY
         # OpenAI API configuration (placeholder - user will update)
         - name: OPENAI_API_BASE_URL
           value: ""

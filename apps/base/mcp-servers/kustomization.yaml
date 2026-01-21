@@ -6,6 +6,7 @@ resources:
   - context-forge.yaml
   # Context Forge server registration documentation
   - context-forge-servers.yaml
+- groupme-netpol.yaml
   # Context Forge RBAC (for Kubernetes MCP)
   - context-forge-rbac.yaml
   # Context Forge init job (auto-registers servers on startup)

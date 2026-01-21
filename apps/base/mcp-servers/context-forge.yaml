@@ -94,8 +94,11 @@ spec:
         - name: JWT_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: context-forge-secrets
-              key: JWT_SECRET_KEY
+              name: openwebui-secret
+              key: WEBUI_SECRET_KEY
+        # Tell Context Forge to use the 'email' claim as the user identity
+        - name: AUTH_USER_CLAIM
+          value: "email"
         
         # Platform Admin
         - name: PLATFORM_ADMIN_EMAIL
