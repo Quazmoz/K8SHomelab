@@ -62,7 +62,7 @@ data:
           "env": {
             "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
           }
-        },
+        }
 
       }
     }
