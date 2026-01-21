@@ -119,7 +119,7 @@ spec:
           mountPath: /tools
         resources:
           requests:
-            memory: "64Mi"
+            memory: "512Mi"
             cpu: "10m"
           limits:
             memory: "2Gi"
