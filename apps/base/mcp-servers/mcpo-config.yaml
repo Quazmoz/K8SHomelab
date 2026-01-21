@@ -10,14 +10,10 @@ data:
     {
       "mcpServers": {
         "azure": {
-          "command": "docker",
+          "command": "sh",
           "args": [
-            "run", "-i", "--rm",
-            "-e", "AZURE_TENANT_ID",
-            "-e", "AZURE_CLIENT_ID", 
-            "-e", "AZURE_CLIENT_SECRET",
-            "-e", "AZURE_SUBSCRIPTION_ID",
-            "mcr.microsoft.com/azure-sdk/azure-mcp:latest"
+            "-c",
+            "npm install --prefix /tmp/azure-mcp @azure/mcp@latest @azure/mcp-linux-x64@latest && /tmp/azure-mcp/node_modules/@azure/mcp-linux-x64/bin/azmcp server start"
           ]
         },
         "postgres": {
