@@ -26,7 +26,13 @@ SERVERS = [
         "name": "azure",
         "type": "stdio",
         "command": "npx",
-        "args": ["-y", "@azure/mcp@latest", "server", "start"]
+        "args": ["-y", "@azure/mcp@latest", "server", "start"],
+        "env": {
+            "AZURE_TENANT_ID": os.environ.get("AZURE_TENANT_ID", ""),
+            "AZURE_CLIENT_ID": os.environ.get("AZURE_CLIENT_ID", ""),
+            "AZURE_CLIENT_SECRET": os.environ.get("AZURE_CLIENT_SECRET", ""),
+            "AZURE_SUBSCRIPTION_ID": os.environ.get("AZURE_SUBSCRIPTION_ID", "")
+        }
     },
     {
         "name": "kubernetes",
