@@ -10,8 +10,15 @@ data:
     {
       "mcpServers": {
         "azure": {
-          "command": "npx",
-          "args": ["-y", "@azure/mcp@latest", "server", "start"]
+          "command": "docker",
+          "args": [
+            "run", "-i", "--rm",
+            "-e", "AZURE_TENANT_ID",
+            "-e", "AZURE_CLIENT_ID", 
+            "-e", "AZURE_CLIENT_SECRET",
+            "-e", "AZURE_SUBSCRIPTION_ID",
+            "mcr.microsoft.com/azure-sdk/azure-mcp:latest"
+          ]
         },
         "postgres": {
           "command": "npx",
