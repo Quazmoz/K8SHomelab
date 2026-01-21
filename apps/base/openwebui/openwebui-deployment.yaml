@@ -80,7 +80,7 @@ spec:
           value: "true"
         # OpenTelemetry Metrics & Traces Export
         - name: ENABLE_OTEL
-          value: "true"
+          value: "false"
         - name: ENABLE_OTEL_METRICS
           value: "true"
         - name: ENABLE_OTEL_TRACES
