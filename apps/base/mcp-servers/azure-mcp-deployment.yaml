@@ -32,8 +32,9 @@ spec:
         - /bin/sh
         - -c
         - |
-          # Use npx to run supergateway and spawn azmcp via npx
-          npx -y supergateway --port 8000 --stdio "npx -y @azure/mcp@latest server start"
+          # Debug mode
+          npm install -g supergateway @azure/mcp
+          sleep infinity
         env:
         # Azure credentials for Azure MCP (service principal)
         - name: AZURE_TENANT_ID
@@ -67,18 +68,6 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "1000m"
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 8000
-          initialDelaySeconds: 30
-          periodSeconds: 30
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 8000
-          initialDelaySeconds: 10
-          periodSeconds: 10
 
 ---
 apiVersion: v1
