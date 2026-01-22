@@ -22,8 +22,22 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
       serviceAccountName: mcpo
-      # Init container to download kubectl
       initContainers:
+      - name: install-azure-deps
+        image: node:20-bookworm-slim
+        command:
+        - /bin/sh
+        - -c
+        - |
+          apt-get update -qq && apt-get install -y -qq libicu72
+          mkdir -p /azure-deps/lib
+          cp -P /usr/lib/x86_64-linux-gnu/libicu* /azure-deps/lib/
+          cp -P /usr/lib/x86_64-linux-gnu/libssl* /azure-deps/lib/
+          cp -P /usr/lib/x86_64-linux-gnu/libcrypto* /azure-deps/lib/
+          npm install --prefix /azure-deps @azure/mcp@latest @azure/mcp-linux-x64@latest
+        volumeMounts:
+        - name: azure-deps
+          mountPath: /azure-deps
       - name: install-kubectl
         image: bitnami/kubectl:latest
         command:
@@ -117,6 +131,8 @@ spec:
           readOnly: true
         - name: tools
           mountPath: /tools
+        - name: azure-deps
+          mountPath: /azure-deps
         resources:
           requests:
             memory: "512Mi"
@@ -146,6 +162,8 @@ spec:
         configMap:
           name: mcpo-config
       - name: tools
+        emptyDir: {}
+      - name: azure-deps
         emptyDir: {}
 
 ---

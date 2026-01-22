@@ -13,7 +13,7 @@ data:
           "command": "sh",
           "args": [
             "-c",
-            "npm install --prefix /tmp/azure-mcp @azure/mcp@latest @azure/mcp-linux-x64@latest && /tmp/azure-mcp/node_modules/@azure/mcp-linux-x64/dist/azmcp server start"
+            "export LD_LIBRARY_PATH=/azure-deps/lib:$LD_LIBRARY_PATH && /azure-deps/node_modules/@azure/mcp-linux-x64/dist/azmcp server start"
           ]
         },
         "postgres": {
@@ -37,17 +37,6 @@ data:
           "env": {
             "PROMETHEUS_URL": "http://prometheus-server.apps.svc.cluster.local"
           }
-        },
-        "n8n": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "supergateway",
-            "--sse",
-            "http://n8n.apps.svc.cluster.local:5678/mcp-server/http",
-            "--header",
-            "authorization:Bearer ${N8N_MCP_TOKEN}"
-          ]
         },
         "clickup": {
           "command": "npx",
