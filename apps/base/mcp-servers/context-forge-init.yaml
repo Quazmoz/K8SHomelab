@@ -16,15 +16,14 @@ data:
     import time
 
     API_URL = "http://context-forge.apps.svc.cluster.local:4444"
-    # Note: SSE and HTTP servers (groupme, clickup-native, azure-go, n8n) should be registered manually via Admin UI
-    # This init job only registers stdio servers that run locally in Context Forge
+    # Note: We ONLY register Azure and GroupMe here to avoid conflicts with MCPO
+    # MCPO handles kubernetes, postgres, etc.
     SERVERS = [
-        # Stdio Servers (run locally in Context Forge container)
-        {"name": "kubernetes", "type": "stdio", "command": "npx", "args": ["-y", "kubernetes-mcp-server@latest"]},
-        {"name": "postgres", "type": "stdio", "command": "npx", "args": ["-y", "@henkey/postgres-mcp-server"], "env": {"POSTGRES_HOST": "postgres.apps.svc.cluster.local", "POSTGRES_USER": "grafana_user", "POSTGRES_PASSWORD": "passwordfortesting123", "POSTGRES_DATABASE": "postgres", "POSTGRES_PORT": "5432"}},
-        {"name": "prometheus", "type": "stdio", "command": "npx", "args": ["-y", "prometheus-mcp-server"], "env": {"PROMETHEUS_URL": "http://prometheus-server.apps.svc.cluster.local"}},
-        {"name": "freshrss", "type": "stdio", "command": "npx", "args": ["-y", "mcp-server-fetch"], "env": {"FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"}},
-        {"name": "clickup-openapi", "type": "stdio", "command": "npx", "args": ["-y", "@ivotoby/openapi-mcp-server", "--api-base-url", "https://api.clickup.com/api/v2", "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"]}
+        # HTTP Servers
+        {"name": "azure-go", "type": "http", "url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp", "description": "Azure Cloud Management"},
+        
+        # SSE Servers
+        {"name": "groupme", "type": "sse", "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse", "destination_url": "http://groupme-backend.apps.svc.cluster.local:5000/sse", "description": "GroupMe Messaging", "passthrough_headers": ["X-Authenticated-User"]}
     ]
 
     def wait_for_context_forge():
