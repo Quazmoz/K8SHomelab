@@ -1,0 +1,98 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azure-mcp
+  namespace: apps
+  labels:
+    app: azure-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-mcp
+  template:
+    metadata:
+      labels:
+        app: azure-mcp
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      containers:
+      - name: azure-mcp
+        image: node:20-bookworm
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        # Install supergateway and @azure/mcp, then run supergateway wrapping the azure mcp server
+        # We use node:20-bookworm to ensure we have necessary system libraries (glibc, etc)
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Use npx to run supergateway and spawn azmcp via npx
+          npx -y supergateway --port 8000 --stdio "npx -y @azure/mcp@latest server start"
+        env:
+        # Azure credentials for Azure MCP (service principal)
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_TENANT_ID
+              optional: true
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_ID
+              optional: true
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_CLIENT_SECRET
+              optional: true
+        - name: AZURE_SUBSCRIPTION_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-credentials
+              key: AZURE_SUBSCRIPTION_ID
+              optional: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "10m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: azure-mcp
+  namespace: apps
+  labels:
+    app: azure-mcp
+spec:
+  type: ClusterIP
+  selector:
+    app: azure-mcp
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000

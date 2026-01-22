@@ -1,0 +1,236 @@
+2026-01-22 14:17:03,799 - INFO - Starting MCPO Server...
+2026-01-22 14:17:03,799 - INFO -   Name: MCP OpenAPI Proxy
+2026-01-22 14:17:03,799 - INFO -   Version: 1.0
+2026-01-22 14:17:03,799 - INFO -   Description: Automatically generated API from MCP Tool Schemas
+2026-01-22 14:17:03,800 - INFO -   Hostname: mcpo-cf689d7f8-v9kv4
+2026-01-22 14:17:03,800 - INFO -   Port: 8000
+2026-01-22 14:17:03,800 - INFO -   API Key: Not Provided
+2026-01-22 14:17:03,800 - INFO -   CORS Allowed Origins: ['*']
+2026-01-22 14:17:03,800 - INFO -   Path Prefix: /
+2026-01-22 14:17:03,800 - INFO -   Root Path: 
+2026-01-22 14:17:03,800 - INFO - Loading MCP server configurations from: /config/config.json
+2026-01-22 14:17:03,800 - INFO - Configuring MCP Servers:
+2026-01-22 14:17:03,803 - INFO - Uvicorn server starting...
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+2026-01-22 14:17:03,854 - INFO - Initiating connection for server: 'azure'...
+Selecting previously unselected package libicu72:amd64.
+(Reading database ... 17075 files and directories currently installed.)
+Preparing to unpack .../libicu72_72.1-3+deb12u1_amd64.deb ...
+Unpacking libicu72:amd64 (72.1-3+deb12u1) ...
+Setting up libicu72:amd64 (72.1-3+deb12u1) ...
+Processing triggers for libc-bin (2.36-9+deb12u13) ...
+2026-01-22 14:17:05,820 - ERROR - Failed to connect to MCP server 'azure': ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  + Exception Group Traceback (most recent call last):
+  |   File "/app/.venv/lib/python3.12/site-packages/mcpo/main.py", line 567, in lifespan
+  |     async with client_context as (reader, writer, *_):
+  |                ^^^^^^^^^^^^^^
+  |   File "/usr/local/lib/python3.12/contextlib.py", line 231, in __aexit__
+  |     await self.gen.athrow(value)
+  |   File "/app/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 183, in stdio_client
+  |     anyio.create_task_group() as tg,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |   File "/app/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Exception Group Traceback (most recent call last):
+    |   File "/app/.venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py", line 189, in stdio_client
+    |     yield read_stream, write_stream
+    |   File "/app/.venv/lib/python3.12/site-packages/mcpo/main.py", line 568, in lifespan
+    |     async with ClientSession(reader, writer) as session:
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/app/.venv/lib/python3.12/site-packages/mcp/shared/session.py", line 218, in __aexit__
+    |     return await self._task_group.__aexit__(exc_type, exc_val, exc_tb)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/app/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+    |     raise BaseExceptionGroup(
+    | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+    +-+---------------- 1 ----------------
+      | Traceback (most recent call last):
+      |   File "/app/.venv/lib/python3.12/site-packages/mcpo/main.py", line 570, in lifespan
+      |     await create_dynamic_endpoints(app, api_dependency=api_dependency)
+      |   File "/app/.venv/lib/python3.12/site-packages/mcpo/main.py", line 349, in create_dynamic_endpoints
+      |     result = await session.initialize()
+      |              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |   File "/app/.venv/lib/python3.12/site-packages/mcp/client/session.py", line 151, in initialize
+      |     result = await self.send_request(
+      |              ^^^^^^^^^^^^^^^^^^^^^^^^
+      |   File "/app/.venv/lib/python3.12/site-packages/mcp/shared/session.py", line 286, in send_request
+      |     raise McpError(response_or_error.error)
+      | mcp.shared.exceptions.McpError: Connection closed
+      +------------------------------------
+2026-01-22 14:17:05,823 - ERROR - Failed to establish connection for server: 'azure' - Multiple errors occurred:
+2026-01-22 14:17:05,823 - ERROR -   Error 1: ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+2026-01-22 14:17:05,825 - INFO - Initiating connection for server: 'postgres'...
+[MCP Info] No tools configuration file provided. All available tools will be enabled.
+[MCP Info] No tools configuration file provided. All available tools will be enabled.
+PostgreSQL MCP server running on stdio
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_manage_functions_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_manage_rls_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_manage_schema_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_manage_triggers_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_manage_indexes_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_manage_users_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_manage_constraints_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_execute_mutation_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+/app/.venv/lib/python3.12/site-packages/pydantic/main.py:1804: UserWarning: Field name "schema" in "pg_manage_comments_form_model" shadows an attribute in parent "BaseModel"
+  return meta(
+2026-01-22 14:17:16,431 - INFO - Successfully connected to 'postgres'.
+2026-01-22 14:17:16,431 - INFO - Initiating connection for server: 'kubernetes'...
+read: {"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"mcp","version":"0.1.0"}}}
+write: {"jsonrpc":"2.0","id":0,"result":{"capabilities":{"logging":{},"prompts":{"listChanged":true},"tools":{"listChanged":true}},"protocolVersion":"2025-06-18","serverInfo":{"name":"kubernetes-mcp-server","title":"kubernetes-mcp-server","version":"v0.0.56"}}}
+read: {"jsonrpc":"2.0","method":"notifications/initialized"}
+read: {"jsonrpc":"2.0","id":1,"method":"tools/list"}
+write: {"jsonrpc":"2.0","id":1,"result":{"tools":[{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Configuration: View"},"description":"Get the current Kubernetes configuration content as a kubeconfig YAML","inputSchema":{"type":"object","properties":{"minified":{"type":"boolean","description":"Return a minified version of the configuration. If set to true, keeps only the current-context and the relevant pieces of the configuration for that context. If set to false, all contexts, clusters, auth-infos, and users are returned in the configuration. (Optional, default true)"}}},"name":"configuration_view","title":"Configuration: View"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Events: List"},"description":"List all the Kubernetes events in the current cluster from all namespaces","inputSchema":{"type":"object","properties":{"namespace":{"type":"string","description":"Optional Namespace to retrieve the events from. If not provided, will list events from all namespaces"}}},"name":"events_list","title":"Events: List"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"title":"Helm: Install"},"description":"Install a Helm chart in the current or provided namespace","inputSchema":{"type":"object","properties":{"chart":{"type":"string","description":"Chart reference to install (for example: stable/grafana, oci://ghcr.io/nginxinc/charts/nginx-ingress)"},"name":{"type":"string","description":"Name of the Helm release (Optional, random name if not provided)"},"namespace":{"type":"string","description":"Namespace to install the Helm chart in (Optional, current namespace if not provided)"},"values":{"type":"object","properties":{},"description":"Values to pass to the Helm chart (Optional)"}},"required":["chart"]},"name":"helm_install","title":"Helm: Install"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Helm: List"},"description":"List all the Helm releases in the current or provided namespace (or in all namespaces if specified)","inputSchema":{"type":"object","properties":{"all_namespaces":{"type":"boolean","description":"If true, lists all Helm releases in all namespaces ignoring the namespace argument (Optional)"},"namespace":{"type":"string","description":"Namespace to list Helm releases from (Optional, all namespaces if not provided)"}}},"name":"helm_list","title":"Helm: List"},{"annotations":{"destructiveHint":true,"idempotentHint":true,"openWorldHint":true,"title":"Helm: Uninstall"},"description":"Uninstall a Helm release in the current or provided namespace","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Name of the Helm release to uninstall"},"namespace":{"type":"string","description":"Namespace to uninstall the Helm release from (Optional, current namespace if not provided)"}},"required":["name"]},"name":"helm_uninstall","title":"Helm: Uninstall"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Namespaces: List"},"description":"List all the Kubernetes namespaces in the current cluster","inputSchema":{"type":"object","properties":{}},"name":"namespaces_list","title":"Namespaces: List"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Node: Log"},"description":"Get logs from a Kubernetes node (kubelet, kube-proxy, or other system logs). This accesses node logs through the Kubernetes API proxy to the kubelet","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Name of the node to get logs from"},"query":{"type":"string","description":"query specifies services(s) or files from which to return logs (required). Example: \"kubelet\" to fetch kubelet logs, \"/\u003clog-file-name\u003e\" to fetch a specific log file from the node (e.g., \"/var/log/kubelet.log\" or \"/var/log/kube-proxy.log\")"},"tailLines":{"type":"integer","description":"Number of lines to retrieve from the end of the logs (Optional, 0 means all logs)","default":100,"minimum":0}},"required":["name","query"]},"name":"nodes_log","title":"Node: Log"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Node: Stats Summary"},"description":"Get detailed resource usage statistics from a Kubernetes node via the kubelet's Summary API. Provides comprehensive metrics including CPU, memory, filesystem, and network usage at the node, pod, and container levels. On systems with cgroup v2 and kernel 4.20+, also includes PSI (Pressure Stall Information) metrics that show resource pressure for CPU, memory, and I/O. See https://kubernetes.io/docs/reference/instrumentation/understand-psi-metrics/ for details on PSI metrics","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Name of the node to get stats from"}},"required":["name"]},"name":"nodes_stats_summary","title":"Node: Stats Summary"},{"annotations":{"destructiveHint":false,"idempotentHint":true,"openWorldHint":true,"readOnlyHint":true,"title":"Nodes: Top"},"description":"List the resource consumption (CPU and memory) as recorded by the Kubernetes Metrics Server for the specified Kubernetes Nodes or all nodes in the cluster","inputSchema":{"type":"object","properties":{"label_selector":{"type":"string","description":"Kubernetes label selector (e.g. 'node-role.kubernetes.io/worker=') to filter nodes by label (Optional, only applicable when name is not provided)","pattern":"([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]"},"name":{"type":"string","description":"Name of the Node to get the resource consumption from (Optional, all Nodes if not provided)"}}},"name":"nodes_top","title":"Nodes: Top"},{"annotations":{"destructiveHint":true,"idempotentHint":true,"openWorldHint":true,"title":"Pods: Delete"},"description":"Delete a Kubernetes Pod in the current or provided namespace with the provided name","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Name of the Pod to delete"},"namespace":{"type":"string","description":"Namespace to delete the Pod from"}},"required":["name"]},"name":"pods_delete","title":"Pods: Delete"},{"annotations":{"destructiveHint":true,"openWorldHint":true,"title":"Pods: Exec"},"description":"Execute a command in a Kubernetes Pod in the current or provided namespace with the provided name and command","inputSchema":{"type":"object","properties":{"command":{"type":"array","items":{"type":"string"},"description":"Command to execute in the Pod container. The first item is the command to be run, and the rest are the arguments to that command. Example: [\"ls\", \"-l\", \"/tmp\"]"},"container":{"type":"string","description":"Name of the Pod container where the command will be executed (Optional)"},"name":{"type":"string","description":"Name of the Pod where the command will be executed"},"namespace":{"type":"string","description":"Namespace of the Pod where the command will be executed"}},"required":["name","command"]},"name":"pods_exec","title":"Pods: Exec"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Pods: Get"},"description":"Get a Kubernetes Pod in the current or provided namespace with the provided name","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Name of the Pod"},"namespace":{"type":"string","description":"Namespace to get the Pod from"}},"required":["name"]},"name":"pods_get","title":"Pods: Get"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Pods: List"},"description":"List all the Kubernetes pods in the current cluster from all namespaces","inputSchema":{"type":"object","properties":{"labelSelector":{"type":"string","description":"Optional Kubernetes label selector (e.g. 'app=myapp,env=prod' or 'app in (myapp,yourapp)'), use this option when you want to filter the pods by label","pattern":"([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]"}}},"name":"pods_list","title":"Pods: List"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Pods: List in Namespace"},"description":"List all the Kubernetes pods in the specified namespace in the current cluster","inputSchema":{"type":"object","properties":{"labelSelector":{"type":"string","description":"Optional Kubernetes label selector (e.g. 'app=myapp,env=prod' or 'app in (myapp,yourapp)'), use this option when you want to filter the pods by label","pattern":"([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]"},"namespace":{"type":"string","description":"Namespace to list pods from"}},"required":["namespace"]},"name":"pods_list_in_namespace","title":"Pods: List in Namespace"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Pods: Log"},"description":"Get the logs of a Kubernetes Pod in the current or provided namespace with the provided name","inputSchema":{"type":"object","properties":{"container":{"type":"string","description":"Name of the Pod container to get the logs from (Optional)"},"name":{"type":"string","description":"Name of the Pod to get the logs from"},"namespace":{"type":"string","description":"Namespace to get the Pod logs from"},"previous":{"type":"boolean","description":"Return previous terminated container logs (Optional)"},"tail":{"type":"integer","description":"Number of lines to retrieve from the end of the logs (Optional, default: 100)","default":100,"minimum":0}},"required":["name"]},"name":"pods_log","title":"Pods: Log"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"title":"Pods: Run"},"description":"Run a Kubernetes Pod in the current or provided namespace with the provided container image and optional name","inputSchema":{"type":"object","properties":{"image":{"type":"string","description":"Container Image to run in the Pod"},"name":{"type":"string","description":"Name of the Pod (Optional, random name if not provided)"},"namespace":{"type":"string","description":"Namespace to run the Pod in"},"port":{"type":"number","description":"TCP/IP port to expose from the Pod container (Optional, no port exposed if not provided)"}},"required":["image"]},"name":"pods_run","title":"Pods: Run"},{"annotations":{"destructiveHint":false,"idempotentHint":true,"openWorldHint":true,"readOnlyHint":true,"title":"Pods: Top"},"description":"List the resource consumption (CPU and memory) as recorded by the Kubernetes Metrics Server for the specified Kubernetes Pods in the all namespaces, the provided namespace, or the current namespace","inputSchema":{"type":"object","properties":{"all_namespaces":{"type":"boolean","description":"If true, list the resource consumption for all Pods in all namespaces. If false, list the resource consumption for Pods in the provided namespace or the current namespace","default":true},"label_selector":{"type":"string","description":"Kubernetes label selector (e.g. 'app=myapp,env=prod' or 'app in (myapp,yourapp)'), use this option when you want to filter the pods by label (Optional, only applicable when name is not provided)","pattern":"([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]"},"name":{"type":"string","description":"Name of the Pod to get the resource consumption from (Optional, all Pods in the namespace if not provided)"},"namespace":{"type":"string","description":"Namespace to get the Pods resource consumption from (Optional, current namespace if not provided and all_namespaces is false)"}}},"name":"pods_top","title":"Pods: Top"},{"annotations":{"destructiveHint":true,"idempotentHint":true,"openWorldHint":true,"title":"Resources: Create or Update"},"description":"Create or update a Kubernetes resource in the current cluster by providing a YAML or JSON representation of the resource\n(common apiVersion and kind include: v1 Pod, v1 Service, v1 Node, apps/v1 Deployment, networking.k8s.io/v1 Ingress)","inputSchema":{"type":"object","properties":{"resource":{"type":"string","description":"A JSON or YAML containing a representation of the Kubernetes resource. Should include top-level fields such as apiVersion,kind,metadata, and spec"}},"required":["resource"]},"name":"resources_create_or_update","title":"Resources: Create or Update"},{"annotations":{"destructiveHint":true,"idempotentHint":true,"openWorldHint":true,"title":"Resources: Delete"},"description":"Delete a Kubernetes resource in the current cluster by providing its apiVersion, kind, optionally the namespace, and its name\n(common apiVersion and kind include: v1 Pod, v1 Service, v1 Node, apps/v1 Deployment, networking.k8s.io/v1 Ingress)","inputSchema":{"type":"object","properties":{"apiVersion":{"type":"string","description":"apiVersion of the resource (examples of valid apiVersion are: v1, apps/v1, networking.k8s.io/v1)"},"kind":{"type":"string","description":"kind of the resource (examples of valid kind are: Pod, Service, Deployment, Ingress)"},"name":{"type":"string","description":"Name of the resource"},"namespace":{"type":"string","description":"Optional Namespace to delete the namespaced resource from (ignored in case of cluster scoped resources). If not provided, will delete resource from configured namespace"}},"required":["apiVersion","kind","name"]},"name":"resources_delete","title":"Resources: Delete"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Resources: Get"},"description":"Get a Kubernetes resource in the current cluster by providing its apiVersion, kind, optionally the namespace, and its name\n(common apiVersion and kind include: v1 Pod, v1 Service, v1 Node, apps/v1 Deployment, networking.k8s.io/v1 Ingress)","inputSchema":{"type":"object","properties":{"apiVersion":{"type":"string","description":"apiVersion of the resource (examples of valid apiVersion are: v1, apps/v1, networking.k8s.io/v1)"},"kind":{"type":"string","description":"kind of the resource (examples of valid kind are: Pod, Service, Deployment, Ingress)"},"name":{"type":"string","description":"Name of the resource"},"namespace":{"type":"string","description":"Optional Namespace to retrieve the namespaced resource from (ignored in case of cluster scoped resources). If not provided, will get resource from configured namespace"}},"required":["apiVersion","kind","name"]},"name":"resources_get","title":"Resources: Get"},{"annotations":{"destructiveHint":false,"openWorldHint":true,"readOnlyHint":true,"title":"Resources: List"},"description":"List Kubernetes resources and objects in the current cluster by providing their apiVersion and kind and optionally the namespace and label selector\n(common apiVersion and kind include: v1 Pod, v1 Service, v1 Node, apps/v1 Deployment, networking.k8s.io/v1 Ingress)","inputSchema":{"type":"object","properties":{"apiVersion":{"type":"string","description":"apiVersion of the resources (examples of valid apiVersion are: v1, apps/v1, networking.k8s.io/v1)"},"kind":{"type":"string","description":"kind of the resources (examples of valid kind are: Pod, Service, Deployment, Ingress)"},"labelSelector":{"type":"string","description":"Optional Kubernetes label selector (e.g. 'app=myapp,env=prod' or 'app in (myapp,yourapp)'), use this option when you want to filter the pods by label","pattern":"([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]"},"namespace":{"type":"string","description":"Optional Namespace to retrieve the namespaced resources from (ignored in case of cluster scoped resources). If not provided, will list resources from all namespaces"}},"required":["apiVersion","kind"]},"name":"resources_list","title":"Resources: List"},{"annotations":{"destructiveHint":true,"idempotentHint":true,"openWorldHint":true,"title":"Resources: Scale"},"description":"Get or update the scale of a Kubernetes resource in the current cluster by providing its apiVersion, kind, name, and optionally the namespace. If the scale is set in the tool call, the scale will be updated to that value. Always returns the current scale of the resource","inputSchema":{"type":"object","properties":{"apiVersion":{"type":"string","description":"apiVersion of the resource (examples of valid apiVersion are apps/v1)"},"kind":{"type":"string","description":"kind of the resource (examples of valid kind are: StatefulSet, Deployment)"},"name":{"type":"string","description":"Name of the resource"},"namespace":{"type":"string","description":"Optional Namespace to get/update the namespaced resource scale from (ignored in case of cluster scoped resources). If not provided, will get/update resource scale from configured namespace"},"scale":{"type":"integer","description":"Optional scale to update the resources scale to. If not provided, will return the current scale of the resource, and not update it"}},"required":["apiVersion","kind","name"]},"name":"resources_scale","title":"Resources: Scale"}]}}
+2026-01-22 14:17:19,393 - INFO - Successfully connected to 'kubernetes'.
+2026-01-22 14:17:19,393 - INFO - Initiating connection for server: 'prometheus'...
+Prometheus MCP server running on stdio
+2026-01-22 14:17:22,733 - INFO - Successfully connected to 'prometheus'.
+2026-01-22 14:17:22,733 - INFO - Initiating connection for server: 'clickup'...
+Registered tool: GET::user (get-authenticated-usr)
+Registered tool: GET::team (get-workspaces)
+Registered tool: GET::team__---team_id (get-team)
+Registered tool: GET::team__---team_id__space (get-spaces)
+Registered tool: POST::team__---team_id__space (crt-space)
+Registered tool: GET::space__---space_id (get-space)
+Registered tool: PUT::space__---space_id (upd-space)
+Registered tool: DELETE::space__---space_id (del-space)
+Registered tool: GET::folder__---folder_id (get-folder)
+Registered tool: PUT::folder__---folder_id (upd-folder)
+Registered tool: DELETE::folder__---folder_id (del-folder)
+Registered tool: GET::space__---space_id__folder (get-folders-in-space)
+Registered tool: POST::space__---space_id__folder (crt-folder)
+Registered tool: GET::space__---space_id__list (get-lists-in-space)
+Registered tool: POST::space__---space_id__list (crt-lst-in-space)
+Registered tool: GET::folder__---folder_id__list (get-lists-in-folder)
+Registered tool: POST::folder__---folder_id__list (crt-lst-in-folder)
+Registered tool: GET::list__---list_id (get-lst)
+Registered tool: PUT::list__---list_id (upd-lst)
+Registered tool: DELETE::list__---list_id (del-lst)
+Registered tool: GET::list__---list_id__task (get-tasks-in-lst)
+Registered tool: POST::list__---list_id__task (crt-task-in-lst)
+Registered tool: GET::task__---task_id (get-task)
+Registered tool: PUT::task__---task_id (upd-task)
+Registered tool: DELETE::task__---task_id (del-task)
+Registered tool: GET::task__---task_id__comment (get-task-comments)
+Registered tool: POST::task__---task_id__comment (crt-task-comment)
+Registered tool: GET::team__---team_id__task (search-team-tasks)
+Registered tool: GET::team__---team_id__member (get-team-members)
+Registered tool: GET::team__---team_id__goal (get-goals)
+Registered tool: POST::team__---team_id__goal (crt-goal)
+Registered tool: GET::goal__---goal_id (get-goal)
+Registered tool: PUT::goal__---goal_id (upd-goal)
+Registered tool: DELETE::goal__---goal_id (del-goal)
+Registered tool: POST::goal__---goal_id__key_result (crt-key-result)
+Registered tool: PUT::key_result__---key_result_id (edit-key-result)
+Registered tool: DELETE::key_result__---key_result_id (del-key-result)
+Registered tool: GET::space__---space_id__tag (get-space-tags)
+Registered tool: POST::space__---space_id__tag (crt-space-tag)
+Registered tool: PUT::space__---space_id__tag__---tag_name (edit-space-tag)
+Registered tool: DELETE::space__---space_id__tag__---tag_name (del-space-tag)
+Registered tool: POST::task__---task_id__tag__---tag_name (add-tag-to-task)
+Registered tool: DELETE::task__---task_id__tag__---tag_name (remove-tag-task)
+Registered tool: POST::task__---task_id__checklist (crt-checklist)
+Registered tool: PUT::checklist__---checklist_id (edit-checklist)
+Registered tool: DELETE::checklist__---checklist_id (del-checklist)
+Registered tool: POST::checklist__---checklist_id__checklist_item (crt-checklist-item)
+Registered tool: PUT::checklist__---checklist_id__checklist_item__---checklist_item_id (edit-checklist-item)
+Registered tool: DELETE::checklist__---checklist_id__checklist_item__---checklist_item_id (del-checklist-item)
+Registered tool: GET::team__---team_id__webhook (get-webhooks)
+Registered tool: POST::team__---team_id__webhook (crt-webhook)
+Registered tool: PUT::webhook__---webhook_id (upd-webhook)
+Registered tool: DELETE::webhook__---webhook_id (del-webhook)
+Registered tool: GET::team__---team_id__time_entries (get-time-entries)
+Registered tool: POST::team__---team_id__time_entries (crt-time-entry)
+Registered tool: GET::team__---team_id__time_entries__---timer_id (get-time-entry)
+Registered tool: PUT::team__---team_id__time_entries__---timer_id (upd-time-entry)
+Registered tool: DELETE::team__---team_id__time_entries__---timer_id (del-time-entry)
+Registered tool: POST::team__---team_id__time_entries__start (start-time-entry)
+Registered tool: POST::team__---team_id__time_entries__stop (stop-time-entry)
+Registered tool: GET::team__---team_id__time_entries__running (get-running-time-entry)
+Registered tool: GET::team__---team_id__view (get-workspace-views)
+Registered tool: POST::team__---team_id__view (crt-workspace-view)
+Registered tool: GET::space__---space_id__view (get-space-views)
+Registered tool: POST::space__---space_id__view (crt-space-view)
+Registered tool: GET::folder__---folder_id__view (get-folder-views)
+Registered tool: POST::folder__---folder_id__view (crt-folder-view)
+Registered tool: GET::list__---list_id__view (get-lst-views)
+Registered tool: POST::list__---list_id__view (crt-lst-view)
+Registered tool: GET::view__---view_id (get-view)
+Registered tool: PUT::view__---view_id (upd-view)
+Registered tool: DELETE::view__---view_id (del-view)
+Registered tool: GET::view__---view_id__task (get-view-tasks)
+Registered tool: GET::list__---list_id__field (get-lst-custom-fields)
+Registered tool: GET::folder__---folder_id__field (get-folder-custom-fields)
+Registered tool: GET::space__---space_id__field (get-space-custom-fields)
+Registered tool: GET::team__---team_id__field (get-workspace-custom-fields)
+Registered tool: POST::task__---task_id__field__---field_id (set-custom-field-val)
+Registered tool: DELETE::task__---task_id__field__---field_id (remove-custom-field-val)
+Registered tool: POST::task__---task_id__dependency (add-dependency)
+Registered tool: DELETE::task__---task_id__dependency (del-dependency)
+Registered tool: POST::task__---task_id__link__---links_to (add-task-link)
+Registered tool: DELETE::task__---task_id__link__---links_to (del-task-link)
+Registered tool: POST::task__---task_id__attachment (crt-task-attachment)
+Registered tool: POST::team__---team_id__guest (invite-guest-to-workspace)
+Registered tool: GET::team__---team_id__guest__---guest_id (get-guest)
+Registered tool: PUT::team__---team_id__guest__---guest_id (edit-guest-on-workspace)
+Registered tool: DELETE::team__---team_id__guest__---guest_id (remove-guest-workspace)
+Registered tool: GET::team__---team_id__seats (get-workspace-seats)
+Registered tool: GET::team__---team_id__plan (get-workspace-plan)
+Registered tool: GET::team__---team_id__customroles (get-custom-roles)
+Registered tool: GET::team__---team_id__shared (get-shared-hierarchy)
+Registered tool: GET::team__---team_id__group (get-grps)
+Registered tool: POST::team__---team_id__group (crt-grp)
+Registered tool: PUT::group__---group_id (upd-grp)
+Registered tool: DELETE::group__---group_id (del-grp)
+Registered tool: GET::list__---list_id__template (get-task-templates)
+Registered tool: POST::list__---list_id__taskTemplate__---template_id (crt-task-template)
+Registered tool: GET::list__---list_id__member (get-lst-members)
+Registered tool: GET::task__---task_id__member (get-task-members)
+Registered tool: PUT::comment__---comment_id (upd-comment)
+Registered tool: DELETE::comment__---comment_id (del-comment)
+Registered tool: GET::list__---list_id__comment (get-lst-comments)
+Registered tool: POST::list__---list_id__comment (crt-lst-comment)
+Registered tool: GET::view__---view_id__comment (get-chat-view-comments)
+Registered tool: POST::view__---view_id__comment (crt-chat-view-comment)
+Registered tool: GET::team__---team_id__customitem (get-custom-task-types)
+Registered tool: POST::team__---team_id__user (invite-usr-to-workspace)
+Registered tool: GET::team__---team_id__user__---user_id (get-usr)
+Registered tool: PUT::team__---team_id__user__---user_id (edit-usr-on-workspace)
+Registered tool: DELETE::team__---team_id__user__---user_id (remove-usr-workspace)
+Registered tool: POST::list__---list_id__task__---task_id (add-task-to-lst)
+Registered tool: DELETE::list__---list_id__task__---task_id (remove-task-lst)
+Registered tool: GET::task__---task_id__time_in_status (get-task-time-in-status)
+Registered tool: GET::comment__---comment_id__reply (get-threaded-comments)
+Registered tool: POST::comment__---comment_id__reply (crt-threaded-comment)
+OpenAPI MCP Server running on stdio
+2026-01-22 14:17:28,013 - INFO - Successfully connected to 'clickup'.
+2026-01-22 14:17:28,014 - INFO - 
+--- Server Startup Summary ---
+2026-01-22 14:17:28,014 - INFO - Successfully connected to:
+2026-01-22 14:17:28,014 - INFO -   - postgres
+2026-01-22 14:17:28,014 - INFO -   - kubernetes
+2026-01-22 14:17:28,014 - INFO -   - prometheus
+2026-01-22 14:17:28,014 - INFO -   - clickup
+2026-01-22 14:17:28,014 - WARNING - Failed to connect to:
+2026-01-22 14:17:28,014 - WARNING -   - azure
+2026-01-22 14:17:28,014 - INFO - --------------------------
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+Starting MCP OpenAPI Proxy with config file: /config/config.json
+INFO:     192.168.1.15:39684 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     192.168.1.15:33946 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     192.168.1.15:40946 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     192.168.1.15:51562 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     192.168.1.15:49152 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     192.168.1.15:47282 - "GET /openapi.json HTTP/1.1" 200 OK

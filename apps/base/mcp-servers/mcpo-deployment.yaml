@@ -23,22 +23,6 @@ spec:
         kubernetes.io/hostname: quinn-hpprobook430g6
       serviceAccountName: mcpo
       initContainers:
-      - name: install-azure-deps
-        image: node:20-bookworm
-        command:
-        - /bin/sh
-        - -c
-        - |
-          apt-get update -qq
-          mkdir -p /azure-deps/debs
-          cd /azure-deps/debs
-          apt-get download libicu72
-          mkdir -p /azure-deps/lib
-          npm install --prefix /azure-deps @azure/mcp@latest @azure/mcp-linux-x64@latest
-        volumeMounts:
-        - name: azure-deps
-          mountPath: /azure-deps
-
       - name: install-kubectl
         image: bitnami/kubectl:latest
         command:
@@ -132,9 +116,6 @@ spec:
           readOnly: true
         - name: tools
           mountPath: /tools
-
-        - name: azure-deps
-          mountPath: /azure-deps
         resources:
           requests:
             memory: "512Mi"
@@ -165,9 +146,6 @@ spec:
           name: mcpo-config
       - name: tools
         emptyDir: {}
-      - name: azure-deps
-        emptyDir: {}
-
 
 ---
 # mcpo Service
@@ -186,4 +164,3 @@ spec:
   - name: http
     port: 8000
     targetPort: 8000
-    protocol: TCP

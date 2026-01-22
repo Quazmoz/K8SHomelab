@@ -10,10 +10,12 @@ data:
     {
       "mcpServers": {
         "azure": {
-          "command": "sh",
+          "command": "npx",
           "args": [
-            "-c",
-            "dpkg -i /azure-deps/debs/*.deb >&2 && /azure-deps/node_modules/@azure/mcp-linux-x64/dist/azmcp server start"
+            "-y",
+            "supergateway",
+            "--sse",
+            "http://azure-mcp.apps.svc.cluster.local:8000/sse"
           ]
         },
         "postgres": {
@@ -24,7 +26,8 @@ data:
             "POSTGRES_PORT": "5432",
             "POSTGRES_DATABASE": "postgres",
             "POSTGRES_USER": "grafana_user",
-            "POSTGRES_PASSWORD": "passwordfortesting123"
+            "POSTGRES_PASSWORD": "passwordfortesting123",
+            "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/postgres"
           }
         },
         "kubernetes": {
@@ -46,6 +49,16 @@ data:
             "@ivotoby/openapi-mcp-server",
             "--api-base-url", "https://api.clickup.com/api/v2",
             "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"
+          ]
+        }
+        "n8n": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "supergateway",
+            "--sse",
+            "http://n8n.apps.svc.cluster.local:5678/mcp-server/http",
+            "--api-key-env", "N8N_MCP_TOKEN"
           ]
         }
       }
