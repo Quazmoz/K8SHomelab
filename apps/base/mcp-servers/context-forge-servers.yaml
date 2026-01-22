@@ -20,6 +20,12 @@ data:
     {
       "servers": [
         {
+          "name": "azure-go",
+          "description": "Azure Cloud Management (Go)",
+          "type": "sse",
+          "url": "http://azure-mcp.apps.svc.cluster.local:8080/sse"
+        },
+        {
           "name": "groupme",
           "description": "GroupMe messaging (per-user auth)",
           "type": "sse",
@@ -43,13 +49,6 @@ data:
         }
       ],
       "stdio_servers": [
-        {
-          "name": "azure",
-          "description": "Azure cloud management",
-          "command": "npx",
-          "args": ["-y", "@azure/mcp@latest", "server", "start"],
-          "env": ["AZURE_TENANT_ID", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET", "AZURE_SUBSCRIPTION_ID"]
-        },
         {
           "name": "postgres",
           "description": "PostgreSQL database",
