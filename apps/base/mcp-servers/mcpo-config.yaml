@@ -50,7 +50,7 @@ data:
             "--api-base-url", "https://api.clickup.com/api/v2",
             "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"
           ]
-        }
+        },
         "n8n": {
           "command": "npx",
           "args": [
