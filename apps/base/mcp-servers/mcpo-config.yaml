@@ -44,18 +44,11 @@ data:
           ]
         },
         "n8n": {
-          "command": "npx",
+          "command": "sh",
           "args": [
-            "-y",
-            "supergateway",
-            "--streamableHttp",
-            "http://n8n.apps.svc.cluster.local:5678/mcp-server/http",
-            "--header", "Accept: application/json, text/event-stream",
-            "--header", "Authorization: Bearer ${N8N_MCP_TOKEN}"
-          ],
-          "env": {
-            "N8N_MCP_TOKEN": "${N8N_MCP_TOKEN}"
-          }
+            "-c",
+            "exec npx -y supergateway --streamableHttp http://n8n.apps.svc.cluster.local:5678/mcp-server/http --header 'Accept: application/json, text/event-stream' --oauth2Bearer \"$N8N_MCP_TOKEN\""
+          ]
         }
       }
     }
