@@ -24,20 +24,21 @@ spec:
       serviceAccountName: mcpo
       initContainers:
       - name: install-azure-deps
-        image: node:20-bookworm-slim
+        image: node:20-bookworm
         command:
         - /bin/sh
         - -c
         - |
-          apt-get update -qq && apt-get install -y -qq libicu72
+          apt-get update -qq
+          mkdir -p /azure-deps/debs
+          cd /azure-deps/debs
+          apt-get download libicu72
           mkdir -p /azure-deps/lib
-          cp -P /usr/lib/x86_64-linux-gnu/libicu* /azure-deps/lib/
-          cp -P /usr/lib/x86_64-linux-gnu/libssl* /azure-deps/lib/
-          cp -P /usr/lib/x86_64-linux-gnu/libcrypto* /azure-deps/lib/
           npm install --prefix /azure-deps @azure/mcp@latest @azure/mcp-linux-x64@latest
         volumeMounts:
         - name: azure-deps
           mountPath: /azure-deps
+
       - name: install-kubectl
         image: bitnami/kubectl:latest
         command:
@@ -131,6 +132,7 @@ spec:
           readOnly: true
         - name: tools
           mountPath: /tools
+
         - name: azure-deps
           mountPath: /azure-deps
         resources:
@@ -165,6 +167,7 @@ spec:
         emptyDir: {}
       - name: azure-deps
         emptyDir: {}
+
 
 ---
 # mcpo Service
