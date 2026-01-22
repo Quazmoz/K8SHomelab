@@ -13,7 +13,7 @@ data:
           "command": "sh",
           "args": [
             "-c",
-            "npm install --prefix /tmp/azure-mcp @azure/mcp@latest @azure/mcp-linux-x64@latest && /tmp/azure-mcp/node_modules/@azure/mcp-linux-x64/bin/azmcp server start"
+            "npm install --prefix /tmp/azure-mcp @azure/mcp@latest @azure/mcp-linux-x64@latest && /tmp/azure-mcp/node_modules/@azure/mcp-linux-x64/dist/azmcp server start"
           ]
         },
         "postgres": {
