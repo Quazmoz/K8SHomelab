@@ -9,7 +9,7 @@ data:
   config.json: |
     {
       "mcpServers": {
-        "azure": {
+        "_azure_disabled": {
           "command": "npx",
           "args": [
             "-y",
