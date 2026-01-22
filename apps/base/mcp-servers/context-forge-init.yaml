@@ -16,12 +16,10 @@ data:
     import time
 
     API_URL = "http://context-forge.apps.svc.cluster.local:4444"
+    # Note: SSE and HTTP servers (groupme, clickup-native, azure-go, n8n) should be registered manually via Admin UI
+    # This init job only registers stdio servers that run locally in Context Forge
     SERVERS = [
-        # SSE Servers
-        {"name": "groupme", "type": "sse", "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse", "passthrough_headers": ["X-Authenticated-User"]},
-        {"name": "clickup-native", "type": "sse", "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"},
-        # Stdio Servers
-        {"name": "azure", "type": "stdio", "command": "npx", "args": ["-y", "@azure/mcp@latest", "server", "start"]},
+        # Stdio Servers (run locally in Context Forge container)
         {"name": "kubernetes", "type": "stdio", "command": "npx", "args": ["-y", "kubernetes-mcp-server@latest"]},
         {"name": "postgres", "type": "stdio", "command": "npx", "args": ["-y", "@henkey/postgres-mcp-server"], "env": {"POSTGRES_HOST": "postgres.apps.svc.cluster.local", "POSTGRES_USER": "grafana_user", "POSTGRES_PASSWORD": "passwordfortesting123", "POSTGRES_DATABASE": "postgres", "POSTGRES_PORT": "5432"}},
         {"name": "prometheus", "type": "stdio", "command": "npx", "args": ["-y", "prometheus-mcp-server"], "env": {"PROMETHEUS_URL": "http://prometheus-server.apps.svc.cluster.local"}},

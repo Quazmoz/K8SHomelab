@@ -15,7 +15,12 @@ metadata:
   namespace: apps
 data:
   # Documentation of MCP servers to register
-  # These are registered via the Context Forge Admin UI or API, not automatically
+  # 
+  # IMPORTANT: 
+  # - SSE/HTTP servers (azure-go, groupme, clickup-native, n8n) must be registered MANUALLY via Admin UI
+  # - Stdio servers (kubernetes, postgres, prometheus, freshrss, clickup-openapi) are auto-registered by init job
+  # - Do NOT register stdio servers manually - they are handled by context-forge-init.yaml
+  #
   servers.json: |
     {
       "servers": [
@@ -100,11 +105,11 @@ data:
       ]
     }
   
-  # Registration script for convenience
-  register.sh: |
+  # Cleanup script to remove duplicate/virtual servers
+  cleanup_duplicates.sh: |
     #!/bin/bash
-    # Usage: ./register.sh <BEARER_TOKEN>
-    # Register MCP servers with Context Forge
+    # Usage: ./cleanup_duplicates.sh <BEARER_TOKEN>
+    # Remove duplicate servers and old/incorrect registrations
     
     TOKEN=$1
     CF_URL="http://context-forge.apps.svc.cluster.local:4444"
@@ -115,17 +120,61 @@ data:
       exit 1
     fi
     
-    # Register SSE servers
+    echo "Fetching all servers..."
+    SERVERS=$(curl -s -X GET "$CF_URL/servers" -H "Authorization: Bearer $TOKEN")
+    
+    # Servers to keep (one of each)
+    KEEP=("azure-go" "groupme" "clickup-native" "n8n" "kubernetes" "postgres" "prometheus" "freshrss" "clickup-openapi")
+    
+    # Servers to remove (duplicates, old names, virtual servers)
+    REMOVE=("azure")  # Old azure stdio server (replaced by azure-go)
+    
+    echo "Checking for duplicates..."
+    # Note: Actual deletion should be done via Admin UI or API DELETE calls
+    echo "To remove duplicates, use the Admin UI at http://mcp.k8s.local/admin"
+    echo "Or use: curl -X DELETE \"$CF_URL/servers/<server-id>\" -H \"Authorization: Bearer $TOKEN\""
+  
+  # Registration script for SSE/HTTP servers (manual registration)
+  register_manual_servers.sh: |
+    #!/bin/bash
+    # Usage: ./register_manual_servers.sh <BEARER_TOKEN>
+    # Register SSE/HTTP servers that must be registered manually (not auto-registered by init job)
+    
+    TOKEN=$1
+    CF_URL="http://context-forge.apps.svc.cluster.local:4444"
+    
+    if [ -z "$TOKEN" ]; then
+      echo "Usage: $0 <BEARER_TOKEN>"
+      echo "Get token with: kubectl exec -it deploy/context-forge -n apps -- python3 -m mcpgateway.utils.create_jwt_token --username admin@localhost --exp 0 --secret <JWT_SECRET_KEY>"
+      exit 1
+    fi
+    
+    # Register Azure MCP Go (HTTP)
+    echo "Registering Azure MCP Go..."
+    curl -s -X POST "$CF_URL/servers" \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{"server": {"name": "azure-go", "type": "http", "url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp", "description": "Azure Cloud Management (Go)"}}'
+    
+    # Register GroupMe (SSE)
     echo "Registering GroupMe..."
     curl -s -X POST "$CF_URL/servers" \
       -H "Authorization: Bearer $TOKEN" \
       -H "Content-Type: application/json" \
-      -d '{"name": "groupme", "type": "sse", "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse"}'
+      -d '{"server": {"name": "groupme", "type": "sse", "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse", "passthrough_headers": ["X-Authenticated-User"], "description": "GroupMe messaging (per-user auth)"}}'
     
+    # Register ClickUp Native (SSE)
     echo "Registering ClickUp Native..."
     curl -s -X POST "$CF_URL/servers" \
       -H "Authorization: Bearer $TOKEN" \
       -H "Content-Type: application/json" \
-      -d '{"name": "clickup-native", "type": "sse", "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"}'
+      -d '{"server": {"name": "clickup-native", "type": "sse", "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse", "description": "ClickUp project management"}}'
+    
+    # Register n8n (SSE/HTTP)
+    echo "Registering n8n..."
+    curl -s -X POST "$CF_URL/servers" \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{"server": {"name": "n8n", "type": "sse", "url": "http://n8n.apps.svc.cluster.local:5678/mcp-server/http", "description": "n8n workflow automation"}}'
     
     echo "Done! Check $CF_URL/admin for registered servers."
