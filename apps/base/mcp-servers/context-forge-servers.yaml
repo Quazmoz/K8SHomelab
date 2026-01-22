@@ -22,8 +22,8 @@ data:
         {
           "name": "azure-go",
           "description": "Azure Cloud Management (Go)",
-          "type": "sse",
-          "url": "http://azure-mcp.apps.svc.cluster.local:8080/sse"
+          "type": "http",
+          "url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp"
         },
         {
           "name": "groupme",
