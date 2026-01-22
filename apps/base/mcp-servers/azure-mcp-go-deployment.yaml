@@ -1,0 +1,96 @@
+# Azure MCP Go Server
+# HTTP-based MCP server for Azure Cloud Management
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azure-mcp-go
+  namespace: apps
+  labels:
+    app: azure-mcp-go
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-mcp-go
+  template:
+    metadata:
+      labels:
+        app: azure-mcp-go
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: azure-mcp-go
+        image: quazmoz/quazmoz:azure
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: POSTGRES_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: POSTGRES_CONNECTION_STRING
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: AZURE_TENANT_ID
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: AZURE_CLIENT_ID
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: AZURE_CLIENT_SECRET
+        - name: AZURE_SUBSCRIPTION_ID
+          valueFrom:
+            secretKeyRef:
+              name: azure-mcp-secrets
+              key: AZURE_SUBSCRIPTION_ID
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: azure-mcp-go
+  namespace: apps
+  labels:
+    app: azure-mcp-go
+spec:
+  selector:
+    app: azure-mcp-go
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP
