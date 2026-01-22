@@ -48,7 +48,7 @@ data:
           "args": [
             "-y",
             "supergateway",
-            "--sse",
+            "--streamableHttp",
             "http://n8n.apps.svc.cluster.local:5678/mcp-server/http",
             "--api-key-env", "N8N_MCP_TOKEN",
             "--header", "Accept: application/json, text/event-stream"
