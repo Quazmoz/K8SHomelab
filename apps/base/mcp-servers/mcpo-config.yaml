@@ -9,15 +9,7 @@ data:
   config.json: |
     {
       "mcpServers": {
-        "_azure_disabled": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "supergateway",
-            "--sse",
-            "http://azure-mcp.apps.svc.cluster.local:8000/sse"
-          ]
-        },
+
         "postgres": {
           "command": "npx",
           "args": ["-y", "@henkey/postgres-mcp-server"],
