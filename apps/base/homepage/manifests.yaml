@@ -99,12 +99,6 @@ data:
             description: MCP Gateway & Admin
             siteMonitor: http://context-forge.apps.svc.cluster.local:4444/health
             statusStyle: dot
-        - Azure MCP:
-            href: http://mcpo.k8s.local/azure/docs
-            icon: mdi-microsoft-azure
-            description: Azure Integration
-            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/azure/openapi.json
-            statusStyle: dot
         - Kubernetes MCP:
             href: http://mcpo.k8s.local/kubernetes/docs
             icon: si-kubernetes
