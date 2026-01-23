@@ -83,7 +83,7 @@ spec:
         
         # Authentication
         - name: AUTH_REQUIRED
-          value: "true"
+          value: "false"
         - name: BASIC_AUTH_USER
           value: "admin"
         - name: BASIC_AUTH_PASSWORD
