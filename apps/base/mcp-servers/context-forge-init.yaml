@@ -16,19 +16,29 @@ data:
     import time
 
     API_URL = "http://context-forge.apps.svc.cluster.local:4444"
-    # Note: We ONLY register Azure and GroupMe here to avoid conflicts with MCPO
-    # MCPO handles kubernetes, postgres, etc.
-    SERVERS = [
-        # HTTP Servers
-        {"name": "azure-go", "type": "http", "url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp", "description": "Azure Cloud Management"},
-        
-        # SSE Servers
-        {"name": "groupme", "type": "sse", "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse", "destination_url": "http://groupme-backend.apps.svc.cluster.local:5000/sse", "description": "GroupMe Messaging", "passthrough_headers": ["X-Authenticated-User"]}
+    
+    # 1. Backend MCP Servers (Sources)
+    MCP_BACKENDS = [
+        # Azure MCP (SSE)
+        {
+            "name": "azure-go",
+            "url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp",
+            "destination_url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp", 
+            "type": "sse"
+        },
+        # GroupMe MCP (SSE)
+        {
+            "name": "groupme",
+            "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse",
+            "destination_url": "http://groupme-backend.apps.svc.cluster.local:5000/sse",
+            "type": "sse",
+            "passthrough_headers": ["X-Authenticated-User"]
+        }
     ]
 
     def wait_for_context_forge():
         print("⏳ Waiting for Context Forge to be ready...")
-        for i in range(60):  # Wait up to 5 minutes
+        for i in range(60):
             try:
                 resp = requests.get(f"{API_URL}/health", timeout=5)
                 if resp.status_code == 200:
@@ -37,25 +47,22 @@ data:
             except Exception:
                 pass
             time.sleep(5)
-        print("❌ Context Forge did not become ready in time")
+        print("❌ Context Forge did not become ready")
         return False
 
     def get_token():
-        print("🔑 Generating Token...")
         secret = os.environ.get("JWT_SECRET_KEY", "")
         if not secret:
             print("❌ JWT_SECRET_KEY not set")
             sys.exit(1)
-        
-        # Use the internal mcpgateway utility
         try:
+            # Generate admin token
             result = subprocess.check_output([
                 sys.executable, "-m", "mcpgateway.utils.create_jwt_token",
                 "--username", "admin@localhost",
                 "--exp", "0",
                 "--secret", secret
             ], text=True, stderr=subprocess.DEVNULL).strip()
-            # Filter for the actual token (starts with eyJ)
             for line in result.split('\n'):
                 if line.startswith('eyJ'):
                     return line
@@ -64,27 +71,115 @@ data:
             print(f"❌ Token generation failed: {e}")
             sys.exit(1)
 
-    def register(token):
+    def run_registration(token):
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-        print(f"📡 Registering servers with {API_URL}...")
         
-        for server in SERVERS:
-            print(f"   👉 Registering {server['name']}...")
+        # --- Step 1: Register Backend MCP Servers ---
+        print(f"\n📡 Step 1: Registering Backend MCP Servers...")
+        for backend in MCP_BACKENDS:
+            print(f"   👉 Registering Backend: {backend['name']}...")
             try:
-                resp = requests.post(f"{API_URL}/servers", headers=headers, json={"server": server})
+                # Try unwrapped first (User hint), fallback to wrapped if failed
+                payload = backend
+                resp = requests.post(f"{API_URL}/servers", headers=headers, json=payload)
+                
+                # Check if it was a validation error requiring wrapper
+                if resp.status_code == 422: # Validation Error
+                     print("      ⚠️  Unwrapped failed, trying wrapped {'server': ...}...")
+                     resp = requests.post(f"{API_URL}/servers", headers=headers, json={"server": backend})
+
                 if resp.status_code in [200, 201]:
-                    print(f"      ✅ Success!")
-                elif resp.status_code in [400, 409]:
-                    print(f"      🔹 Already Registered")
+                    print(f"      ✅ Registered")
+                elif resp.status_code == 409:
+                    print(f"      🔹 Already Exists")
                 else:
-                    print(f"      ⚠️  Failed: {resp.status_code} - {resp.text[:200]}")
+                    print(f"      ⚠️  Failed: {resp.status_code} - {resp.text[:100]}")
             except Exception as e:
                 print(f"      ❌ Network Error: {e}")
+
+        # Wait a moment for async tool discovery
+        print("   ⏳ Waiting 5s for tool discovery...")
+        time.sleep(5)
+
+        # --- Step 2: Discover Tools ---
+        print(f"\n🔍 Step 2: Fetching All Available Tools...")
+        all_tool_ids = []
+        try:
+            resp = requests.get(f"{API_URL}/tools", headers=headers)
+            if resp.status_code == 200:
+                tools = resp.json()
+                print(f"      Found {len(tools)} tools total.")
+                all_tool_ids = [t['id'] for t in tools]
+            else:
+                print(f"      ❌ Failed to list tools: {resp.status_code}")
+        except Exception as e:
+            print(f"      ❌ Error listing tools: {e}")
+
+        if not all_tool_ids:
+            print("      ⚠️  No tools found! Virtual Server will be empty.", flush=True)
+            # We continue anyway to ensure the VS endpoint exists
+
+        # --- Step 3: Create/Update Virtual Server (The Exposer) ---
+        virtual_server_name = "Homelab Unified"
+        print(f"\n📦 Step 3: Creating/Updating Virtual Server '{virtual_server_name}'...", flush=True)
+        
+        # Payload for Virtual Server
+        # Based on user input: {"name": "...", "associatedTools": [...]}
+        vs_payload = {
+            "name": virtual_server_name,
+            "description": "Unified access to Azure and GroupMe tools",
+            "associatedTools": all_tool_ids
+        }
+        
+        # Check if it exists to get ID
+        server_id = None
+        current_tools = []
+        try:
+            srv_resp = requests.get(f"{API_URL}/servers", headers=headers)
+            if srv_resp.status_code == 200:
+                for s in srv_resp.json():
+                    if s['name'] == virtual_server_name:
+                        server_id = s['id']
+                        # Check associated tools if available in list
+                        current_tools = s.get('associatedTools', [])
+                        break
+        except:
+            pass
+
+        try:
+            if server_id:
+                print(f"   👉 Updating existing Virtual Server ({server_id})...", flush=True)
+                # Try PUT /servers/{id} with wrapped/unwrapped
+                resp = requests.put(f"{API_URL}/servers/{server_id}", headers=headers, json=vs_payload)
+                if resp.status_code == 422 or resp.status_code == 404:
+                     # Maybe PUT not supported or wrapper needed?
+                     # Try wrapper
+                     resp = requests.put(f"{API_URL}/servers/{server_id}", headers=headers, json={"server": vs_payload})
+            else:
+                print(f"   👉 Creating new Virtual Server...", flush=True)
+                resp = requests.post(f"{API_URL}/servers", headers=headers, json=vs_payload)
+                if resp.status_code == 422:
+                    resp = requests.post(f"{API_URL}/servers", headers=headers, json={"server": vs_payload})
+            
+            if resp.status_code in [200, 201]:
+                data = resp.json()
+                # Handle wrapped or unwrapped response
+                if 'server' in data:
+                    data = data['server']
+                
+                uuid = data.get('uuid') or data.get('id')
+                print(f"      ✅ SUCCESS! Virtual Server Ready.", flush=True)
+                print(f"      🔑 TARGET UUID for OpenWebUI/VSCode: {uuid}", flush=True)
+                print(f"      🌍 URL: {API_URL}/mcp/{uuid}", flush=True)
+            else:
+                print(f"      ⚠️  Failed: {resp.status_code} - {resp.text[:200]}", flush=True)
+        except Exception as e:
+            print(f"      ❌ Error managing Virtual Server: {e}", flush=True)
 
     if __name__ == "__main__":
         if wait_for_context_forge():
             token = get_token()
-            register(token)
+            run_registration(token)
         else:
             sys.exit(1)
 
@@ -108,6 +203,8 @@ spec:
         command: ["/app/.venv/bin/python3"]
         args: ["/scripts/register_servers.py"]
         env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
         - name: JWT_SECRET_KEY
           valueFrom:
             secretKeyRef:
