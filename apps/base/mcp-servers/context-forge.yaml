@@ -51,12 +51,14 @@ spec:
       serviceAccountName: context-forge
       containers:
       - name: context-forge
-        image: ghcr.io/ibm/mcp-context-forge:1.0.0-BETA-1
+        image: ghcr.io/ibm/mcp-context-forge:1.0.0-BETA-2
         imagePullPolicy: Always
         ports:
         - containerPort: 4444
           name: http
         env:
+        - name: REDIS_URL
+          value: "redis://redis:6379"
         # Core settings
         - name: HOST
           value: "0.0.0.0"
@@ -73,7 +75,7 @@ spec:
               name: postgres-credentials
               key: POSTGRES_PASSWORD
         - name: DATABASE_URL
-          value: "postgresql://grafana_user:$(DB_PASSWORD)@postgres-service.apps.svc.cluster.local:5432/context_forge"
+          value: "postgresql+psycopg://grafana_user:$(DB_PASSWORD)@postgres-service.apps.svc.cluster.local:5432/context_forge"
         
         # Admin UI
         - name: MCPGATEWAY_UI_ENABLED
