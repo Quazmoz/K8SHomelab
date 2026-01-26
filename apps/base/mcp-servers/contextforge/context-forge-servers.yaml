@@ -1,12 +1,18 @@
 # Context Forge MCP Server Registration
-# Run these commands after Context Forge is deployed to register MCP servers
-# 
-# First, get the admin token:
-# kubectl exec -it deploy/context-forge -n apps -- \
-#   python3 -m mcpgateway.utils.create_jwt_token --username admin@localhost --exp 0 --secret <JWT_SECRET_KEY>
+# Auto-provisioning: The context-forge-init job automatically registers backend servers
+# and creates virtual servers when the pod starts up.
 #
-# Then register each server via the Admin UI at http://mcp.k8s.local/admin
-# or via API calls below.
+# Architecture:
+#   BACKEND SERVERS (sources)
+#   ├── azure-go (HTTP)      → provides Azure tools
+#   ├── groupme (SSE)        → provides GroupMe tools
+#   └── clickup-native (SSE) → provides ClickUp tools
+#
+#   VIRTUAL SERVERS (what OpenWebUI sees)
+#   ├── "azure mcp"    → bundles all Azure tools
+#   └── "clickup mcp"  → bundles all ClickUp tools
+#
+# For GroupMe: Users authenticate per-user via Auth Registration tool
 
 apiVersion: v1
 kind: ConfigMap
@@ -14,11 +20,12 @@ metadata:
   name: context-forge-servers
   namespace: apps
 data:
-  # Documentation of MCP servers to register
+  # Documentation of MCP servers auto-provisioned
   # 
   # IMPORTANT: 
-  # - SSE/HTTP servers (azure-go, groupme, clickup-native) must be registered MANUALLY via Admin UI
-  # - Do NOT register stdio servers manually - they are handled by context-forge-init.yaml
+  # - Backend servers (azure-go, groupme, clickup-native) auto-registered via init job
+  # - Virtual servers (azure mcp, clickup mcp) auto-created via init job
+  # - Do NOT manually register - context-forge-init.yaml handles everything
   #
   servers.json: |
     {
@@ -41,6 +48,18 @@ data:
           "description": "ClickUp project management",
           "type": "sse", 
           "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"
+        }
+      ],
+      "virtual_servers": [
+        {
+          "name": "azure mcp",
+          "description": "Azure cloud resource management tools",
+          "backend_servers": ["azure-go"]
+        },
+        {
+          "name": "clickup mcp",
+          "description": "ClickUp task and project management tools",
+          "backend_servers": ["clickup-native"]
         }
       ]
     }

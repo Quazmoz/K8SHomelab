@@ -19,12 +19,12 @@ data:
     
     # 1. Backend MCP Servers (Sources)
     MCP_BACKENDS = [
-        # Azure MCP (SSE)
+        # Azure MCP (HTTP)
         {
             "name": "azure-go",
             "url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp",
             "destination_url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp", 
-            "type": "sse"
+            "type": "http"
         },
         # GroupMe MCP (SSE)
         {
@@ -33,6 +33,28 @@ data:
             "destination_url": "http://groupme-backend.apps.svc.cluster.local:5000/sse",
             "type": "sse",
             "passthrough_headers": ["X-Authenticated-User"]
+        },
+        # ClickUp MCP (SSE)
+        {
+            "name": "clickup-native",
+            "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse",
+            "destination_url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse",
+            "type": "sse"
+        }
+    ]
+    
+    # 2. Virtual Server Configurations (what OpenWebUI sees)
+    # Each virtual server bundles tools from specific backend servers
+    VIRTUAL_SERVERS = [
+        {
+            "name": "azure mcp",
+            "description": "Azure cloud resource management tools",
+            "backend_servers": ["azure-go"]
+        },
+        {
+            "name": "clickup mcp",
+            "description": "ClickUp task and project management tools",
+            "backend_servers": ["clickup-native"]
         }
     ]
 
@@ -101,80 +123,93 @@ data:
         print("   ⏳ Waiting 5s for tool discovery...")
         time.sleep(5)
 
-        # --- Step 2: Discover Tools ---
-        print(f"\n🔍 Step 2: Fetching All Available Tools...")
-        all_tool_ids = []
+        # --- Step 2: Discover Tools by Backend Server ---
+        print(f"\n🔍 Step 2: Discovering Tools by Backend Server...")
+        tool_map = {}  # Maps backend server name -> list of tool IDs
         try:
             resp = requests.get(f"{API_URL}/tools", headers=headers)
             if resp.status_code == 200:
                 tools = resp.json()
                 print(f"      Found {len(tools)} tools total.")
-                all_tool_ids = [t['id'] for t in tools]
+                
+                # Group tools by their backend server
+                for tool in tools:
+                    server_name = tool.get('server', {}).get('name', 'unknown') if isinstance(tool.get('server'), dict) else tool.get('server', 'unknown')
+                    if server_name not in tool_map:
+                        tool_map[server_name] = []
+                    tool_map[server_name].append(tool['id'])
+                    print(f"      - {tool['name']} (from {server_name})")
             else:
                 print(f"      ❌ Failed to list tools: {resp.status_code}")
         except Exception as e:
             print(f"      ❌ Error listing tools: {e}")
 
-        if not all_tool_ids:
-            print("      ⚠️  No tools found! Virtual Server will be empty.", flush=True)
-            # We continue anyway to ensure the VS endpoint exists
+        print(f"\n      Tool Map: {json.dumps(tool_map, indent=2)}")
 
-        # --- Step 3: Create/Update Virtual Server (The Exposer) ---
-        virtual_server_name = "Homelab Unified"
-        print(f"\n📦 Step 3: Creating/Updating Virtual Server '{virtual_server_name}'...", flush=True)
+        # --- Step 3: Create/Update Virtual Servers ---
+        print(f"\n📦 Step 3: Creating/Updating Virtual Servers...", flush=True)
         
-        # Payload for Virtual Server
-        # Based on user input: {"name": "...", "associatedTools": [...]}
-        vs_payload = {
-            "name": virtual_server_name,
-            "description": "Unified access to Azure, GroupMe, and ClickUp tools",
-            "associatedTools": all_tool_ids
-        }
-        
-        # Check if it exists to get ID
-        server_id = None
-        current_tools = []
+        # Fetch existing servers for comparison
+        existing_servers = {}
         try:
             srv_resp = requests.get(f"{API_URL}/servers", headers=headers)
             if srv_resp.status_code == 200:
                 for s in srv_resp.json():
-                    if s['name'] == virtual_server_name:
-                        server_id = s['id']
-                        # Check associated tools if available in list
-                        current_tools = s.get('associatedTools', [])
-                        break
+                    existing_servers[s['name']] = s
         except:
             pass
-
-        try:
-            if server_id:
-                print(f"   👉 Updating existing Virtual Server ({server_id})...", flush=True)
-                # Try PUT /servers/{id} with wrapped/unwrapped
-                resp = requests.put(f"{API_URL}/servers/{server_id}", headers=headers, json=vs_payload)
-                if resp.status_code == 422 or resp.status_code == 404:
-                     # Maybe PUT not supported or wrapper needed?
-                     # Try wrapper
-                     resp = requests.put(f"{API_URL}/servers/{server_id}", headers=headers, json={"server": vs_payload})
-            else:
-                print(f"   👉 Creating new Virtual Server...", flush=True)
-                resp = requests.post(f"{API_URL}/servers", headers=headers, json=vs_payload)
-                if resp.status_code == 422:
-                    resp = requests.post(f"{API_URL}/servers", headers=headers, json={"server": vs_payload})
+        
+        # Create each virtual server
+        for vs_config in VIRTUAL_SERVERS:
+            vs_name = vs_config['name']
+            vs_desc = vs_config['description']
+            backend_servers = vs_config['backend_servers']
             
-            if resp.status_code in [200, 201]:
-                data = resp.json()
-                # Handle wrapped or unwrapped response
-                if 'server' in data:
-                    data = data['server']
+            # Collect tools from specified backend servers
+            associated_tools = []
+            for backend in backend_servers:
+                if backend in tool_map:
+                    associated_tools.extend(tool_map[backend])
+            
+            print(f"\n   👉 Virtual Server: '{vs_name}'")
+            print(f"      Description: {vs_desc}")
+            print(f"      Backend servers: {backend_servers}")
+            print(f"      Associated tools: {len(associated_tools)}")
+            
+            vs_payload = {
+                "name": vs_name,
+                "description": vs_desc,
+                "associatedTools": associated_tools
+            }
+            
+            server_id = None
+            if vs_name in existing_servers:
+                server_id = existing_servers[vs_name].get('id')
+            
+            try:
+                if server_id:
+                    print(f"      Updating existing Virtual Server ({server_id})...", flush=True)
+                    resp = requests.put(f"{API_URL}/servers/{server_id}", headers=headers, json=vs_payload)
+                    if resp.status_code == 422 or resp.status_code == 404:
+                        resp = requests.put(f"{API_URL}/servers/{server_id}", headers=headers, json={"server": vs_payload})
+                else:
+                    print(f"      Creating new Virtual Server...", flush=True)
+                    resp = requests.post(f"{API_URL}/servers", headers=headers, json=vs_payload)
+                    if resp.status_code == 422:
+                        resp = requests.post(f"{API_URL}/servers", headers=headers, json={"server": vs_payload})
                 
-                uuid = data.get('uuid') or data.get('id')
-                print(f"      ✅ SUCCESS! Virtual Server Ready.", flush=True)
-                print(f"      🔑 TARGET UUID for OpenWebUI/VSCode: {uuid}", flush=True)
-                print(f"      🌍 URL: {API_URL}/mcp/{uuid}", flush=True)
-            else:
-                print(f"      ⚠️  Failed: {resp.status_code} - {resp.text[:200]}", flush=True)
-        except Exception as e:
-            print(f"      ❌ Error managing Virtual Server: {e}", flush=True)
+                if resp.status_code in [200, 201]:
+                    data = resp.json()
+                    if 'server' in data:
+                        data = data['server']
+                    
+                    uuid = data.get('uuid') or data.get('id')
+                    print(f"      ✅ SUCCESS! Virtual Server '{vs_name}' ready.", flush=True)
+                    print(f"      🔑 UUID: {uuid}", flush=True)
+                else:
+                    print(f"      ⚠️  Failed: {resp.status_code} - {resp.text[:200]}", flush=True)
+            except Exception as e:
+                print(f"      ❌ Error managing Virtual Server: {e}", flush=True)
 
     if __name__ == "__main__":
         if wait_for_context_forge():
