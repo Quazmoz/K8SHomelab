@@ -126,17 +126,6 @@ data:
         # --- Step 2: Discover Tools by Backend Server ---
         print(f"\n🔍 Step 2: Discovering Tools by Backend Server...")
         tool_map = {}  # Maps backend server name -> list of tool IDs
-        backend_server_ids = {}  # Maps backend server name -> server UUID
-        
-        # First, get all registered servers to map names to IDs
-        try:
-            resp = requests.get(f"{API_URL}/servers", headers=headers)
-            if resp.status_code == 200:
-                for server in resp.json():
-                    backend_server_ids[server['name']] = server['id']
-                    print(f"      Found server: {server['name']}")
-        except Exception as e:
-            print(f"      ⚠️  Could not get server list: {e}")
         
         # Get all tools from the global tools endpoint
         all_tools = []
@@ -148,27 +137,42 @@ data:
         except Exception as e:
             print(f"      ⚠️  Error getting tools: {e}")
         
-        # Group tools by pattern matching against backend server names
-        # This works because tools are named like "azure-*", "groupme-*", "clickup-*"
-        for backend_config in MCP_BACKENDS:
-            backend_name = backend_config['name']
-            backend_prefix = backend_name.split('-')[0]  # "azure", "groupme", "clickup"
+        # Group tools by backend server matching
+        # Tools are named like "azure-*", "groupme-*", "clickup-*"
+        if all_tools:
+            print(f"      Grouping tools by backend server...")
             
-            # Filter tools by name prefix
-            matching_tools = [
-                tool['id'] for tool in all_tools 
-                if tool.get('name', '').lower().startswith(backend_prefix.lower())
-            ]
+            for backend_config in MCP_BACKENDS:
+                backend_name = backend_config['name']
+                backend_prefix = backend_name.split('-')[0]  # Get "azure", "groupme", "clickup"
+                
+                # Find tools matching this backend's prefix
+                matching_tools = [
+                    tool['id'] for tool in all_tools 
+                    if backend_prefix in tool.get('name', '').lower()
+                ]
+                
+                tool_map[backend_name] = matching_tools
+                if matching_tools:
+                    print(f"      ✓ {backend_name}: {len(matching_tools)} tools found")
             
-            tool_map[backend_name] = matching_tools
-            print(f"      - {backend_name}: {len(matching_tools)} tools (pattern: {backend_prefix}-*)")
+            # If we still have 0 tools matched, assign all to first backend as fallback
+            total_assigned = sum(len(ids) for ids in tool_map.values())
+            if total_assigned == 0 and all_tools:
+                print(f"      ⚠️  No pattern matches found, assigning all {len(all_tools)} tools to primary backend")
+                if 'azure-go' in tool_map or len(MCP_BACKENDS) > 0:
+                    primary_backend = 'azure-go' if 'azure-go' in tool_map else MCP_BACKENDS[0]['name']
+                    tool_map[primary_backend] = [tool['id'] for tool in all_tools]
+                    print(f"         Assigned {len(all_tools)} tools to {primary_backend}")
+        else:
+            print(f"      ⚠️  No tools found in global catalog")
         
         print(f"\n      Tool Map Summary:")
         total_tools = 0
         for server_name, tool_ids in tool_map.items():
             print(f"        {server_name}: {len(tool_ids)} tools")
             total_tools += len(tool_ids)
-        print(f"      Total tools to associate: {total_tools}")
+        print(f"      Total tools to distribute: {total_tools}")
 
         # --- Step 3: Create/Update Virtual Servers ---
         print(f"\n📦 Step 3: Creating/Updating Virtual Servers...", flush=True)
