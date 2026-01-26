@@ -146,11 +146,13 @@ data:
                 backend_name = backend_config['name']
                 backend_prefix = backend_name.split('-')[0]  # Get "azure", "groupme", "clickup"
                 
-                # Find tools matching this backend's prefix
-                matching_tools = [
-                    tool['id'] for tool in all_tools 
-                    if backend_prefix in tool.get('name', '').lower()
-                ]
+                # Find tools matching this backend's prefix (e.g. "clickup" in "clickup_native_...")
+                matching_tools = []
+                for tool in all_tools:
+                    tool_name = tool.get('name', '').lower()
+                    # Check prefix or if backend name part exists in tool name
+                    if backend_prefix in tool_name or backend_name.replace('-', '_') in tool_name:
+                        matching_tools.append(tool['id'])
                 
                 tool_map[backend_name] = matching_tools
                 if matching_tools:
