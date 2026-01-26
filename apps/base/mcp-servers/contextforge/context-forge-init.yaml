@@ -188,13 +188,20 @@ data:
         except:
             pass
         
+        # Map backend server names to their IDs
+        backend_name_to_id = {}
+        for backend_name, server_id in backend_server_ids.items():
+            backend_name_to_id[backend_name] = server_id
+        
+        print(f"\n      Backend Server ID Map: {backend_name_to_id}")
+        
         # Create each virtual server
         for vs_config in VIRTUAL_SERVERS:
             vs_name = vs_config['name']
             vs_desc = vs_config['description']
             backend_servers = vs_config['backend_servers']
             
-            # Collect tools from specified backend servers
+            # Collect tool IDs from specified backend servers
             associated_tools = []
             for backend in backend_servers:
                 if backend in tool_map:
@@ -203,7 +210,9 @@ data:
             print(f"\n   👉 Virtual Server: '{vs_name}'")
             print(f"      Description: {vs_desc}")
             print(f"      Backend servers: {backend_servers}")
-            print(f"      Associated tools: {len(associated_tools)}")
+            print(f"      Tools to associate: {len(associated_tools)}")
+            if associated_tools:
+                print(f"      Tool IDs: {associated_tools[:5]}{'...' if len(associated_tools) > 5 else ''}")
             
             vs_payload = {
                 "name": vs_name,
