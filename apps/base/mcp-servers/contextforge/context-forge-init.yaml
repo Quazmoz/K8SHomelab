@@ -134,46 +134,35 @@ data:
             if resp.status_code == 200:
                 for server in resp.json():
                     backend_server_ids[server['name']] = server['id']
-                    print(f"      Found backend server: {server['name']} (ID: {server['id']})")
+                    print(f"      Found server: {server['name']} (ID: {server['id']})")
         except Exception as e:
             print(f"      ⚠️  Could not get server list: {e}")
         
-        # Get all tools and group by their server ID
-        try:
-            resp = requests.get(f"{API_URL}/tools", headers=headers)
-            if resp.status_code == 200:
-                tools = resp.json()
-                print(f"      Found {len(tools)} tools total.")
-                
-                # Group tools by their server ID, then map to server name
-                tools_by_server_id = {}
-                for tool in tools:
-                    server_id = tool.get('server_id') or tool.get('server', {}).get('id', 'unknown')
-                    if server_id not in tools_by_server_id:
-                        tools_by_server_id[server_id] = []
-                    tools_by_server_id[server_id].append(tool['id'])
-                
-                # Convert server IDs to server names
-                for server_id, tool_ids in tools_by_server_id.items():
-                    # Find server name by ID
-                    server_name = None
-                    for name, sid in backend_server_ids.items():
-                        if sid == server_id:
-                            server_name = name
-                            break
-                    if not server_name:
-                        server_name = f"unknown({server_id})"
-                    
-                    tool_map[server_name] = tool_ids
-                    print(f"      - {len(tool_ids)} tools from {server_name}")
-            else:
-                print(f"      ❌ Failed to list tools: {resp.status_code}")
-        except Exception as e:
-            print(f"      ❌ Error listing tools: {e}")
-
+        # For each backend server, fetch its tools directly
+        for backend_name in [b['name'] for b in MCP_BACKENDS]:
+            if backend_name in backend_server_ids:
+                server_id = backend_server_ids[backend_name]
+                try:
+                    # Query tools from this specific backend server
+                    resp = requests.get(f"{API_URL}/servers/{server_id}/tools", headers=headers)
+                    if resp.status_code == 200:
+                        tools = resp.json()
+                        tool_ids = [tool['id'] for tool in tools]
+                        tool_map[backend_name] = tool_ids
+                        print(f"      - {backend_name}: {len(tool_ids)} tools discovered")
+                    else:
+                        print(f"      ⚠️  Could not fetch tools for {backend_name}: {resp.status_code}")
+                        tool_map[backend_name] = []
+                except Exception as e:
+                    print(f"      ⚠️  Error fetching tools for {backend_name}: {e}")
+                    tool_map[backend_name] = []
+        
         print(f"\n      Tool Map Summary:")
+        total_tools = 0
         for server_name, tool_ids in tool_map.items():
             print(f"        {server_name}: {len(tool_ids)} tools")
+            total_tools += len(tool_ids)
+        print(f"      Total tools discovered: {total_tools}")
 
         # --- Step 3: Create/Update Virtual Servers ---
         print(f"\n📦 Step 3: Creating/Updating Virtual Servers...", flush=True)
