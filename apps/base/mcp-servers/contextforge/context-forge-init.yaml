@@ -191,8 +191,8 @@ data:
         
         # Map backend server names to their IDs
         backend_name_to_id = {}
-        for backend_name, server_id in backend_server_ids.items():
-            backend_name_to_id[backend_name] = server_id
+        for name, s in existing_servers.items():
+            backend_name_to_id[name] = s.get('id')
         
         print(f"\n      Backend Server ID Map: {backend_name_to_id}")
         
