@@ -134,35 +134,41 @@ data:
             if resp.status_code == 200:
                 for server in resp.json():
                     backend_server_ids[server['name']] = server['id']
-                    print(f"      Found server: {server['name']} (ID: {server['id']})")
+                    print(f"      Found server: {server['name']}")
         except Exception as e:
             print(f"      ⚠️  Could not get server list: {e}")
         
-        # For each backend server, fetch its tools directly
-        for backend_name in [b['name'] for b in MCP_BACKENDS]:
-            if backend_name in backend_server_ids:
-                server_id = backend_server_ids[backend_name]
-                try:
-                    # Query tools from this specific backend server
-                    resp = requests.get(f"{API_URL}/servers/{server_id}/tools", headers=headers)
-                    if resp.status_code == 200:
-                        tools = resp.json()
-                        tool_ids = [tool['id'] for tool in tools]
-                        tool_map[backend_name] = tool_ids
-                        print(f"      - {backend_name}: {len(tool_ids)} tools discovered")
-                    else:
-                        print(f"      ⚠️  Could not fetch tools for {backend_name}: {resp.status_code}")
-                        tool_map[backend_name] = []
-                except Exception as e:
-                    print(f"      ⚠️  Error fetching tools for {backend_name}: {e}")
-                    tool_map[backend_name] = []
+        # Get all tools from the global tools endpoint
+        all_tools = []
+        try:
+            resp = requests.get(f"{API_URL}/tools", headers=headers)
+            if resp.status_code == 200:
+                all_tools = resp.json()
+                print(f"      Found {len(all_tools)} tools total")
+        except Exception as e:
+            print(f"      ⚠️  Error getting tools: {e}")
+        
+        # Group tools by pattern matching against backend server names
+        # This works because tools are named like "azure-*", "groupme-*", "clickup-*"
+        for backend_config in MCP_BACKENDS:
+            backend_name = backend_config['name']
+            backend_prefix = backend_name.split('-')[0]  # "azure", "groupme", "clickup"
+            
+            # Filter tools by name prefix
+            matching_tools = [
+                tool['id'] for tool in all_tools 
+                if tool.get('name', '').lower().startswith(backend_prefix.lower())
+            ]
+            
+            tool_map[backend_name] = matching_tools
+            print(f"      - {backend_name}: {len(matching_tools)} tools (pattern: {backend_prefix}-*)")
         
         print(f"\n      Tool Map Summary:")
         total_tools = 0
         for server_name, tool_ids in tool_map.items():
             print(f"        {server_name}: {len(tool_ids)} tools")
             total_tools += len(tool_ids)
-        print(f"      Total tools discovered: {total_tools}")
+        print(f"      Total tools to associate: {total_tools}")
 
         # --- Step 3: Create/Update Virtual Servers ---
         print(f"\n📦 Step 3: Creating/Updating Virtual Servers...", flush=True)
