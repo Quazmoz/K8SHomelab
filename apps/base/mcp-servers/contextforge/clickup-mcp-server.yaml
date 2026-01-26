@@ -1,6 +1,6 @@
 # Custom ClickUp MCP Server
 # Uses quazmoz/quazmoz:clickup image
-# Connects via SSE to mcpo
+# Connects via SSE to Context Forge
 apiVersion: apps/v1
 kind: Deployment
 metadata:

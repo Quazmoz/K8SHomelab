@@ -8,6 +8,6 @@
     },
     "info": {
         "name": "Context Forge",
-        "description": "MCP Gateway - All tools (GroupMe, Azure, Kubernetes, Postgres, Prometheus, ClickUp)"
+        "description": "MCP Gateway - GroupMe, Azure, ClickUp tools"
     }
 }

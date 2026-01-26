@@ -1,6 +1,7 @@
 ---
 # mcpo - MCP-to-OpenAPI Proxy
 # Exposes multiple MCP servers as OpenAPI endpoints for OpenWebUI
+# Handles: Postgres, Kubernetes, Prometheus, FreshRSS, n8n
 # Docs: https://github.com/open-webui/mcpo
 apiVersion: apps/v1
 kind: Deployment
@@ -57,58 +58,12 @@ spec:
         # .NET globalization invariant mode - fixes libicu dependency
         - name: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
           value: "true"
-        # Azure credentials for Azure MCP (service principal)
-        # Required: AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
-        # Create secret: kubectl create secret generic azure-mcp-credentials -n apps \
-        #   --from-literal=AZURE_TENANT_ID=xxx --from-literal=AZURE_CLIENT_ID=xxx \
-        #   --from-literal=AZURE_CLIENT_SECRET=xxx --from-literal=AZURE_SUBSCRIPTION_ID=xxx
-        - name: AZURE_TENANT_ID
-          valueFrom:
-            secretKeyRef:
-              name: azure-mcp-credentials
-              key: AZURE_TENANT_ID
-              optional: true
-        - name: AZURE_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: azure-mcp-credentials
-              key: AZURE_CLIENT_ID
-              optional: true
-        - name: AZURE_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: azure-mcp-credentials
-              key: AZURE_CLIENT_SECRET
-              optional: true
-        - name: AZURE_SUBSCRIPTION_ID
-          valueFrom:
-            secretKeyRef:
-              name: azure-mcp-credentials
-              key: AZURE_SUBSCRIPTION_ID
-              optional: true
         # n8n Native MCP token (from n8n Settings → MCP Access → Connect)
         - name: N8N_MCP_TOKEN
           valueFrom:
             secretKeyRef:
               name: n8n-mcp-credentials
               key: N8N_MCP_TOKEN
-              optional: true
-        # ClickUp API credentials - API_HEADERS is used by @ivotoby/openapi-mcp-server
-        # CLICKUP_API_KEY must be defined BEFORE API_HEADERS for $(VAR) substitution
-        - name: CLICKUP_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: clickup-mcp-credentials
-              key: CLICKUP_API_KEY
-              optional: true
-        - name: API_HEADERS
-          value: "Authorization:$(CLICKUP_API_KEY)"
-        # GroupMe API token - used by --api-key-env GROUPME_TOKEN in mcpo config
-        - name: GROUPME_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: groupme-mcp-credentials
-              key: GROUPME_TOKEN
               optional: true
         volumeMounts:
         - name: mcpo-config

@@ -127,7 +127,7 @@ data:
         # Based on user input: {"name": "...", "associatedTools": [...]}
         vs_payload = {
             "name": virtual_server_name,
-            "description": "Unified access to Azure and GroupMe tools",
+            "description": "Unified access to Azure, GroupMe, and ClickUp tools",
             "associatedTools": all_tool_ids
         }
         

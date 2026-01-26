@@ -1,103 +1,128 @@
 # MCP Servers
 
-Model Context Protocol (MCP) tools for OpenWebUI integration via **Context Forge**.
+Model Context Protocol (MCP) tools for OpenWebUI integration via **Context Forge** and **MCPO**.
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                           OpenWebUI                                 │
+│  (Workspace → Tools → Auth Registration for GroupMe)               │
+└─────────────────────────────────────────────────────────────────────┘
+                    ↓                           ↓
+        ┌──────────────────────────┐   ┌──────────────────┐
+        │   Context Forge          │   │      MCPO        │
+        │   (MCP Gateway)          │   │  (OpenAPI Proxy) │
+        ├──────────────────────────┤   ├──────────────────┤
+        │ - GroupMe (per-user auth)│   │ - Postgres       │
+        │ - Azure (HTTP)           │   │ - Kubernetes     │
+        │ - ClickUp (SSE)          │   │ - Prometheus     │
+        │ Port: 4444               │   │ - FreshRSS       │
+        │ URL: mcp.k8s.local       │   │ - n8n            │
+        │                          │   │ Port: 8000       │
+        │                          │   │ URL: mcpo.k8s.lo │
+        └──────────────────────────┘   └──────────────────┘
+```
+
+## Directory Structure
+
+```
+mcp-servers/
+├── contextforge/              # Context Forge gateway + custom MCP servers
+│   ├── context-forge.yaml           # Main deployment, service, ingress
+│   ├── context-forge-servers.yaml   # Server registration config
+│   ├── context-forge-rbac.yaml      # RBAC for Kubernetes access
+│   ├── context-forge-init.yaml      # Auto-registration job
+│   ├── groupme-backend.yaml         # GroupMe SSE backend (per-user auth)
+│   ├── clickup-mcp-server.yaml      # ClickUp SSE server
+│   ├── azure-mcp-go-deployment.yaml # Azure HTTP server
+│   ├── groupme-netpol.yaml          # Network policies
+│   └── openwebui-context-forge.json # OpenWebUI config (primary entry point)
+│
+├── mcpo/                      # MCPO proxy + Node.js MCP servers
+│   ├── mcpo-config.yaml             # MCPO configuration
+│   ├── mcpo-deployment.yaml         # Deployment + service
+│   ├── mcpo-rbac.yaml               # RBAC for Kubernetes access
+│   ├── ingress.yaml                 # Ingress for mcpo.k8s.local
+│   ├── openwebui-postgres-mcp.json  # OpenWebUI config
+│   ├── openwebui-kubernetes-mcp.json
+│   ├── openwebui-prometheus-mcp.json
+│   ├── openwebui-freshrss-mcp.json
+│   └── openwebui-n8n-mcp.json
+│
+├── legacy/                    # Deprecated/disabled resources
+│   ├── tanium-mcp-server.yaml       # Tanium server (disabled)
+│   ├── openwebui-tanium-mcp.json    # Tanium config (disabled)
+│   └── clickup-openapi.json         # Reference OpenAPI spec
+│
+├── kustomization.yaml         # Main kustomization (Flux sync)
+├── README.md                  # This file
+└── AUTH_WORKFLOW.md          # Per-user authentication details
+```
 
 ## System Architecture
 
-```mermaid
-graph TD
-    subgraph "K8s Cluster"
-        OWUI[OpenWebUI]
-        CF[Context Forge (Gateway)]
-        
-        subgraph "Backends"
-            GM[GroupMe Backend]
-            CU[ClickUp MCP]
-            N8N[n8n Workflow]
-        end
-        
-        subgraph "Storage"
-            Redis[(Redis)]
-            Postgres[(Postgres)]
-        end
-        
-        OWUI --"MCP /mcp (Streamable HTTP)"--> CF
-        CF --"SSE"--> GM
-        CF --"SSE"--> CU
-        CF --"HTTP"--> N8N
-        
-        GM --"Store/Read Tokens"--> Redis
-        CF --"Config/Logs"--> Postgres
-    end
-```
+### Context Forge (Primary Gateway)
+- **Purpose**: Centralized MCP gateway with per-user authentication
+- **Servers**:
+  - **GroupMe** (SSE) - Custom backend with token encryption in Postgres
+  - **Azure** (HTTP) - Cloud resource management  
+  - **ClickUp** (SSE) - Task management
+- **Authentication**: JWT tokens, per-user header passthrough for GroupMe
+- **Port**: 4444 (internal cluster)
+- **Public URL**: `mcp.k8s.local`
 
-## Signal Flows
+### MCPO (Node.js Tools Proxy)
+- **Purpose**: Expose Node.js-based MCP servers as OpenAPI endpoints
+- **Servers**:
+  - **Postgres** - Database inspection and queries
+  - **Kubernetes** - Cluster resource management
+  - **Prometheus** - Metrics and alerting queries
+  - **FreshRSS** - RSS feed reading
+  - **n8n** - Workflow automation
+- **Port**: 8000 (internal cluster)
+- **Public URL**: `mcpo.k8s.local`
 
-### 1. User Authentication (Token Registration)
+### No Overlap
+✅ Each server lives in ONE location only
+✅ No duplicate registrations between Context Forge and MCPO
+✅ Clear separation of concerns
 
-How a user's GroupMe token is securely registered without ever being exposed in chat history.
+## OpenWebUI Configuration
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant OWUI as OpenWebUI
-    participant Tool as Auth Tool (Python)
-    participant GM as GroupMe Backend
-    participant Redis
+### Setup in OpenWebUI
 
-    User->>OWUI: Enter Token in "UserValves" (Settings)
-    User->>OWUI: Message: "Register my token"
-    OWUI->>Tool: Execute register_token()
-    Note over Tool: Extracts token from UserValves<br>(NOT from chat message)
-    
-    Tool->>GM: POST /auth/register
-    Note right of Tool: Headers:<br>X-User-Email: user@example.com
-    Note right of Tool: Body:<br>{ "groupme_token": "..." }
-    
-    GM->>GM: Encrypt Token (AES-256)
-    GM->>Redis: SET user:email:token <encrypted_token>
-    GM-->>Tool: 200 OK
-    Tool-->>OWUI: "Token registered successfully"
-    OWUI-->>User: "Token registered successfully"
-```
+Import tool configs in OpenWebUI (`Workspace → Tools`):
 
-### 2. Tool Execution (MCP Request)
+1. **Context Forge** (Primary gateway)
+   - File: `contextforge/openwebui-context-forge.json`
+   - Provides: GroupMe, Azure, ClickUp tools
+   - Auth: Basic (admin:password)
 
-How OpenWebUI calls a GroupMe tool using the authenticated user's credentials.
+2. **MCPO** (Node.js tools)
+   - Files: `mcpo/openwebui-*.json`
+   - Provides: Postgres, Kubernetes, Prometheus, FreshRSS, n8n
 
-```mermaid
-sequenceDiagram
-    participant OWUI as OpenWebUI
-    participant CF as Context Forge
-    participant GM as GroupMe Backend
-    participant Redis
-    participant API as GroupMe API
+### Per-User Authentication (GroupMe)
 
-    OWUI->>CF: POST /mcp/ (JSON-RPC)
-    Note right of OWUI: Request: list_groups<br>Header: Authorization Bearer <JWT>
-    
-    CF->>CF: Validate JWT
-    CF->>GM: Forward Request (SSE)
-    Note right of CF: Adds Header:<br>X-Authenticated-User: user@example.com
-    
-    GM->>Redis: GET user:email:token
-    Redis-->>GM: <encrypted_token>
-    GM->>GM: Decrypt Token
-    
-    GM->>API: GET https://api.groupme.com/...
-    Note right of GM: Header:<br>X-Access-Token: <decrypted_token>
-    
-    API-->>GM: JSON Response
-    GM-->>CF: JSON-RPC Result
-    CF-->>OWUI: JSON-RPC Result
-```
+GroupMe requires per-user token registration:
 
-## Component Details
+1. Go to **Workspace → Tools → Auth Registration** (GroupMe tool settings)
+2. Paste your GroupMe token in **REGISTRATION_TOKEN**
+3. In chat, message: `Register Token`
+4. Backend securely stores your encrypted token in Postgres
+5. All future GroupMe calls use your token (auto-decrypted)
 
-| Component | Description | Port | Internal URL | Auth Type |
-|-----------|-------------|------|--------------|-----------|
-| **Context Forge** | Gateway/Router | 4444 | `http://context-forge.apps.svc.cluster.local:4444` | Bearer JWT |
-| **GroupMe** | Backend Service | 5000 | `http://groupme-backend.apps.svc.cluster.local:5000` | Header (`X-Authenticated-User`) |
+See [AUTH_WORKFLOW.md](AUTH_WORKFLOW.md) for detailed flow.
+
+## Flux Sync
+
+Kustomization includes all resources in proper directory structure:
+- Context Forge: `contextforge/*`
+- MCPO: `mcpo/*`
+- Legacy (disabled): `legacy/*`
+
+Flux will auto-sync on commit to main branch.
 | **ClickUp** | MCP Server | 5000 | `http://clickup-mcp-server.apps.svc.cluster.local:5000` | None (Shared Key) |
 
 ## Quick Start for GroupMe Auth

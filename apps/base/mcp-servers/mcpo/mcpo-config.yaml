@@ -1,5 +1,7 @@
 # mcpo ConfigMap
 # Contains config.json for multiple MCP servers
+# MCPO handles: Postgres, Kubernetes, Prometheus, FreshRSS, n8n (stdio servers)
+# Context Forge handles: Azure, GroupMe, ClickUp (SSE/HTTP servers)
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -33,15 +35,12 @@ data:
             "PROMETHEUS_URL": "http://prometheus-server.apps.svc.cluster.local"
           }
         },
-
-        "clickup": {
+        "freshrss": {
           "command": "npx",
-          "args": [
-            "-y", 
-            "@ivotoby/openapi-mcp-server",
-            "--api-base-url", "https://api.clickup.com/api/v2",
-            "--openapi-spec", "https://raw.githubusercontent.com/Quazmoz/K8SHomelab/main/apps/base/mcp-servers/clickup-openapi.json"
-          ]
+          "args": ["-y", "mcp-server-fetch"],
+          "env": {
+            "FETCH_URL": "http://freshrss.apps.svc.cluster.local/api/greader.php"
+          }
         },
         "n8n": {
           "command": "sh",

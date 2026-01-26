@@ -2,27 +2,21 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: apps
 resources:
-  # Context Forge - MCP Gateway (replaces mcpo)
-  - context-forge.yaml
-  # Context Forge server registration documentation
-  - context-forge-servers.yaml
-  - groupme-netpol.yaml
-  # Context Forge RBAC (for Kubernetes MCP)
-  - context-forge-rbac.yaml
-  # Context Forge init job (auto-registers servers on startup)
-  - context-forge-init.yaml
-  # Custom GroupMe backend (SSE MCP server)
-  - groupme-backend.yaml
-  # Custom ClickUp MCP server (SSE)
-  - clickup-mcp-server.yaml
-  # Azure MCP Go server (HTTP)
-  - azure-mcp-go-deployment.yaml
-  # Tanium MCP server - disabled (token expired)
-  # - tanium-mcp-server.yaml
+  # === Context Forge - MCP Gateway ===
+  # Handles: GroupMe, Azure, ClickUp (SSE/HTTP servers with per-user auth)
+  - contextforge/context-forge.yaml
+  - contextforge/context-forge-servers.yaml
+  - contextforge/context-forge-rbac.yaml
+  - contextforge/context-forge-init.yaml
+  - contextforge/groupme-backend.yaml
+  - contextforge/groupme-netpol.yaml
+  - contextforge/clickup-mcp-server.yaml
+  - contextforge/azure-mcp-go-deployment.yaml
   
-  # --- Hybrid Architecture: mcpo for Node.js tools ---
-  - mcpo-config.yaml
-  - mcpo-rbac.yaml  
-  - mcpo-deployment.yaml
-  - ingress.yaml
+  # === MCPO - MCP-to-OpenAPI Proxy ===
+  # Handles: Postgres, Kubernetes, Prometheus, FreshRSS, n8n (stdio servers)
+  - mcpo/mcpo-config.yaml
+  - mcpo/mcpo-rbac.yaml
+  - mcpo/mcpo-deployment.yaml
+  - mcpo/ingress.yaml
 

@@ -1,0 +1,46 @@
+# Context Forge MCP Server Registration
+# Run these commands after Context Forge is deployed to register MCP servers
+# 
+# First, get the admin token:
+# kubectl exec -it deploy/context-forge -n apps -- \
+#   python3 -m mcpgateway.utils.create_jwt_token --username admin@localhost --exp 0 --secret <JWT_SECRET_KEY>
+#
+# Then register each server via the Admin UI at http://mcp.k8s.local/admin
+# or via API calls below.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: context-forge-servers
+  namespace: apps
+data:
+  # Documentation of MCP servers to register
+  # 
+  # IMPORTANT: 
+  # - SSE/HTTP servers (azure-go, groupme, clickup-native) must be registered MANUALLY via Admin UI
+  # - Do NOT register stdio servers manually - they are handled by context-forge-init.yaml
+  #
+  servers.json: |
+    {
+      "servers": [
+        {
+          "name": "azure-go",
+          "description": "Azure Cloud Management (Go)",
+          "type": "http",
+          "url": "http://azure-mcp-go.apps.svc.cluster.local:8080/mcp"
+        },
+        {
+          "name": "groupme",
+          "description": "GroupMe messaging (per-user auth)",
+          "type": "sse",
+          "url": "http://groupme-backend.apps.svc.cluster.local:5000/sse",
+          "passthrough_headers": ["X-Authenticated-User"]
+        },
+        {
+          "name": "clickup-native",
+          "description": "ClickUp project management",
+          "type": "sse", 
+          "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"
+        }
+      ]
+    }
