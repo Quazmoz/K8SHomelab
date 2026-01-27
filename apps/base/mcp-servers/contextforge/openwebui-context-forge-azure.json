@@ -1,0 +1,13 @@
+{
+  "type": "mcp",
+  "url": "http://context-forge.apps.svc.cluster.local:4444/servers/ca67913c74174efaa18163fc8da21a2b/mcp",
+  "spec_type": "url",
+  "path": "openapi.json",
+  "auth_type": "none",
+  "key": "",
+  "info": {
+    "id": "Azure MCP Only",
+    "name": "Azure MCP",
+    "description": "Azure MCP server integration"
+  }
+}

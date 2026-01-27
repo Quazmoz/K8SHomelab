@@ -1,0 +1,13 @@
+{
+  "type": "mcp",
+  "url": "http://context-forge.apps.svc.cluster.local:4444/mcp/75abbf60f4f94152911c3efb7a45175c",
+  "spec_type": "url",
+  "path": "openapi.json",
+  "auth_type": "bearer",
+  "key": "REPLACE_WITH_TOKEN",
+  "info": {
+    "id": "Context Forge",
+    "name": "Context Forge Master",
+    "description": "MCP Gateway - Context Forge master server"
+  }
+}
