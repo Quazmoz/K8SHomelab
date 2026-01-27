@@ -58,7 +58,15 @@ spec:
           name: http
         env:
         - name: REDIS_URL
-          value: "redis://redis:6379"
+          value: "redis://redis.apps.svc.cluster.local:6379/0"
+        - name: REDIS_HOST
+          value: "redis.apps.svc.cluster.local"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: CACHE_ENABLED
+          value: "true"
+        - name: REDIS_ENABLED
+          value: "true"
         # Core settings
         - name: HOST
           value: "0.0.0.0"
