@@ -6,7 +6,7 @@ metadata:
   annotations:
     # Homepage integration
     gethomepage.dev/enabled: "true"
-    gethomepage.dev/group: "Development"
+    gethomepage.dev/group: "DevOps"
     gethomepage.dev/name: "Coder"
     gethomepage.dev/icon: "coder.png"
     gethomepage.dev/description: "Self-hosted developer workspaces"
