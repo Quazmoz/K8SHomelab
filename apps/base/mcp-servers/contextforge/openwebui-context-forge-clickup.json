@@ -1,6 +1,6 @@
 {
   "type": "mcp",
-  "url": "http://context-forge.apps.svc.cluster.local:4444/mcp/f0f0c5fd61854e58aabb10a6a2330c98",
+  "url": "http://context-forge.apps.svc.cluster.local:4444/servers/f0f0c5fd61854e58aabb10a6a2330c98/mcp",
   "spec_type": "url",
   "path": "openapi.json",
   "auth_type": "bearer",
