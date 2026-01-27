@@ -30,6 +30,7 @@ resources:
   - ./mongo-express
   - ./jupyter
   - ./phoenix  # LLM Observability (replaces Langfuse)
+  - ./coder
 
 
 

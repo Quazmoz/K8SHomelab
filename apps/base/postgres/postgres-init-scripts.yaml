@@ -41,6 +41,13 @@ data:
     GRANT ALL PRIVILEGES ON DATABASE freshrss TO freshrss;
     ALTER DATABASE freshrss OWNER TO freshrss;
 
+    -- Create Coder database and user
+    \c postgres
+    CREATE DATABASE coder;
+    CREATE USER coder WITH PASSWORD 'coder123';
+    GRANT ALL PRIVILEGES ON DATABASE coder TO coder;
+    ALTER DATABASE coder OWNER TO coder;
+
     -- Create Langfuse database and user
     \c postgres
     CREATE DATABASE langfuse;

@@ -1,0 +1,45 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: coder
+  namespace: apps
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: coder
+      version: "*" # Use latest stable
+      sourceRef:
+        kind: HelmRepository
+        name: coder
+        namespace: flux-system
+      interval: 1m
+  values:
+    coder:
+      # Access URL is required
+      accessUrl: "http://coder.k8s.local"
+      
+      # Environment variables for configuration
+      env:
+        - name: CODER_PG_CONNECTION_URL
+          value: "postgres://coder:coder123@postgres-service.apps.svc.cluster.local:5432/coder?sslmode=disable"
+          
+      service:
+        type: ClusterIP
+        
+      ingress:
+        enabled: false # We use a separate Ingress resource
+        
+      # Disable built-in postgres
+      # (Note: keys might vary by chart version, but usually 'postgresql' overrides subchart)
+      
+    # Disable embedded postgresql subchart
+    postgresql:
+      enabled: false
+      
+    # Persistence config
+    # We disable persistence for coderd because we rely on external Postgres for state.
+    # Workspaces running on this cluster without a dynamic provisioner MUST use
+    # emptyDir or hostPath which must be defined in the Terraform template.
+    persistence:
+        enabled: false

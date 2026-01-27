@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: coder
+  namespace: apps
+  annotations:
+    # Homepage integration
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: "Development"
+    gethomepage.dev/name: "Coder"
+    gethomepage.dev/icon: "coder.png"
+    gethomepage.dev/description: "Self-hosted developer workspaces"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: coder.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: coder
+            port:
+              number: 80
