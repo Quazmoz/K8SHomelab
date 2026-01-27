@@ -412,3 +412,27 @@ spec:
           operator: In
           values:
           - quinn-hpprobook430g6
+---
+# The Persistent Volume for Authentik media
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: authentik-media-local-pv
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/authentik-media
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6

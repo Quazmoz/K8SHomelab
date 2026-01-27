@@ -21,7 +21,7 @@ resources:
   - ./pgadmin
   - ./llamafactory
 #  - ./uptime-kuma  # Removed - not needed
-#  - ./authentik    # Removed - not needed
+  - ./authentik    # Re-enabled
   - ./freshrss
   - ./qdrant
   - ./mongodb

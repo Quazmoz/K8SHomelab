@@ -5,3 +5,4 @@ resources:
   - authentik-deployment.yaml
   - authentik-configmap.yaml
   - authentik-pvc.yaml
+  - authentik-secrets.yaml
