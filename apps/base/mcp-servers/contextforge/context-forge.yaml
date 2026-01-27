@@ -64,8 +64,10 @@ spec:
         - name: REDIS_PORT
           value: "6379"
         - name: CACHE_ENABLED
-          value: "true"
+          value: "True"
         - name: REDIS_ENABLED
+          value: "True"
+        - name: USE_REDIS
           value: "true"
         # Core settings
         - name: HOST
