@@ -43,3 +43,8 @@ spec:
     # emptyDir or hostPath which must be defined in the Terraform template.
     persistence:
         enabled: false
+        
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
