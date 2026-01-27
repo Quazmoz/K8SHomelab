@@ -28,6 +28,13 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
+      initContainers:
+      - name: setup-storage
+        image: busybox:latest
+        command: ['sh', '-c', 'mkdir -p /media && chmod 777 /media']
+        volumeMounts:
+        - name: media
+          mountPath: /media
       containers:
       - name: authentik
         image: ghcr.io/goauthentik/server:2025.12.0
@@ -99,6 +106,13 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
+      initContainers:
+      - name: setup-storage
+        image: busybox:latest
+        command: ['sh', '-c', 'mkdir -p /media && chmod 777 /media']
+        volumeMounts:
+        - name: media
+          mountPath: /media
       containers:
       - name: authentik
         image: ghcr.io/goauthentik/server:2025.12.0
