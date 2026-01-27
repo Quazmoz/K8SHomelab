@@ -7,7 +7,6 @@ resources:
   - contextforge/context-forge.yaml
   - contextforge/context-forge-servers.yaml
   - contextforge/context-forge-rbac.yaml
-  - contextforge/context-forge-init.yaml
   - contextforge/groupme-backend.yaml
   - contextforge/groupme-netpol.yaml
   - contextforge/clickup-mcp-server.yaml
