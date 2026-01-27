@@ -57,17 +57,13 @@ spec:
         - containerPort: 4444
           name: http
         env:
-        - name: REDIS_URL
-          value: "redis://redis.apps.svc.cluster.local:6379/0"
         - name: REDIS_HOST
-          value: "redis.apps.svc.cluster.local"
+          value: "10.99.243.64"
         - name: REDIS_PORT
           value: "6379"
+        - name: REDIS_DB
+          value: "0"
         - name: CACHE_ENABLED
-          value: "True"
-        - name: REDIS_ENABLED
-          value: "True"
-        - name: USE_REDIS
           value: "true"
         # Core settings
         - name: HOST
