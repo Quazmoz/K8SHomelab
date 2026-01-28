@@ -1,0 +1,17 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: awx-operator
+  namespace: apps
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: awx-operator
+      sourceRef:
+        kind: HelmRepository
+        name: awx-operator
+        namespace: flux-system
+      interval: 1m
+  values:
+    watchNamespace: apps

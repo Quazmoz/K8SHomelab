@@ -1,0 +1,10 @@
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx
+  namespace: apps
+spec:
+  ingress_type: ingress
+  hostname: awx.k8s.local
+  service_type: ClusterIP
+  # Minimal spec; operator creates required services and deployments
