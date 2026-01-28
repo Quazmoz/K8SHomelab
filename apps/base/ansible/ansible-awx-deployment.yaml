@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: awx
+  namespace: apps
   labels:
     app: awx
 spec:
