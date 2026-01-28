@@ -114,7 +114,7 @@ data:
 
     - DevOps:
         - Ansible AWX:
-          href: http://awx.homelab.local
+          href: http://awx.k8s.local
           icon: si-ansible
           description: Ansible Automation Platform
           siteMonitor: http://awx.apps.svc.cluster.local:8052

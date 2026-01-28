@@ -2,11 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: awx
+  namespace: apps
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: awx.homelab.local
+    - host: awx.k8s.local
       http:
         paths:
           - path: /
