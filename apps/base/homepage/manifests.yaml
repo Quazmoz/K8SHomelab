@@ -257,6 +257,7 @@ data:
           show: true
           cpu: true
           memory: true
+          showLabel: true
 
   bookmarks.yaml: ""
   docker.yaml: ""
