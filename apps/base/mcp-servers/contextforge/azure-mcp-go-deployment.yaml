@@ -42,22 +42,22 @@ spec:
         - name: AZURE_TENANT_ID
           valueFrom:
             secretKeyRef:
-              name: azure-mcp-secrets
+              name: azure-mcp-credentials
               key: AZURE_TENANT_ID
         - name: AZURE_CLIENT_ID
           valueFrom:
             secretKeyRef:
-              name: azure-mcp-secrets
+              name: azure-mcp-credentials
               key: AZURE_CLIENT_ID
         - name: AZURE_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: azure-mcp-secrets
+              name: azure-mcp-credentials
               key: AZURE_CLIENT_SECRET
         - name: AZURE_SUBSCRIPTION_ID
           valueFrom:
             secretKeyRef:
-              name: azure-mcp-secrets
+              name: azure-mcp-credentials
               key: AZURE_SUBSCRIPTION_ID
         livenessProbe:
           httpGet:
