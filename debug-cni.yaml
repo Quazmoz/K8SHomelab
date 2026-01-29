@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-cni
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  nodeSelector:
+    kubernetes.io/hostname: quinn-hpprobook430g6
+  tolerations:
+  - operator: Exists
+  containers:
+  - name: debug
+    image: docker.io/calico/node:v3.29.1
+    command: ["ls", "-la", "/host/etc/cni/net.d/"]
+    volumeMounts:
+    - name: cni-dir
+      mountPath: /host/etc/cni/net.d
+  volumes:
+  - name: cni-dir
+    hostPath:
+      path: /etc/cni/net.d
+  restartPolicy: Never
