@@ -13,5 +13,9 @@ spec:
         name: awx-operator
         namespace: flux-system
       interval: 1m
+  install:
+    crds: Create
+  upgrade:
+    crds: Create
   values:
     watchNamespace: apps
