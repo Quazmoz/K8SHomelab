@@ -7,4 +7,6 @@ spec:
   ingress_type: ingress
   hostname: awx.k8s.local
   service_type: ClusterIP
-  # Minimal spec; operator creates required services and deployments
+  postgres_configuration_secret: awx-postgres-configuration
+  admin_user: admin
+  admin_password_secret: awx-admin-password

@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - awx-crd.yaml
   - awx-operator-helmrelease.yaml
+  - awx-postgres-secret.yaml
   - awx-cr.yaml
