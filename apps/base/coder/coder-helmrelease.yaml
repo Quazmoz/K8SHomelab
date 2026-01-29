@@ -49,9 +49,9 @@ spec:
         cpu: "100m"
         memory: "256Mi"
         
-    # Run on Control Plane (OrangePi)
-    nodeSelector:
-      kubernetes.io/hostname: orangepi6plus
+      # Run on Control Plane (OrangePi)
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
       
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
