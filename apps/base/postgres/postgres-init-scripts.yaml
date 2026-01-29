@@ -55,4 +55,11 @@ data:
     GRANT ALL PRIVILEGES ON DATABASE langfuse TO langfuse;
     ALTER DATABASE langfuse OWNER TO langfuse;
 
+    -- Create Azure MCP Go database and user
+    \c postgres
+    CREATE DATABASE azure_mcp_go;
+    CREATE USER azure_mcp_go WITH PASSWORD 'azuremcp123';
+    GRANT ALL PRIVILEGES ON DATABASE azure_mcp_go TO azure_mcp_go;
+    ALTER DATABASE azure_mcp_go OWNER TO azure_mcp_go;
+
 
