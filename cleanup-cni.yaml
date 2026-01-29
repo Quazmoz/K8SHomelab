@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-calico-vxlan
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      hostNetwork: true
+      containers:
+      - name: cleanup
+        image: alpine
+        command: ["/bin/sh", "-c"]
+        args: ["ip link delete vxlan.calico || echo 'Interface not found'"]
+        securityContext:
+          privileged: true
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      restartPolicy: Never
