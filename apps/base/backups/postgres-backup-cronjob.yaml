@@ -60,23 +60,35 @@ spec:
             - /bin/bash
             - -c
             - |
-              set -e
+              set -eo pipefail
               TIMESTAMP=$(date +%Y%m%d_%H%M%S)
               BACKUP_FILE="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql.gz"
               
               echo "Starting PostgreSQL backup at $(date)"
-              echo "Backing up all databases..."
+              echo "Testing database connection..."
               
-              # Dump all databases with compression
-              pg_dumpall --clean --if-exists | gzip > "${BACKUP_FILE}"
-              
-              if [ $? -eq 0 ]; then
-                echo "Backup completed successfully: ${BACKUP_FILE}"
-                ls -lh "${BACKUP_FILE}"
-              else
-                echo "Backup failed!"
+              # Test connection first
+              if ! pg_isready -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}"; then
+                echo "ERROR: Cannot connect to PostgreSQL at ${PGHOST}:${PGPORT}"
                 exit 1
               fi
+              
+              echo "Backing up all databases..."
+              
+              # Dump all databases with compression (pipefail will catch pg_dumpall errors)
+              pg_dumpall --clean --if-exists 2>&1 | gzip > "${BACKUP_FILE}"
+              
+              # Verify backup is not empty (minimum valid gzip header is ~20 bytes)
+              BACKUP_SIZE=$(stat -c%s "${BACKUP_FILE}" 2>/dev/null || echo "0")
+              if [ "${BACKUP_SIZE}" -lt 100 ]; then
+                echo "ERROR: Backup file is too small (${BACKUP_SIZE} bytes), likely failed"
+                cat "${BACKUP_FILE}" | gunzip 2>/dev/null || true
+                rm -f "${BACKUP_FILE}"
+                exit 1
+              fi
+              
+              echo "Backup completed successfully: ${BACKUP_FILE}"
+              ls -lh "${BACKUP_FILE}"
               
               # Cleanup old backups (keep last N days)
               echo "Cleaning up backups older than ${RETENTION_DAYS} days..."
