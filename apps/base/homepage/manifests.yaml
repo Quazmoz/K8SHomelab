@@ -491,8 +491,7 @@ spec:
               mountPath: /app/config/logs
       volumes:
         - name: config
-          persistentVolumeClaim:
-            claimName: homepage-config-pvc
+          emptyDir: {}
         - name: configmap
           configMap:
             name: homepage-config
