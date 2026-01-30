@@ -1,15 +1,6 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: k8s-at-home
-  namespace: flux-system
-spec:
-  interval: 24h
-  url: https://k8s-at-home.com/charts/
----
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
-metadata:
   name: prometheus-community
   namespace: flux-system
 spec:

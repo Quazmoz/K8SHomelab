@@ -31,8 +31,8 @@ spec:
                 - arm64
       containers:
       - name: phoenix
-        image: arizephoenix/phoenix:latest
-        imagePullPolicy: Always
+        image: arizephoenix/phoenix:v12.33.1
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6006
           name: http

@@ -29,7 +29,7 @@ spec:
       serviceAccountName: mcpo
       initContainers:
       - name: install-kubectl
-        image: bitnami/kubectl:latest
+        image: bitnami/kubectl:1.29
         command:
         - /bin/sh
         - -c

@@ -24,7 +24,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: llamafactory
-          image: hiyouga/llamafactory:latest
+          image: hiyouga/llamafactory:v0.9.4
           imagePullPolicy: IfNotPresent
           command: ["llamafactory-cli", "webui"]
           ports:
