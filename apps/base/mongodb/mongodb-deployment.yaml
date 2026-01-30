@@ -8,6 +8,12 @@ metadata:
   namespace: apps
   labels:
     app: mongodb
+    app.kubernetes.io/name: mongodb
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: data-stack
+  annotations:
+    description: "Document database for LibreChat conversations"
+    docs: "https://www.mongodb.com/docs/"
 spec:
   replicas: 1
   selector:
@@ -19,6 +25,8 @@ spec:
     metadata:
       labels:
         app: mongodb
+        app.kubernetes.io/name: mongodb
+        app.kubernetes.io/component: database
     spec:
       # Run on x86 node with local storage
       nodeSelector:

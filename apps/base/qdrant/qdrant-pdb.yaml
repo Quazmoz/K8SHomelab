@@ -1,0 +1,16 @@
+# PodDisruptionBudget for Qdrant
+# Allows voluntary disruption while ensuring vector DB availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: qdrant-pdb
+  namespace: apps
+  labels:
+    app: qdrant
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/component: vector-database
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: qdrant

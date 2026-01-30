@@ -6,6 +6,11 @@ kind: Service
 metadata:
   name: postgres-service
   namespace: apps
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: data-stack
 spec:
   ports:
   - port: 5432
@@ -18,6 +23,11 @@ kind: Service
 metadata:
   name: postgres
   namespace: apps
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: data-stack
 spec:
   ports:
   - port: 5432
@@ -30,6 +40,14 @@ kind: StatefulSet
 metadata:
   name: postgres
   namespace: apps
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: data-stack
+  annotations:
+    description: "Primary PostgreSQL database for homelab services"
+    docs: "https://www.postgresql.org/docs/15/"
 spec:
   replicas: 1
   selector:
@@ -39,6 +57,8 @@ spec:
     metadata:
       labels:
         app: postgres
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/component: database
     spec:
       # The nodeSelector has been removed from here.
       # Scheduling is now driven by the nodeAffinity of the PersistentVolume.

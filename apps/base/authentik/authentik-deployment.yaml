@@ -13,7 +13,13 @@ metadata:
   namespace: apps
   labels:
     app: authentik
+    app.kubernetes.io/name: authentik
+    app.kubernetes.io/component: server
+    app.kubernetes.io/part-of: identity
     component: server
+  annotations:
+    description: "Open-source Identity Provider with SSO, OAuth2, SAML support"
+    docs: "https://goauthentik.io/docs"
 spec:
   replicas: 1
   selector:
@@ -24,6 +30,8 @@ spec:
     metadata:
       labels:
         app: authentik
+        app.kubernetes.io/name: authentik
+        app.kubernetes.io/component: server
         component: server
     spec:
       nodeSelector:
@@ -84,6 +92,9 @@ metadata:
   namespace: apps
   labels:
     app: authentik
+    app.kubernetes.io/name: authentik
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: identity
     component: worker
 spec:
   replicas: 1
@@ -95,6 +106,8 @@ spec:
     metadata:
       labels:
         app: authentik
+        app.kubernetes.io/name: authentik
+        app.kubernetes.io/component: worker
         component: worker
     spec:
       nodeSelector:

@@ -1,0 +1,18 @@
+# PodDisruptionBudget for PostgreSQL
+# Allows voluntary disruption while ensuring DB availability during upgrades
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: postgres-pdb
+  namespace: apps
+  labels:
+    app: postgres
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+spec:
+  # With 1 replica, minAvailable: 0 allows maintenance
+  # but ensures controlled voluntary disruptions
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: postgres

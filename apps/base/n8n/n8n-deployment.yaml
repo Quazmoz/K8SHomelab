@@ -5,6 +5,12 @@ metadata:
   namespace: apps
   labels:
     app: n8n
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: automation
+    app.kubernetes.io/part-of: devops
+  annotations:
+    description: "Workflow automation platform for connecting services"
+    docs: "https://docs.n8n.io/"
 spec:
   replicas: 1
   selector:
@@ -14,6 +20,8 @@ spec:
     metadata:
       labels:
         app: n8n
+        app.kubernetes.io/name: n8n
+        app.kubernetes.io/component: automation
     spec:
       securityContext:
         fsGroup: 1000

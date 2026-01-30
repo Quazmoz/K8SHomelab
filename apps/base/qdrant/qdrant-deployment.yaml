@@ -3,6 +3,14 @@ kind: Deployment
 metadata:
   name: qdrant
   namespace: apps
+  labels:
+    app: qdrant
+    app.kubernetes.io/name: qdrant
+    app.kubernetes.io/component: vector-database
+    app.kubernetes.io/part-of: ai-stack
+  annotations:
+    description: "Vector similarity search engine for AI/ML embeddings"
+    docs: "https://qdrant.tech/documentation/"
 spec:
   replicas: 1
   revisionHistoryLimit: 0
@@ -15,6 +23,8 @@ spec:
     metadata:
       labels:
         app: qdrant
+        app.kubernetes.io/name: qdrant
+        app.kubernetes.io/component: vector-database
     spec:
       containers:
       - name: qdrant

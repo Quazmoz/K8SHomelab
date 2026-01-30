@@ -9,6 +9,12 @@ metadata:
   namespace: apps
   labels:
     app: librechat
+    app.kubernetes.io/name: librechat
+    app.kubernetes.io/component: ai-frontend
+    app.kubernetes.io/part-of: ai-stack
+  annotations:
+    description: "Self-hosted AI chat interface with multi-provider support"
+    docs: "https://librechat.ai"
 spec:
   replicas: 1
   selector:
@@ -23,6 +29,8 @@ spec:
     metadata:
       labels:
         app: librechat
+        app.kubernetes.io/name: librechat
+        app.kubernetes.io/component: ai-frontend
     spec:
       # Run on x86 node (not ARM or Oracle)
       affinity:

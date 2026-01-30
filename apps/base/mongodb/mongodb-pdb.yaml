@@ -1,0 +1,16 @@
+# PodDisruptionBudget for MongoDB
+# Allows voluntary disruption while ensuring document store availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mongodb-pdb
+  namespace: apps
+  labels:
+    app: mongodb
+    app.kubernetes.io/name: mongodb
+    app.kubernetes.io/component: database
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: mongodb

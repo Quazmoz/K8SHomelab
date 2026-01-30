@@ -8,6 +8,12 @@ metadata:
   namespace: apps
   labels:
     app: phoenix
+    app.kubernetes.io/name: phoenix
+    app.kubernetes.io/component: observability
+    app.kubernetes.io/part-of: ai-stack
+  annotations:
+    description: "LLM observability platform with OpenTelemetry support"
+    docs: "https://docs.arize.com/phoenix"
 spec:
   replicas: 1
   selector:
@@ -17,6 +23,8 @@ spec:
     metadata:
       labels:
         app: phoenix
+        app.kubernetes.io/name: phoenix
+        app.kubernetes.io/component: observability
     spec:
       # Run on x86 node for performance
       affinity:

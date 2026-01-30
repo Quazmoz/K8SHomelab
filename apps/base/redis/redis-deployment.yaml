@@ -8,7 +8,13 @@ metadata:
   namespace: apps
   labels:
     app: redis
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: data-stack
     component: cache
+  annotations:
+    description: "In-memory data store for caching and session management"
+    docs: "https://redis.io/docs/"
 spec:
   replicas: 1
   selector:
@@ -18,6 +24,8 @@ spec:
     metadata:
       labels:
         app: redis
+        app.kubernetes.io/name: redis
+        app.kubernetes.io/component: cache
         component: cache
     spec:
       nodeSelector:

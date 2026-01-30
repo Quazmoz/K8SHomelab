@@ -3,6 +3,14 @@ kind: Deployment
 metadata:
   name: freshrss
   namespace: apps
+  labels:
+    app: freshrss
+    app.kubernetes.io/name: freshrss
+    app.kubernetes.io/component: feed-reader
+    app.kubernetes.io/part-of: productivity
+  annotations:
+    description: "Self-hosted RSS feed aggregator"
+    docs: "https://freshrss.github.io/FreshRSS/"
 spec:
   replicas: 1
   selector:
@@ -12,6 +20,8 @@ spec:
     metadata:
       labels:
         app: freshrss
+        app.kubernetes.io/name: freshrss
+        app.kubernetes.io/component: feed-reader
     spec:
       nodeSelector:
         kubernetes.io/hostname: orangepi6plus

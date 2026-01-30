@@ -9,6 +9,12 @@ metadata:
   namespace: apps
   labels:
     app: openwebui
+    app.kubernetes.io/name: openwebui
+    app.kubernetes.io/component: ai-frontend
+    app.kubernetes.io/part-of: ai-stack
+  annotations:
+    description: "Self-hosted web UI for LLM interactions"
+    docs: "https://docs.openwebui.com/"
 spec:
   replicas: 1
   selector:
@@ -23,6 +29,8 @@ spec:
     metadata:
       labels:
         app: openwebui
+        app.kubernetes.io/name: openwebui
+        app.kubernetes.io/component: ai-frontend
     spec:
       # Run on x86 node for better performance
       affinity:
