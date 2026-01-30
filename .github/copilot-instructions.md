@@ -1,162 +1,334 @@
 # Copilot Instructions for K8SHomelab
 
-> **Note:** Your laptop is not the Kubernetes cluster. The K8S cluster runs on your Raspberry Pi (control plane) and HP ProBook (worker node), not on your local development machine.
-
-# Copilot Instructions for K8SHomelab
+> **Note:** Your laptop is not the Kubernetes cluster. The K8S cluster runs on your Orange Pi 6 Plus (control plane) and HP ProBook (worker node), not on your local development machine.
 
 ---
 
 ## Prerequisites
 
-- **kubectl**: Ensure you have `kubectl` installed and configured to access the homelab cluster. Use `kubectl config get-contexts` to verify your context.
-- **Flux CLI**: Install Flux CLI for GitOps reconciliation (`flux reconcile ...`).
-- **Kustomize**: Used for overlays and manifest composition (usually bundled with `kubectl`).
-- **Helm**: Required for some app deployments (e.g., Grafana, Coder).
-- **Git**: All changes are managed via git.
+| Tool | Purpose | Verification |
+|------|---------|--------------|
+| **kubectl** | Cluster management | `kubectl config get-contexts` |
+| **Flux CLI** | GitOps reconciliation | `flux --version` |
+| **Kustomize** | Manifest composition | `kubectl kustomize --help` |
+| **Helm** | App deployments (Grafana, Prometheus, Coder, AWX) | `helm version` |
+| **Git** | Version control | `git --version` |
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      KUBERNETES CLUSTER                         │
+├─────────────────────────────────────────────────────────────────┤
+│  Control Plane:  orangepi6plus (192.168.1.21)                   │
+│                                                                 │
+│  Workers:                                                       │
+│    • quinn-hpprobook430g6 (192.168.1.15)                        │
+├─────────────────────────────────────────────────────────────────┤
+│  CNI: Calico (VXLAN)                                            │
+│  GitOps: Flux CD v2                                             │
+│  Ingress: NGINX + MetalLB (192.168.1.220-250)                   │
+│  DNS: *.k8s.local resolves to ingress                           │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Project Overview
-- **K8SHomelab** is a GitOps-managed Kubernetes homelab running on hybrid infrastructure (local nodes + Oracle Cloud VMs).
-- All Kubernetes manifests and app configs are under `apps/base/`.
-- GitOps is managed via **Flux CD**; deployments are reconciled by pushing to git and running `flux reconcile kustomization apps --with-source`.
 
-- **Cluster**: Control plane on Raspberry Pi, workers on HP ProBook and Oracle Cloud VMs. Your laptop is only used for development and management, not as a cluster node.
-- **Networking**: Calico (VXLAN), WireGuard mesh, NGINX ingress, MetalLB for LoadBalancer IPs.
-- **Major Services**:
-  - **OpenWebUI**: LLM chat interface (`apps/base/openwebui/`)
-  - **Grafana**: Dashboards/monitoring (`apps/base/grafana/`)
-  - **Prometheus**: Metrics (`apps/base/prometheus/`)
-  - **Jenkins**: CI/CD, jobs defined as Groovy in ConfigMaps (`apps/base/jenkins/`)
-  - **n8n**: Workflow automation (`apps/base/n8n/`)
-  - **LlamaFactory**: LLM fine-tuning (`apps/base/llamafactory/`)
-  - **MCP Servers**: Model Context Protocol integration for OpenWebUI (`apps/base/mcp-servers/`)
+- **K8SHomelab** is a GitOps-managed Kubernetes homelab running on local infrastructure.
+- All Kubernetes manifests and app configs live under `apps/base/`.
+- GitOps is managed via **Flux CD**; deployments reconcile automatically on push or via `flux reconcile kustomization apps --with-source`.
+
+### Active Services (by Category)
+
+| Category | Service | URL | Directory |
+|----------|---------|-----|-----------|
+| **AI & LLM** | OpenWebUI | `http://openwebui.k8s.local` | `apps/base/openwebui/` |
+| | LibreChat | `http://librechat.k8s.local` | `apps/base/librechat/` |
+| | LlamaFactory | `http://llamafactory.k8s.local` | `apps/base/llamafactory/` |
+| | Qdrant | `http://qdrant.k8s.local` | `apps/base/qdrant/` |
+| | Jupyter | `http://jupyter.k8s.local` | `apps/base/jupyter/` |
+| | Phoenix | `http://phoenix.k8s.local` | `apps/base/phoenix/` |
+| **MCP Tools** | Context Forge | `http://mcp.k8s.local` | `apps/base/mcp-servers/contextforge/` |
+| | MCPO Proxy | `http://mcpo.k8s.local` | `apps/base/mcp-servers/mcpo/` |
+| **DevOps** | Jenkins | `http://jenkins.k8s.local` | `apps/base/jenkins/` |
+| | n8n | `http://n8n.k8s.local` | `apps/base/n8n/` |
+| | Ansible AWX | `http://awx.k8s.local` | `apps/base/ansible/` |
+| | Coder | `http://coder.k8s.local` | `apps/base/coder/` |
+| **Monitoring** | Grafana | `http://grafana.k8s.local` | `apps/base/grafana/` |
+| | Prometheus | `http://prometheus.k8s.local` | `apps/base/prometheus/` |
+| | Loki | (via Grafana) | `apps/base/loki/` |
+| | Alloy | (collector) | `apps/base/alloy/` |
+| **Data** | PostgreSQL | internal | `apps/base/postgres/` |
+| | Redis | internal | `apps/base/redis/` |
+| | MongoDB | internal | `apps/base/mongodb/` |
+| | pgAdmin | `http://pgadmin.k8s.local` | `apps/base/pgadmin/` |
+| | Mongo Express | `http://mongo-express.k8s.local` | `apps/base/mongo-express/` |
+| **Other** | Homepage | `http://homepage.k8s.local` | `apps/base/homepage/` |
+| | FreshRSS | `http://freshrss.k8s.local` | `apps/base/freshrss/` |
+| | Authentik | `http://authentik.k8s.local` | `apps/base/authentik/` |
+
+---
 
 ## Developer Workflows
 
 ### Standard GitOps Flow
 
-1. Make changes to manifests or configs under `apps/base/` or `clusters/my-homelab/`.
-2. Commit and push to the repository:
-   ```sh
-   git add -A && git commit -m "<message>" && git push
-   ```
-3. Reconcile Flux to apply changes:
-   ```sh
-   flux reconcile kustomization apps --with-source
-   ```
+```bash
+# 1. Make changes to manifests under apps/base/
+# 2. Commit and push
+git add -A && git commit -m "<descriptive message>" && git push
 
-### Manual Configuration (Jenkins & Context Forge)
+# 3. Reconcile (or wait for automatic sync)
+flux reconcile kustomization apps --with-source
+```
 
-- Jenkins and Context Forge (MCP) must be configured via their GUIs. No YAML/JSON or GitOps flows are functional for these components.
+### Quick Commands Reference
 
-### Using kubectl
+```bash
+# Check cluster health
+kubectl get nodes -o wide
+kubectl get pods -A | grep -v Running
 
-- To check cluster status:
-  ```sh
-  kubectl get nodes
-  kubectl get pods -A
-  ```
-- To debug an app:
-  ```sh
-  kubectl -n <namespace> describe pod <pod-name>
-  kubectl -n <namespace> logs <pod-name>
-  ```
-- To port-forward a service (e.g., Grafana):
-  ```sh
-  kubectl -n <namespace> port-forward svc/grafana 3000:3000
-  ```
+# Check Flux status
+flux get all -A
+
+# Debug a pod
+kubectl -n apps describe pod <pod-name>
+kubectl -n apps logs <pod-name> --tail=100
+
+# Port-forward for local access
+kubectl -n apps port-forward svc/<service> <local-port>:<service-port>
+
+# Force reconciliation
+flux reconcile kustomization apps --with-source
+flux reconcile helmrelease <name> -n apps --with-source
+```
+
+### Manual Configuration (GUI-Only Components)
+
+| Component | Reason | Workflow |
+|-----------|--------|----------|
+| **Jenkins** | Code-first flow non-functional | Configure jobs via Jenkins GUI |
+| **Context Forge** | Dynamic MCP registration | Configure via `mcp.k8s.local` GUI |
 
 ---
-- **Deploy changes**:
-  1. `git add -A && git commit -m "message" && git push`
-  2. `flux reconcile kustomization apps --with-source`
-- **Jenkins jobs**: All Jenkins configuration and job management must be performed manually via the Jenkins GUI. The code-first/GitOps flow is currently non-functional.
-- **MCP Servers / Context Forge**: All configuration and integration for Context Forge (MCP) must be performed manually via the GUI. The GitOps/code-first flow is currently non-functional.
 
 ## Project-Specific Conventions
 
-- **Namespaces**: Most apps are deployed in their own namespace. Namespace manifests are in `apps/base/apps-namespace.yaml`.
-- **Secrets**: Store secrets in `*-secrets.yaml` files. Use `.template` files for sharing non-sensitive structure.
-- **Persistent Volumes**: PVCs are defined per app (e.g., `*-pvc.yaml`).
-- **Helm Releases**: Managed via `helm-release.yaml` in each app directory.
-- **Ingress**: Each app typically has its own `ingress.yaml` for subdomain routing.
-- **All app configs** are managed declaratively in kustomize overlays under `apps/base/`, except Jenkins and Context Forge (MCP), which are managed manually via their GUIs.
-- **No manual changes** to running cluster; all changes must go through GitOps, except for Jenkins and Context Forge (MCP), which require manual GUI configuration.
-- **Jenkins**: All job and configuration management is now performed via the Jenkins GUI. The code-first/ConfigMap approach is not in use.
-- **MCP/Context Forge**: All integrations and configuration are managed via the GUI. YAML/JSON GitOps flows are not currently functional.
-- **Legacy/disabled resources** are kept in `apps/base/mcp-servers/legacy/` for reference.
+### Directory Structure
+
+```
+K8SHomelab/
+├── apps/base/                    # All Kubernetes manifests
+│   ├── kustomization.yaml        # Main resource list (enable/disable apps here)
+│   ├── apps-namespace.yaml       # Namespace definitions
+│   ├── sources/                  # Helm repositories
+│   ├── local-storage/            # PersistentVolume definitions
+│   ├── <app>/                    # Per-app directory
+│   │   ├── kustomization.yaml    # App resources list
+│   │   ├── *-deployment.yaml     # Deployments
+│   │   ├── *-service.yaml        # Services
+│   │   ├── *-ingress.yaml        # Ingress rules
+│   │   ├── *-pvc.yaml            # PersistentVolumeClaims
+│   │   ├── *-configmap.yaml      # Configuration
+│   │   ├── *-secrets.yaml        # Secrets (not in git)
+│   │   └── helm-release.yaml     # Helm releases (if applicable)
+│   └── mcp-servers/              # MCP integration
+│       ├── contextforge/         # Context Forge gateway
+│       ├── mcpo/                 # MCPO OpenAPI proxy
+│       └── legacy/               # Disabled/reference resources
+├── clusters/my-homelab/          # Flux kustomizations
+│   └── apps.yaml                 # Points to apps/base
+└── docs/                         # Network troubleshooting docs
+```
+
+### File Naming Conventions
+
+| Pattern | Purpose |
+|---------|---------|
+| `*-deployment.yaml` | Deployment resources |
+| `*-service.yaml` | Service definitions |
+| `*-ingress.yaml` | Ingress rules (subdomain routing) |
+| `*-pvc.yaml` | PersistentVolumeClaims |
+| `*-configmap.yaml` | ConfigMaps |
+| `*-secrets.yaml` | Secrets (excluded from git) |
+| `*-secrets.yaml.template` | Secret templates (structure only) |
+| `helm-release.yaml` | Flux HelmRelease definitions |
+| `kustomization.yaml` | Kustomize resource lists |
+
+### Helm Repositories (Defined in `apps/base/sources/`)
+
+| Repository | URL | Used By |
+|------------|-----|---------|
+| prometheus-community | prometheus-community.github.io | Prometheus |
+| grafana | grafana.github.io | Grafana, Loki, Alloy |
+| coder | helm.coder.com/v2 | Coder |
+| awx-operator | ansible-community.github.io | Ansible AWX |
+
+---
+
+## Adding a New Application
+
+1. **Create directory**: `apps/base/<app-name>/`
+
+2. **Create manifests** (copy from existing app as template):
+   ```bash
+   # Minimum required files:
+   kustomization.yaml
+   <app>-deployment.yaml
+   <app>-service.yaml
+   <app>-ingress.yaml  # if external access needed
+   <app>-pvc.yaml      # if persistent storage needed
+   ```
+
+3. **Add PersistentVolume** (if using local storage):
+   - Edit `apps/base/local-storage/storage.yaml`
+   - Add PV with `hostPath` on `quinn-hpprobook430g6`
+
+4. **Enable in main kustomization**:
+   - Add `- ./<app-name>` to `apps/base/kustomization.yaml`
+
+5. **Update Homepage** (for visibility):
+   - Edit `apps/base/homepage/manifests.yaml`
+   - Add entry under appropriate category in `services.yaml`
+
+6. **Deploy**:
+   ```bash
+   git add -A && git commit -m "Add <app-name>" && git push
+   flux reconcile kustomization apps --with-source
+   ```
+
+---
+
+## MCP Integration Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                           OpenWebUI                                 │
+│                    (Workspace → Tools)                              │
+└─────────────────────────────────────────────────────────────────────┘
+                    ↓                           ↓
+        ┌──────────────────────────┐   ┌──────────────────┐
+        │   Context Forge          │   │      MCPO        │
+        │   (MCP Gateway)          │   │  (OpenAPI Proxy) │
+        ├──────────────────────────┤   ├──────────────────┤
+        │ - GroupMe (per-user auth)│   │ - Postgres       │
+        │ - Azure (HTTP)           │   │ - Kubernetes     │
+        │ - ClickUp (SSE)          │   │ - Prometheus     │
+        │ Port: 4444               │   │ - FreshRSS       │
+        │ URL: mcp.k8s.local       │   │ - n8n            │
+        │                          │   │ Port: 8000       │
+        │                          │   │ URL: mcpo.k8s.lo │
+        └──────────────────────────┘   └──────────────────┘
+```
+
+> See `apps/base/mcp-servers/README.md` for detailed MCP setup.
+
+---
 
 ## Integration & Cross-Component Patterns
 
-- **Service Discovery**: Apps communicate via internal DNS (e.g., `service.namespace.svc.cluster.local`).
-- **Network Policies**: Defined per app for least-privilege access.
-- **RBAC**: Role-based access control is enforced per app.
-- **OpenWebUI** uses JSON configs in `mcp-servers/contextforge/` and `mcpo/` to connect to MCP endpoints.
-- **RBAC** and network policies are defined per app for least-privilege access.
-- **Ingress**: Each app typically has its own `ingress.yaml` for subdomain routing.
+### Service Discovery
+- Internal DNS: `<service>.<namespace>.svc.cluster.local`
+- Example: `postgres.apps.svc.cluster.local:5432`
 
-## Key Files & Directories
+### Network & RBAC
+- Network policies defined per-app for least-privilege access
+- RBAC enforced per-app (see `*-rbac.yaml` files)
+- MCP servers have dedicated RBAC for Kubernetes API access
 
-- `apps/base/<app>/kustomization.yaml` — Kustomize overlays for each app
-- `apps/base/<app>/helm-release.yaml` — Helm release definitions (if used)
-- `apps/base/<app>/*-deployment.yaml` — App deployments
-- `apps/base/<app>/*-service.yaml` — Service definitions
-- `apps/base/<app>/*-ingress.yaml` — Ingress rules
-- `apps/base/<app>/*-configmap.yaml` — App configs
-- `apps/base/<app>/*-secrets.yaml` — App secrets (not in git)
-- `apps/base/` — All app manifests
-- `apps/base/mcp-servers/` — MCP integration, context forge, MCPO
-- `apps/base/jenkins/jenkins-jobs.yaml` — Jenkins job definitions (Groovy DSL)
-- `clusters/my-homelab/` — Flux kustomizations for cluster state
-- `README.md` (root, mcp-servers, jenkins) — Architecture, workflows, and conventions
+### Ingress Routing
+- All services use `*.k8s.local` subdomains
+- NGINX Ingress controller handles routing
+- MetalLB provides LoadBalancer IPs (192.168.1.220-250)
 
-## Examples
+### Node Scheduling Constraints
 
-- **Deploy a new app**:
-  1. Create a new directory under `apps/base/` (copy an existing app as a template).
-  2. Add `kustomization.yaml`, deployment, service, ingress, and config files as needed.
-  3. Commit and push changes, then reconcile Flux.
+| Workload | Allowed Nodes | Reason |
+|----------|---------------|--------|
+| Prometheus, Grafana, Loki | quinn-hpprobook430g6 | Requires local storage |
+| Most workloads | quinn-hpprobook430g6 | Storage availability |
 
-- **Debug a failing pod**:
-  1. Find the pod: `kubectl get pods -A | grep <app>`
-  2. Describe the pod: `kubectl -n <namespace> describe pod <pod-name>`
-  3. Check logs: `kubectl -n <namespace> logs <pod-name>`
+---
 
-- **Update an app config**:
-  1. Edit the relevant ConfigMap or Secret YAML in the app directory.
-  2. Commit, push, and reconcile Flux.
+## Key Files & Quick Reference
 
-- **Scale a deployment**:
-  ```sh
-  kubectl -n <namespace> scale deployment <deployment-name> --replicas=3
-  ```
+| File | Purpose |
+|------|---------|
+| `apps/base/kustomization.yaml` | Enable/disable apps |
+| `apps/base/apps-namespace.yaml` | Namespace definitions |
+| `apps/base/sources/helm-repositories.yaml` | Helm repo sources |
+| `apps/base/local-storage/storage.yaml` | PV definitions |
+| `apps/base/homepage/manifests.yaml` | Dashboard config |
+| `apps/base/mcp-servers/README.md` | MCP integration guide |
+| `clusters/my-homelab/apps.yaml` | Flux kustomization |
+| `AGENT_CONTEXT.md` | AI agent context |
+| `docs/NETWORK.md` | Network architecture |
+| `docs/NETWORK_TROUBLESHOOTING.md` | Network issues |
+
 ---
 
 ## Troubleshooting
 
-- **Flux not applying changes**: Ensure your commit is pushed and run `flux reconcile kustomization apps --with-source`.
-- **Pod CrashLoopBackOff**: Check logs and describe the pod for error messages.
-- **Ingress not working**: Verify ingress rules and DNS. Check NGINX ingress controller logs.
-- **Persistent Volume issues**: Check PVC and PV status with `kubectl get pvc -A` and `kubectl get pv`.
-- **Jenkins/Context Forge config lost**: All changes must be re-applied via the GUI if the pod is recreated.
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Flux not applying changes | Commit not pushed | `git push` then `flux reconcile kustomization apps --with-source` |
+| Pod CrashLoopBackOff | Config/resource issue | `kubectl describe pod` + `kubectl logs` |
+| Ingress not working | DNS/ingress rules | Check hosts file, ingress YAML, NGINX controller logs |
+| PVC Pending | Missing PV | Add PV to `local-storage/storage.yaml` |
+| Calico pods stuck 0/1 | VXLAN MTU error | Delete vxlan.calico, restart Calico |
+| HelmRelease not reconciling | Source issue | `flux reconcile source helm <repo> -n flux-system` |
+| Jenkins/Context Forge config lost | Pod recreated | Re-apply via GUI |
+
+### Debugging Commands
+
+```bash
+# Check node status
+kubectl get nodes -o wide
+
+# Check Flux status
+flux get all -A
+
+# Check DNS resolution
+kubectl run -it --rm dns-test --image=busybox --restart=Never -- nslookup kubernetes.default
+
+# Check Calico
+kubectl get pods -n kube-system -l k8s-app=calico-node -o wide
+kubectl logs -n kube-system -l k8s-app=calico-node --tail=20
+
+# Check HelmRelease status
+flux get helmreleases -A
+
+# Force HelmRelease reconciliation
+flux reconcile helmrelease <name> -n apps --with-source
+```
 
 ---
 
 ## Best Practices
 
-- Use overlays and kustomize for environment-specific configs.
-- Keep secrets out of git; use templates for structure.
-- Use descriptive commit messages.
-- Prefer declarative configs; only Jenkins and Context Forge are exceptions.
-- Regularly backup persistent data (PVCs, databases).
+1. **GitOps First**: All changes go through git (except Jenkins/Context Forge)
+2. **Test Locally**: Use `kubectl kustomize apps/base/<app>` before committing
+3. **Secrets Management**: Use `.template` files for structure, actual secrets excluded via `.gitignore`
+4. **Homepage Visibility**: Always add new apps to homepage dashboard
+5. **Local Storage**: Use `quinn-hpprobook430g6` for stateful workloads
+6. **Descriptive Commits**: Include what changed and why
+7. **Incremental Changes**: Deploy and verify one change at a time
+8. **Backup PVCs**: Regularly backup persistent data
 
 ---
 
+## Hosts File Entry
 
-## App Visibility Convention
+Add to your local machine's hosts file:
 
-- **After deploying any new app, always add it to the homepage app (`apps/base/homepage/`) for visibility and access.** Update the homepage manifests/configs as needed to reflect the new app in the dashboard or UI.
+```
+192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local jenkins.k8s.local n8n.k8s.local llamafactory.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local librechat.k8s.local freshrss.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local coder.k8s.local
+```
 
 ---
 
@@ -164,13 +336,11 @@
 
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [Flux CD Documentation](https://fluxcd.io/docs/)
-- [Kustomize Documentation](https://kubectl.docs.kubernetes.io/references/kustomize/)
+- [Kustomize Reference](https://kubectl.docs.kubernetes.io/references/kustomize/)
 - [Helm Documentation](https://helm.sh/docs/)
+- [Calico Documentation](https://docs.tigera.io/calico/)
 - [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/)
 
 ---
-- To add a new MCP/Context Forge integration: use the Context Forge GUI to add and configure integrations. Do not edit YAML/JSON or use GitOps for this process.
-- To add or modify a Jenkins job: use the Jenkins GUI to create or update jobs. Do not edit `jenkins-jobs.yaml` or rely on code-first provisioning.
 
----
 For more details, see the relevant `README.md` in each app directory.

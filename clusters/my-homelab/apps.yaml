@@ -10,3 +10,4 @@ spec:
     name: flux-system
   path: ./apps/base
   prune: true
+  validation: client
