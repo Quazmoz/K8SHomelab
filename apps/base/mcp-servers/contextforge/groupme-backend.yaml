@@ -84,6 +84,12 @@ metadata:
   namespace: apps
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # SSE/Streaming support for MCP
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/upstream-keepalive-timeout: "3600"
 spec:
   ingressClassName: nginx
   rules:
