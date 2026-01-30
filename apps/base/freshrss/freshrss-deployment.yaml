@@ -13,6 +13,12 @@ spec:
       labels:
         app: freshrss
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
       containers:
       - name: freshrss
         image: freshrss/freshrss@sha256:5664f42e37e7101c824806d8f73cbc97c8f406ce043bbdb8d39d4ff1e7f2ad11
@@ -66,8 +72,7 @@ spec:
           periodSeconds: 10
       volumes:
       - name: freshrss-data
-        persistentVolumeClaim:
-          claimName: freshrss-pvc
+        emptyDir: {}
       - name: feeds-opml
         configMap:
           name: freshrss-feeds

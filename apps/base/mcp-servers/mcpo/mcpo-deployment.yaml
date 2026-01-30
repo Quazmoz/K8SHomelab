@@ -21,7 +21,11 @@ spec:
         app: mcpo
     spec:
       nodeSelector:
-        kubernetes.io/hostname: quinn-hpprobook430g6
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
       serviceAccountName: mcpo
       initContainers:
       - name: install-kubectl
@@ -58,6 +62,9 @@ spec:
         # .NET globalization invariant mode - fixes libicu dependency
         - name: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
           value: "true"
+        # Fix npx cache issue by using emptyDir mount
+        - name: NPM_CONFIG_CACHE
+          value: "/root/.npm"
         # n8n Native MCP token (from n8n Settings → MCP Access → Connect)
         - name: N8N_MCP_TOKEN
           valueFrom:
@@ -71,13 +78,19 @@ spec:
           readOnly: true
         - name: tools
           mountPath: /tools
+        - name: npm-cache
+          mountPath: /root/.npm
+        - name: npm-cache
+          mountPath: /root/.cache
         resources:
           requests:
             memory: "512Mi"
             cpu: "10m"
+            ephemeral-storage: "1Gi"
           limits:
             memory: "2Gi"
             cpu: "2000m"
+            ephemeral-storage: "4Gi"
         # Increase startup time for npx install
         livenessProbe:
           httpGet:
@@ -100,6 +113,8 @@ spec:
         configMap:
           name: mcpo-config
       - name: tools
+        emptyDir: {}
+      - name: npm-cache
         emptyDir: {}
 
 ---
