@@ -46,7 +46,7 @@ spec:
             - name: PGPORT
               value: "5432"
             - name: PGUSER
-              value: "postgres"
+              value: "grafana_user"
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:

@@ -43,6 +43,14 @@ spec:
         - podSelector:
             matchLabels:
               app: mcpo
+        # Context Forge - MCP gateway with postgres backend
+        - podSelector:
+            matchLabels:
+              app: context-forge
+        # GroupMe Backend - uses postgres for token storage
+        - podSelector:
+            matchLabels:
+              app: groupme-backend
         # Azure MCP Go - MCP server with postgres access
         - podSelector:
             matchLabels:
@@ -63,10 +71,16 @@ spec:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: coder
+        # AWX - uses postgres for ansible automation
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: awx
         # Postgres Backup CronJob
         - podSelector:
             matchLabels:
               app: postgres-backup
       ports:
+        - protocol: TCP
+          port: 5432
         - protocol: TCP
           port: 5432

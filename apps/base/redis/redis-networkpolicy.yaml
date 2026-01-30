@@ -31,6 +31,10 @@ spec:
         - podSelector:
             matchLabels:
               app: n8n
+        # Context Forge - uses redis for distributed caching
+        - podSelector:
+            matchLabels:
+              app: context-forge
       ports:
         - protocol: TCP
           port: 6379
