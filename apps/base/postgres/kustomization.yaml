@@ -7,4 +7,3 @@ resources:
   - postgres-init-scripts.yaml
   - postgres-exporter.yaml
   - postgres-pdb.yaml
-  - postgres-networkpolicy.yaml

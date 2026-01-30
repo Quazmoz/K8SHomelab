@@ -6,4 +6,3 @@ resources:
   - redisinsight-deployment.yaml
   - ingress.yaml
   - redis-pdb.yaml
-  - redis-networkpolicy.yaml

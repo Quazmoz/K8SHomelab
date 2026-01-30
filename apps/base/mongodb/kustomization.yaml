@@ -5,4 +5,3 @@ resources:
   - mongodb-pvc.yaml
   - mongodb-exporter.yaml
   - mongodb-pdb.yaml
-  - mongodb-networkpolicy.yaml

@@ -7,4 +7,3 @@ resources:
   - qdrant-service.yaml
   - qdrant-ingress.yaml
   - qdrant-pdb.yaml
-  - qdrant-networkpolicy.yaml
