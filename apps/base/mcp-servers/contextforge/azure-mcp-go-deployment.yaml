@@ -37,7 +37,7 @@ spec:
         - name: POSTGRES_CONNECTION_STRING
           valueFrom:
             secretKeyRef:
-              name: azure-mcp-secrets
+              name: azure-mcp-credentials
               key: POSTGRES_CONNECTION_STRING
         - name: AZURE_TENANT_ID
           valueFrom:
