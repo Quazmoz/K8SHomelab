@@ -63,6 +63,10 @@ spec:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: coder
+        # Postgres Backup CronJob
+        - podSelector:
+            matchLabels:
+              app: postgres-backup
       ports:
         - protocol: TCP
           port: 5432
