@@ -460,3 +460,58 @@ spec:
           operator: In
           values:
           - quinn-hpprobook430g6
+
+---
+# ============================================
+# SLOW STORAGE (Orange Pi SD Card - /mnt/backup)
+# Used for backups and cold data
+# ============================================
+
+# PersistentVolume for PostgreSQL backups on SD card
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-backup-pv
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: slow-storage
+  local:
+    path: /mnt/backup/postgres
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - orangepi6plus
+
+---
+# PersistentVolume for MongoDB backups on SD card
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-backup-pv
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: slow-storage
+  local:
+    path: /mnt/backup/mongodb
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - orangepi6plus

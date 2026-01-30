@@ -32,6 +32,7 @@ resources:
   - ./jupyter
   - ./phoenix  # LLM Observability (replaces Langfuse)
   - ./coder
+  - ./backups  # Daily database backups to SD card
 
 
 

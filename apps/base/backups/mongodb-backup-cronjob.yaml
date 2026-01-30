@@ -1,0 +1,116 @@
+---
+# MongoDB Backup CronJob
+# Runs daily at 3 AM, keeps last 7 backups
+# Stores compressed mongodump on Orange Pi SD card
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongodb-backup
+  namespace: apps
+  labels:
+    app: mongodb-backup
+    app.kubernetes.io/name: mongodb-backup
+    app.kubernetes.io/component: backup
+    app.kubernetes.io/part-of: data-stack
+  annotations:
+    description: "Daily MongoDB backup to SD card storage"
+spec:
+  schedule: "0 3 * * *"  # Daily at 3 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600  # 1 hour timeout
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: mongodb-backup
+        spec:
+          restartPolicy: OnFailure
+          # Must run on Orange Pi where SD card is mounted
+          nodeSelector:
+            kubernetes.io/hostname: orangepi6plus
+          tolerations:
+            - key: "node-role.kubernetes.io/control-plane"
+              operator: "Exists"
+              effect: "NoSchedule"
+          containers:
+          - name: mongodb-backup
+            image: mongo:8
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: MONGO_HOST
+              value: "mongodb.apps.svc.cluster.local"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: BACKUP_DIR
+              value: "/backup"
+            - name: RETENTION_DAYS
+              value: "7"
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              BACKUP_FILE="${BACKUP_DIR}/mongodb_backup_${TIMESTAMP}"
+              
+              echo "Starting MongoDB backup at $(date)"
+              echo "Backing up all databases..."
+              
+              # Dump all databases
+              mongodump --host="${MONGO_HOST}" --port="${MONGO_PORT}" --out="${BACKUP_FILE}"
+              
+              if [ $? -eq 0 ]; then
+                echo "Dump completed, compressing..."
+                cd "${BACKUP_DIR}"
+                tar -czvf "mongodb_backup_${TIMESTAMP}.tar.gz" "mongodb_backup_${TIMESTAMP}"
+                rm -rf "mongodb_backup_${TIMESTAMP}"
+                echo "Backup completed successfully: mongodb_backup_${TIMESTAMP}.tar.gz"
+                ls -lh "${BACKUP_DIR}/mongodb_backup_${TIMESTAMP}.tar.gz"
+              else
+                echo "Backup failed!"
+                exit 1
+              fi
+              
+              # Cleanup old backups (keep last N days)
+              echo "Cleaning up backups older than ${RETENTION_DAYS} days..."
+              find "${BACKUP_DIR}" -name "mongodb_backup_*.tar.gz" -mtime +${RETENTION_DAYS} -delete
+              
+              echo "Current backups:"
+              ls -lht "${BACKUP_DIR}"/mongodb_backup_*.tar.gz 2>/dev/null || echo "No backups found"
+              
+              echo "Backup job completed at $(date)"
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: mongodb-backup-pvc
+
+---
+# PVC for MongoDB backups
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-backup-pvc
+  namespace: apps
+  labels:
+    app: mongodb-backup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: slow-storage
+  resources:
+    requests:
+      storage: 20Gi

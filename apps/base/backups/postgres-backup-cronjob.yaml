@@ -1,0 +1,119 @@
+---
+# PostgreSQL Backup CronJob
+# Runs daily at 2 AM, keeps last 7 backups
+# Stores compressed pg_dump on Orange Pi SD card
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: apps
+  labels:
+    app: postgres-backup
+    app.kubernetes.io/name: postgres-backup
+    app.kubernetes.io/component: backup
+    app.kubernetes.io/part-of: data-stack
+  annotations:
+    description: "Daily PostgreSQL backup to SD card storage"
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600  # 1 hour timeout
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          restartPolicy: OnFailure
+          # Must run on Orange Pi where SD card is mounted
+          nodeSelector:
+            kubernetes.io/hostname: orangepi6plus
+          tolerations:
+            - key: "node-role.kubernetes.io/control-plane"
+              operator: "Exists"
+              effect: "NoSchedule"
+          containers:
+          - name: postgres-backup
+            image: postgres:15
+            imagePullPolicy: IfNotPresent
+            env:
+            - name: PGHOST
+              value: "postgres.apps.svc.cluster.local"
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              value: "postgres"
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            - name: BACKUP_DIR
+              value: "/backup"
+            - name: RETENTION_DAYS
+              value: "7"
+            command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              BACKUP_FILE="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql.gz"
+              
+              echo "Starting PostgreSQL backup at $(date)"
+              echo "Backing up all databases..."
+              
+              # Dump all databases with compression
+              pg_dumpall --clean --if-exists | gzip > "${BACKUP_FILE}"
+              
+              if [ $? -eq 0 ]; then
+                echo "Backup completed successfully: ${BACKUP_FILE}"
+                ls -lh "${BACKUP_FILE}"
+              else
+                echo "Backup failed!"
+                exit 1
+              fi
+              
+              # Cleanup old backups (keep last N days)
+              echo "Cleaning up backups older than ${RETENTION_DAYS} days..."
+              find "${BACKUP_DIR}" -name "postgres_backup_*.sql.gz" -mtime +${RETENTION_DAYS} -delete
+              
+              echo "Current backups:"
+              ls -lht "${BACKUP_DIR}"/postgres_backup_*.sql.gz 2>/dev/null || echo "No backups found"
+              
+              echo "Backup job completed at $(date)"
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: postgres-backup-pvc
+
+---
+# PVC for PostgreSQL backups
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-backup-pvc
+  namespace: apps
+  labels:
+    app: postgres-backup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: slow-storage
+  resources:
+    requests:
+      storage: 20Gi
