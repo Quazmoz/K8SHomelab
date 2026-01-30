@@ -76,3 +76,24 @@ spec:
   - port: 5000
     targetPort: 5000
     name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: groupme-backend-ingress
+  namespace: apps
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: groupme.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: groupme-backend
+            port:
+              number: 5000
