@@ -113,12 +113,7 @@ data:
             statusStyle: dot
 
     - DevOps:
-        - Ansible AWX:
-            href: http://awx.k8s.local
-            icon: si-ansible
-            description: Ansible Automation Platform
-            siteMonitor: http://awx.apps.svc.cluster.local:8052
-            statusStyle: dot
+
         - Jenkins:
             href: http://jenkins.k8s.local
             icon: jenkins.png
