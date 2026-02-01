@@ -12,5 +12,11 @@ spec:
   admin_password_secret: awx-admin-password
   projects_storage_access_mode: ReadWriteOnce
   projects_storage_size: 10Gi
+  ingress_annotations: |
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: DevOps
+    gethomepage.dev/name: "Ansible AWX"
+    gethomepage.dev/icon: "si-ansible"
+    gethomepage.dev/description: "Ansible Automation Platform"
   node_selector: |
     kubernetes.io/hostname: quinn-hpprobook430g6
