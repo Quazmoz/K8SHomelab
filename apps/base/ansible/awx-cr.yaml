@@ -5,6 +5,7 @@ metadata:
   namespace: apps
 spec:
   ingress_type: ingress
+  ingress_class_name: nginx
   hostname: awx.k8s.local
   service_type: ClusterIP
   postgres_configuration_secret: awx-postgres-configuration
@@ -13,6 +14,7 @@ spec:
   projects_storage_access_mode: ReadWriteOnce
   projects_storage_size: 10Gi
   ingress_annotations: |
+    kubernetes.io/ingress.class: nginx
     gethomepage.dev/enabled: "true"
     gethomepage.dev/group: DevOps
     gethomepage.dev/name: "Ansible AWX"
