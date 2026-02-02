@@ -99,6 +99,17 @@ data:
             description: MCP Gateway & Admin
             siteMonitor: http://context-forge.apps.svc.cluster.local:4444/health
             statusStyle: dot
+        - GroupMe MCP:
+            href: http://groupme.k8s.local
+            icon: mdi-message-text
+            description: GroupMe Integration
+            siteMonitor: http://groupme-backend.apps.svc.cluster.local:5000/health
+            statusStyle: dot
+        - ClickUp MCP:
+            icon: mdi-checkbox-marked-circle
+            description: ClickUp Integration
+            siteMonitor: http://clickup-mcp-server.apps.svc.cluster.local:5000
+            statusStyle: dot
         - Kubernetes MCP:
             href: http://mcpo.k8s.local/kubernetes/docs
             icon: si-kubernetes
@@ -407,7 +418,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v24-mcp-tools"
+        checksum/config: "v25-mcp-uptime"
     spec:
       serviceAccountName: homepage
       nodeSelector:
