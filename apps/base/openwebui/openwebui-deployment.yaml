@@ -73,9 +73,9 @@ spec:
           value: "your-secret-key-change-me"
         # OpenAI API configuration (placeholder - user will update)
         - name: OPENAI_API_BASE_URL
-          value: ""
+          value: "http://orangepi-npu.apps.svc.cluster.local:8000/v1"
         - name: OPENAI_API_KEY
-          value: ""
+          value: "dummy-key"
         # Ollama configuration (if using local Ollama)
         - name: OLLAMA_BASE_URL
           value: ""
