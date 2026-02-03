@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orangepi-npu
+  namespace: apps
+  labels:
+    app: orangepi-npu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orangepi-npu
+  template:
+    metadata:
+      labels:
+        app: orangepi-npu
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: orangepi-npu
+        image: quazmoz/quazmoz:orangepi6plusnpu
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        volumeMounts:
+        - name: model-cache
+          mountPath: /app/models
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+      volumes:
+      - name: model-cache
+        emptyDir: {}

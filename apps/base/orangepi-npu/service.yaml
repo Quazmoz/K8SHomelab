@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: orangepi-npu
+  namespace: apps
+  labels:
+    app: orangepi-npu
+spec:
+  type: ClusterIP
+  selector:
+    app: orangepi-npu
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
