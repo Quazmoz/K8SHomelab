@@ -27,6 +27,8 @@ spec:
       - name: orangepi-npu
         image: quazmoz/quazmoz:orangepi6plusnpu
         imagePullPolicy: Always
+        securityContext:
+          privileged: true
         ports:
         - containerPort: 8000
           name: http
