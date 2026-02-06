@@ -50,10 +50,10 @@ spec:
           value: "1"
         resources:
           requests:
-            memory: "2Gi"
-            cpu: "1000m"
+            memory: "7Gi"
+            cpu: "4000m"
           limits:
-            memory: "6Gi"
+            memory: "7Gi"
             cpu: "8000m"
         volumeMounts:
         - name: models
