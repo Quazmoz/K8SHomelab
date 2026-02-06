@@ -48,12 +48,14 @@ spec:
           value: "1"
         - name: OLLAMA_MAX_LOADED_MODELS
           value: "1"
+        - name: OLLAMA_NUM_CTX
+          value: "16384"
         resources:
           requests:
-            memory: "7Gi"
+            memory: "12Gi"
             cpu: "4000m"
           limits:
-            memory: "7Gi"
+            memory: "12Gi"
             cpu: "8000m"
         volumeMounts:
         - name: models
