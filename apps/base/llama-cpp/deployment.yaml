@@ -1,5 +1,5 @@
 ---
-# llama.cpp Deployment for Orange Pi 6 Plus
+# Ollama Deployment for Orange Pi 6 Plus
 # CPU-only LLM inference with OpenAI-compatible API
 apiVersion: apps/v1
 kind: Deployment
@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/component: llm-backend
     app.kubernetes.io/part-of: ai-stack
   annotations:
-    description: "llama.cpp server for CPU-based LLM inference"
+    description: "Ollama LLM server (ARM64 native) for CPU-based inference"
 spec:
   replicas: 1
   selector:
@@ -35,25 +35,19 @@ spec:
         operator: "Exists"
         effect: "NoSchedule"
       containers:
-      - name: llama-cpp
-        image: ghcr.io/ggml-org/llama.cpp:server
+      - name: ollama
+        image: ollama/ollama:latest
         imagePullPolicy: IfNotPresent
-        args:
-        - "--host"
-        - "0.0.0.0"
-        - "--port"
-        - "8080"
-        - "--model"
-        - "/models/mistral-7b-instruct-v0.3.Q3_K_M.gguf"
-        - "--ctx-size"
-        - "2048"
-        - "--threads"
-        - "4"
-        - "--n-gpu-layers"
-        - "0"
         ports:
-        - containerPort: 8080
+        - containerPort: 11434
           name: http
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0:11434"
+        - name: OLLAMA_NUM_PARALLEL
+          value: "1"
+        - name: OLLAMA_MAX_LOADED_MODELS
+          value: "1"
         resources:
           requests:
             memory: "2Gi"
@@ -63,19 +57,19 @@ spec:
             cpu: "8000m"
         volumeMounts:
         - name: models
-          mountPath: /models
+          mountPath: /root/.ollama
         livenessProbe:
           httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 120  # Model loading takes time
+            path: /
+            port: 11434
+          initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 60
+            path: /
+            port: 11434
+          initialDelaySeconds: 15
           periodSeconds: 10
           timeoutSeconds: 5
       volumes:
@@ -84,7 +78,7 @@ spec:
           claimName: llama-cpp-models-pvc
 
 ---
-# llama.cpp Service
+# Ollama Service (keeping llama-cpp name for compatibility)
 apiVersion: v1
 kind: Service
 metadata:
@@ -98,6 +92,6 @@ spec:
     app: llama-cpp
   ports:
   - name: http
-    port: 8080
-    targetPort: 8080
+    port: 11434
+    targetPort: 11434
     protocol: TCP

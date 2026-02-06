@@ -73,7 +73,7 @@ spec:
           value: "your-secret-key-change-me"
         # OpenAI API configuration (placeholder - user will update)
         - name: OPENAI_API_BASE_URL
-          value: "http://llama-cpp.apps.svc.cluster.local:8080/v1"
+          value: "http://llama-cpp.apps.svc.cluster.local:11434/v1"
         - name: OPENAI_API_KEY
           value: "dummy-key"
         # Ollama configuration (if using local Ollama)
