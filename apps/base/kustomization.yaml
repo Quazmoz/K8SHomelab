@@ -33,6 +33,7 @@ resources:
   - ./phoenix  # LLM Observability (replaces Langfuse)
   - ./coder
   - ./backups  # Daily database backups to SD card
+  - ./llama-cpp  # llama.cpp LLM backend for OpenWebUI
 
 
 

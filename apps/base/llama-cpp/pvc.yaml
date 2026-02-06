@@ -1,0 +1,18 @@
+---
+# llama.cpp Models PersistentVolumeClaim
+# Uses slow-storage on Orange Pi SSD for GGUF model files
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: llama-cpp-models-pvc
+  namespace: apps
+  labels:
+    app: llama-cpp
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  volumeName: llama-cpp-models-pv
+  resources:
+    requests:
+      storage: 50Gi
