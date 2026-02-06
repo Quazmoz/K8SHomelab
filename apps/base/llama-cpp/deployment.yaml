@@ -52,10 +52,10 @@ spec:
           value: "16384"
         resources:
           requests:
-            memory: "10Gi"
+            memory: "8Gi"
             cpu: "4000m"
           limits:
-            memory: "10Gi"
+            memory: "8Gi"
             cpu: "8000m"
         volumeMounts:
         - name: models
