@@ -1,0 +1,14 @@
+{
+    "type": "openapi",
+    "url": "http://mcpo.apps.svc.cluster.local:8000/freshrss_db",
+    "path": "/openapi.json",
+    "auth_type": "",
+    "key": "",
+    "config": {
+        "enable": true
+    },
+    "info": {
+        "name": "freshrss_db MCP",
+        "description": "PostgreSQL tools for freshrss_db database"
+    }
+}

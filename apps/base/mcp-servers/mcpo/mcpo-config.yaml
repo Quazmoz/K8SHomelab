@@ -24,6 +24,90 @@ data:
             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/postgres"
           }
         },
+        "authentik": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+            "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/authentik"
+          }
+        },
+        "awx": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+            "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/awx"
+          }
+        },
+        "azure_mcp_go": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+            "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/azure_mcp_go"
+          }
+        },
+        "coder": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/coder"
+          }
+        },
+        "context_forge": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/context_forge"
+          }
+        },
+        "freshrss_db": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/freshrss"
+          }
+        },
+        "grafana_db": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/grafana_db"
+          }
+        },
+        "groupme_tokens": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/groupme_tokens"
+          }
+        },
+        "langfuse": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/langfuse"
+          }
+        },
+        "n8n_db": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/n8n"
+          }
+        },
+        "openwebui_db": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/openwebui_db"
+          }
+        },
+        "phoenix": {
+          "command": "npx",
+          "args": ["-y", "@henkey/postgres-mcp-server"],
+          "env": {
+             "POSTGRES_CONNECTION_STRING": "postgresql://grafana_user:passwordfortesting123@postgres.apps.svc.cluster.local:5432/phoenix"
+          }
+        },
         "kubernetes": {
           "command": "npx",
           "args": ["-y", "kubernetes-mcp-server@latest"]

@@ -1,0 +1,14 @@
+{
+    "type": "openapi",
+    "url": "http://mcpo.apps.svc.cluster.local:8000/azure_mcp_go",
+    "path": "/openapi.json",
+    "auth_type": "",
+    "key": "",
+    "config": {
+        "enable": true
+    },
+    "info": {
+        "name": "azure_mcp_go MCP",
+        "description": "PostgreSQL tools for azure_mcp_go database"
+    }
+}
