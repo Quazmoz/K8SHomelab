@@ -53,8 +53,8 @@
    *   **Args**: `-y @henkey/postgres-mcp-server`
    *   **Env Vars**:
        *   `POSTGRES_HOST`: `postgres.apps.svc.cluster.local`
-       *   `POSTGRES_USER`: `grafana_user`
-       *   `POSTGRES_PASSWORD`: `passwordfortesting123`
+       *   `POSTGRES_USER`: `postgres`
+       *   `POSTGRES_PASSWORD`: *(from postgres-credentials Secret)*
        *   `POSTGRES_DATABASE`: `postgres`
 
    **Prometheus**

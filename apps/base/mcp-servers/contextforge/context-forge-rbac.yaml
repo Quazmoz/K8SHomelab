@@ -14,7 +14,7 @@ metadata:
 rules:
 # Core API resources
 - apiGroups: [""]
-  resources: ["pods", "services", "configmaps", "secrets", "namespaces", "nodes", "persistentvolumes", "persistentvolumeclaims", "events", "endpoints", "resourcequotas", "limitranges"]
+  resources: ["pods", "services", "configmaps", "namespaces", "nodes", "persistentvolumes", "persistentvolumeclaims", "events", "endpoints", "resourcequotas", "limitranges"]
   verbs: ["get", "list", "watch"]
 # Pods logs and exec
 - apiGroups: [""]

@@ -16,7 +16,11 @@ spec:
       interval: 1m
   values:
     alertmanager:
-      enabled: false
+      enabled: true
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      persistentVolume:
+        enabled: false
     pushgateway:
       enabled: true
       nodeSelector:
@@ -42,6 +46,68 @@ spec:
     kube-state-metrics:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
+
+    # §4c, §7b, §7c — MCP Security Alerting Rules
+    serverFiles:
+      alerting_rules.yml:
+        groups:
+          - name: mcp-security
+            rules:
+              # §4c — High error rate from MCP servers
+              - alert: MCPOHighErrorRate
+                expr: |
+                  sum(rate(kube_pod_container_status_restarts_total{namespace="apps", container=~"mcpo|context-forge"}[5m])) > 0.1
+                for: 5m
+                labels:
+                  severity: warning
+                  compliance: "mcp-standard-4c"
+                annotations:
+                  summary: "MCP server experiencing high restart rate"
+                  description: "{{ $labels.container }} in {{ $labels.namespace }} has restarted {{ $value }} times in the last 5 minutes."
+              # §7c — MCP server pod down
+              - alert: MCPODown
+                expr: |
+                  kube_deployment_status_replicas_available{namespace="apps", deployment=~"mcpo|context-forge"} == 0
+                for: 2m
+                labels:
+                  severity: critical
+                  compliance: "mcp-standard-7c"
+                annotations:
+                  summary: "MCP server is down"
+                  description: "{{ $labels.deployment }} has 0 available replicas for more than 2 minutes."
+              # §7b — Pod restart spike (potential runaway)
+              - alert: MCPOPodRestart
+                expr: |
+                  increase(kube_pod_container_status_restarts_total{namespace="apps", container=~"mcpo|context-forge"}[1h]) > 3
+                for: 0m
+                labels:
+                  severity: warning
+                  compliance: "mcp-standard-7b"
+                annotations:
+                  summary: "MCP pod restarting repeatedly"
+                  description: "{{ $labels.container }} has restarted {{ $value }} times in the last hour."
+              # §4b — Loki ingestion health check
+              - alert: LokiIngestionStopped
+                expr: |
+                  sum(rate(loki_distributor_bytes_received_total[10m])) == 0
+                for: 10m
+                labels:
+                  severity: critical
+                  compliance: "mcp-standard-4b"
+                annotations:
+                  summary: "Loki is not receiving any logs"
+                  description: "No log bytes ingested in the last 10 minutes. Audit trail may be broken."
+              # §4c — PostgreSQL exporter down
+              - alert: PostgresExporterDown
+                expr: |
+                  up{job="postgres-exporter"} == 0
+                for: 5m
+                labels:
+                  severity: warning
+                  compliance: "mcp-standard-4c"
+                annotations:
+                  summary: "PostgreSQL metrics exporter is down"
+                  description: "Cannot scrape PostgreSQL metrics. Database monitoring is degraded."
 
     # Static scrape configs for Oracle VMs via WireGuard IPs
     extraScrapeConfigs: |

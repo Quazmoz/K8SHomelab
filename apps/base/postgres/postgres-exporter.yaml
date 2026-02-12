@@ -2,12 +2,12 @@
 # Exposes pg_stat_* metrics for Grafana dashboards
 ---
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: postgres-exporter-config
   namespace: apps
-data:
-  DATA_SOURCE_NAME: "postgresql://grafana_user:passwordfortesting123@postgres-service:5432/postgres?sslmode=disable"
+stringData:
+  DATA_SOURCE_NAME: "postgresql://postgres:passwordfortesting123@postgres-service:5432/postgres?sslmode=disable"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -39,7 +39,7 @@ spec:
         env:
         - name: DATA_SOURCE_NAME
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
               name: postgres-exporter-config
               key: DATA_SOURCE_NAME
         resources:

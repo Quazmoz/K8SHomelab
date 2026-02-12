@@ -43,7 +43,7 @@ spec:
         - name: PostgreSQL
           type: postgres
           url: postgres-service:5432
-          user: grafana_user
+          user: postgres
           secureJsonData:
             password: "passwordfortesting123"
           jsonData:
@@ -56,7 +56,7 @@ spec:
           type: postgres
           uid: PostgreSQL-OpenWebUI
           url: postgres-service:5432
-          user: grafana_user
+          user: postgres
           secureJsonData:
             password: "passwordfortesting123"
           jsonData:

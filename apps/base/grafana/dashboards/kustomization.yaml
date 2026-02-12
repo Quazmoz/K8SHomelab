@@ -16,5 +16,6 @@ resources:
   - openwebui-advanced.yaml  # Resources dashboard (models, files, KB)
   - n8n-workflows.yaml
   - mcp-tools.yaml
+  - mcp-security-audit.yaml
   # Navigation
   - homelab-overview.yaml

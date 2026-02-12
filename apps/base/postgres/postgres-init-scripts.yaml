@@ -1,5 +1,6 @@
 # Postgres Init Scripts ConfigMap
-# Creates databases and users on first startup
+# Creates databases on first startup
+# All databases use the default 'postgres' superuser for access
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,59 +8,19 @@ metadata:
   namespace: apps
 data:
   01-create-databases.sql: |
-    -- Create Grafana database and user
+    -- All databases are owned by the default 'postgres' superuser.
+    -- No additional users are created; applications connect as 'postgres'.
+    -- Password is managed via the postgres-credentials K8s Secret.
+
     CREATE DATABASE grafana_db;
-    CREATE USER grafana_user WITH PASSWORD 'passwordfortesting123';
-    GRANT ALL PRIVILEGES ON DATABASE grafana_db TO grafana_user;
-    ALTER DATABASE grafana_db OWNER TO grafana_user;
-    
-    -- Create Authentik database and user  
     CREATE DATABASE authentik;
-    CREATE USER authentik WITH PASSWORD 'authentik123';
-    GRANT ALL PRIVILEGES ON DATABASE authentik TO authentik;
-    ALTER DATABASE authentik OWNER TO authentik;
-    
-    -- Create n8n database and user (for future use)
     CREATE DATABASE n8n;
-    CREATE USER n8n WITH PASSWORD 'n8n123';
-    GRANT ALL PRIVILEGES ON DATABASE n8n TO n8n;
-    ALTER DATABASE n8n OWNER TO n8n;
-    
-    -- Create OpenWebUI database (uses grafana_user for simplicity)
     CREATE DATABASE openwebui_db;
-    GRANT ALL PRIVILEGES ON DATABASE openwebui_db TO grafana_user;
-    ALTER DATABASE openwebui_db OWNER TO grafana_user;
-    -- Grant schema access for GRAFana queries (OpenWebUI creates tables later)
-    \c openwebui_db
-    GRANT ALL ON SCHEMA public TO grafana_user;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO grafana_user;
-    
-    -- Create FreshRSS database and user
-    \c postgres
     CREATE DATABASE freshrss;
-    CREATE USER freshrss WITH PASSWORD 'freshrss123';
-    GRANT ALL PRIVILEGES ON DATABASE freshrss TO freshrss;
-    ALTER DATABASE freshrss OWNER TO freshrss;
-
-    -- Create Coder database and user
-    \c postgres
     CREATE DATABASE coder;
-    CREATE USER coder WITH PASSWORD 'coder123';
-    GRANT ALL PRIVILEGES ON DATABASE coder TO coder;
-    ALTER DATABASE coder OWNER TO coder;
-
-    -- Create Langfuse database and user
-    \c postgres
     CREATE DATABASE langfuse;
-    CREATE USER langfuse WITH PASSWORD 'langfuse123';
-    GRANT ALL PRIVILEGES ON DATABASE langfuse TO langfuse;
-    ALTER DATABASE langfuse OWNER TO langfuse;
-
-    -- Create Azure MCP Go database and user
-    \c postgres
     CREATE DATABASE azure_mcp_go;
-    CREATE USER azure_mcp_go WITH PASSWORD 'azuremcp123';
-    GRANT ALL PRIVILEGES ON DATABASE azure_mcp_go TO azure_mcp_go;
-    ALTER DATABASE azure_mcp_go OWNER TO azure_mcp_go;
-
+    CREATE DATABASE context_forge;
+    CREATE DATABASE groupme_tokens;
+    CREATE DATABASE phoenix;
 

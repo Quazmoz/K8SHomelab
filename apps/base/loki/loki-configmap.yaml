@@ -6,6 +6,8 @@ metadata:
 data:
   loki-config.yaml: |
     # This is the configuration for a simple, single-binary Loki instance.
+    # ACCEPTED RISK: auth_enabled is false because this is a single-tenant homelab.
+    # All access is internal (no external ingress). Documented per §9 compliance exception.
     auth_enabled: false
 
     server:
@@ -38,6 +40,12 @@ data:
     
     compactor:
       working_directory: /data/loki/boltdb-shipper-compactor
+      retention_enabled: true
+
+    # §4b: Enforce 90-day log retention and limit query abuse
+    limits_config:
+      retention_period: 2160h  # 90 days (required by §4b)
+      max_query_series: 5000   # Prevent resource abuse from excessive queries
 
     schema_config:
       configs:

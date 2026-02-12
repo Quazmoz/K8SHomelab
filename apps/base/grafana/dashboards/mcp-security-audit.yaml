@@ -1,0 +1,419 @@
+# MCP Security Audit Dashboard
+# Compliance: §4a (logging), §4b (retention), §4c (anomaly detection), §7b (guardrails)
+# This dashboard provides security-focused visibility into MCP server operations
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-mcp-security-audit
+  namespace: apps
+  labels:
+    grafana_dashboard: "1"
+data:
+  mcp-security-audit.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [
+        {
+          "asDropdown": false,
+          "icon": "external link",
+          "includeVars": false,
+          "keepTime": true,
+          "tags": [],
+          "targetBlank": true,
+          "title": "MCP Tools Dashboard",
+          "tooltip": "View operational MCP Tools dashboard",
+          "type": "link",
+          "url": "/d/mcp-tools/mcp-tools"
+        }
+      ],
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 1,
+          "title": "🔒 MCP Security Overview — Reyes Holdings MCP Standard",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 1 },
+                  { "color": "red", "value": 3 }
+                ]
+              },
+              "mappings": [
+                { "options": { "0": { "text": "Running", "color": "green" } }, "type": "value" }
+              ]
+            }
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+          "id": 2,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "title": "MCPO Status",
+          "description": "§7c — Failsafe visibility: Is MCPO available?",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "kube_deployment_status_replicas_available{namespace=\"apps\", deployment=\"mcpo\"}",
+              "legendFormat": "Available Replicas"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 1 },
+                  { "color": "red", "value": 3 }
+                ]
+              }
+            }
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+          "id": 3,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "title": "Context Forge Status",
+          "description": "§7c — Failsafe visibility: Is Context Forge available?",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "kube_deployment_status_replicas_available{namespace=\"apps\", deployment=\"context-forge\"}",
+              "legendFormat": "Available Replicas"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 3 },
+                  { "color": "red", "value": 5 }
+                ]
+              }
+            }
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+          "id": 4,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "textMode": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "title": "MCP Pod Restarts (1h)",
+          "description": "§7b — Guardrails: Excessive restarts may indicate a runaway agent",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"apps\", container=~\"mcpo|context-forge\"}[1h]))",
+              "legendFormat": "Restarts"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            }
+          },
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+          "id": 5,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "textMode": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "title": "Active Alerts",
+          "description": "§4c — Number of currently firing MCP security alerts",
+          "type": "stat",
+          "targets": [
+            {
+              "expr": "count(ALERTS{alertstate=\"firing\", compliance=~\"mcp-standard.*\"}) or vector(0)",
+              "legendFormat": "Firing Alerts"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+          "id": 10,
+          "title": "§4a — MCP Tool Invocation Audit",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+          "id": 11,
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none"
+          },
+          "title": "MCP API Request Log (MCPO)",
+          "description": "§4a — All MCP tool invocations logged with timestamps",
+          "type": "logs",
+          "targets": [
+            {
+              "expr": "{pod=~\"mcpo.*\"} |~ \"POST|GET\" |~ \"/[a-z]\"",
+              "legendFormat": ""
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+          "id": 12,
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none"
+          },
+          "title": "MCP API Request Log (Context Forge)",
+          "description": "§4a — Context Forge tool invocations",
+          "type": "logs",
+          "targets": [
+            {
+              "expr": "{pod=~\"context-forge.*\"} |~ \"POST|GET\" |~ \"/[a-z]\"",
+              "legendFormat": ""
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+          "id": 20,
+          "title": "§4c — Anomaly Detection & Error Tracking",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "lineWidth": 1,
+                "stacking": { "mode": "normal" }
+              }
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+          "id": 21,
+          "title": "MCP Error Rate (5m buckets)",
+          "description": "§4c — Track error patterns to detect anomalous behavior",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "sum by (pod) (count_over_time({pod=~\"mcpo.*|context-forge.*\"} |~ \"(?i)(error|exception|fail|500|503)\" [5m]))",
+              "legendFormat": "{{ pod }}"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "showPoints": "auto"
+              }
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+          "id": 22,
+          "title": "MCP Request Volume (5m buckets)",
+          "description": "§4c, §7b — Volume spikes may indicate runaway agents",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "sum by (pod) (count_over_time({pod=~\"mcpo.*|context-forge.*\"} |~ \"POST\" [5m]))",
+              "legendFormat": "{{ pod }}"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+          "id": 23,
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none"
+          },
+          "title": "Unauthorized Access Attempts (401/403)",
+          "description": "§4c — Track failed authentication attempts",
+          "type": "logs",
+          "targets": [
+            {
+              "expr": "{pod=~\"mcpo.*|context-forge.*\"} |~ \"401|403|Unauthorized|Forbidden\"",
+              "legendFormat": ""
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+          "id": 24,
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none"
+          },
+          "title": "MCP Error Logs",
+          "description": "§4a — Detailed error log stream for investigation",
+          "type": "logs",
+          "targets": [
+            {
+              "expr": "{pod=~\"mcpo.*|context-forge.*\"} |~ \"(?i)(error|exception|fail|500|503)\"",
+              "legendFormat": ""
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+          "id": 30,
+          "title": "§4b — Log Retention & Infrastructure Health",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "lineWidth": 2
+              },
+              "unit": "Bps"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+          "id": 31,
+          "title": "Loki Ingestion Rate",
+          "description": "§4b — Confirms logs are actively being ingested (retention requires data)",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "sum(rate(loki_distributor_bytes_received_total[5m]))",
+              "legendFormat": "Bytes/sec ingested"
+            }
+          ]
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "lineWidth": 2
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+          "id": 32,
+          "title": "Prometheus Active Alerts",
+          "description": "§4c — All currently firing alerts including MCP security rules",
+          "type": "timeseries",
+          "targets": [
+            {
+              "expr": "count(ALERTS{alertstate=\"firing\"}) or vector(0)",
+              "legendFormat": "Firing alerts"
+            },
+            {
+              "expr": "count(ALERTS{alertstate=\"pending\"}) or vector(0)",
+              "legendFormat": "Pending alerts"
+            }
+          ]
+        }
+      ],
+      "schemaVersion": 39,
+      "tags": ["mcp", "security", "audit", "compliance"],
+      "templating": { "list": [] },
+      "time": { "from": "now-24h", "to": "now" },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "MCP Security Audit",
+      "uid": "mcp-security-audit",
+      "version": 1
+    }
