@@ -21,6 +21,8 @@ spec:
         kubernetes.io/hostname: quinn-hpprobook430g6
       persistentVolume:
         enabled: false
+      persistence:
+        enabled: false
     pushgateway:
       enabled: true
       nodeSelector:
