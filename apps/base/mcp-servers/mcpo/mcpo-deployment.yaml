@@ -110,8 +110,8 @@ spec:
           failureThreshold: 5
       volumes:
       - name: mcpo-config
-        configMap:
-          name: mcpo-config
+        secret:
+          secretName: mcpo-config
       - name: tools
         emptyDir: {}
       - name: npm-cache

@@ -14,7 +14,7 @@ resources:
   
   # === MCPO - MCP-to-OpenAPI Proxy ===
   # Handles: Postgres, Kubernetes, Prometheus, FreshRSS, n8n (stdio servers)
-  - mcpo/mcpo-config.yaml
+  - mcpo/mcpo-config.secret.enc.yaml
   - mcpo/mcpo-rbac.yaml
   - mcpo/mcpo-deployment.yaml
   - mcpo/ingress.yaml
