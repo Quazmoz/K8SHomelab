@@ -82,7 +82,8 @@ spec:
           periodSeconds: 10
       volumes:
       - name: freshrss-data
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: freshrss-pvc
       - name: feeds-opml
         configMap:
           name: freshrss-feeds
