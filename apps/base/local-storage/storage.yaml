@@ -253,7 +253,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /mnt/k8s-data/freshrss
+    path: /mnt/data/freshrss
   nodeAffinity:
     required:
       nodeSelectorTerms:
