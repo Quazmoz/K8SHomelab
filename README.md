@@ -89,6 +89,6 @@ flux get all -A
 
 ## 🔐 Security
 
-- Secrets managed via SOPS encryption
-- Template files (`.template`) in Git with placeholders
-- Actual secrets excluded via `.gitignore`
+- Detailed guide: [docs/SECURITY.md](docs/SECURITY.md)
+- Secrets managed via SOPS (Age encryption)
+- Credentials stored in `postgres-credentials` (encrypted)
