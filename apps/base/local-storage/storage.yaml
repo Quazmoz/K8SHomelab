@@ -261,7 +261,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - quinn-hpprobook430g6
+          - orangepi6plus
 
 ---
 # The Persistent Volume for Qdrant vector database
