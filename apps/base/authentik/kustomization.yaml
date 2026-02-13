@@ -3,6 +3,6 @@ kind: Kustomization
 namespace: apps
 resources:
   - authentik-deployment.yaml
-  - authentik-configmap.yaml
   - authentik-pvc.yaml
-  - authentik-secrets.yaml
+  - authentik-configmap.yaml
+  - authentik-secrets.secret.enc.yaml
