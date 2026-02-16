@@ -31,6 +31,8 @@ spec:
       labels:
         app: adguard-home
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
       containers:
       - name: adguard-home
         image: adguard/adguardhome:latest
