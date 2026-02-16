@@ -1,0 +1,90 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: adguard-home-pvc
+  namespace: apps
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-storage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adguard-home
+  namespace: apps
+  labels:
+    app: adguard-home
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adguard-home
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: adguard-home
+    spec:
+      containers:
+      - name: adguard-home
+        image: adguard/adguardhome:latest
+        ports:
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 53
+          name: dns-udp
+          protocol: UDP
+        - containerPort: 80
+          name: web-admin
+          protocol: TCP
+        - containerPort: 3000
+          name: web-setup
+          protocol: TCP
+        volumeMounts:
+        - name: data
+          mountPath: /opt/adguardhome/work
+        - name: config
+          mountPath: /opt/adguardhome/conf
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: adguard-home-pvc
+      - name: config
+        persistentVolumeClaim:
+          claimName: adguard-home-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adguard-home
+  namespace: apps
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "adguard-home"
+spec:
+  selector:
+    app: adguard-home
+  type: LoadBalancer
+  ports:
+  - name: dns-udp
+    port: 53
+    targetPort: 53
+    protocol: UDP
+  - name: dns-tcp
+    port: 53
+    targetPort: 53
+    protocol: TCP
+  - name: web-admin
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  - name: web-setup
+    port: 3000
+    targetPort: 3000
+    protocol: TCP
