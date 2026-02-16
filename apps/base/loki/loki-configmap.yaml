@@ -30,6 +30,7 @@ data:
     compactor:
       working_directory: /data/loki/boltdb-shipper-compactor
       retention_enabled: true
+      delete_request_store: filesystem
 
     # §4b: Enforce 90-day log retention and limit query abuse
     limits_config:
