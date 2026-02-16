@@ -41,7 +41,7 @@ data:
     compactor:
       working_directory: /data/loki/boltdb-shipper-compactor
       retention_enabled: true
-      compactor_ring:
+      ring:
         kvstore:
           store: inmemory
 
