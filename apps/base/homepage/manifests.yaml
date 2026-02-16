@@ -181,7 +181,7 @@ data:
             description: Cache
             statusStyle: dot
         - AdGuard Home:
-            href: http://192.168.1.222
+            href: http://192.168.1.222:3000
             icon: si-adguard
             description: DNS Sinkhole
             siteMonitor: http://adguard-home.apps.svc.cluster.local:80
