@@ -531,7 +531,16 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    - quinn-hpprobook430g6
+  local:
+    path: /mnt/k8s-data/llama-cpp-models
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - orangepi6plus
 
 ---
 # The Persistent Volume for AdGuard Home data/config
