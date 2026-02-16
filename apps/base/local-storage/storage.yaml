@@ -531,7 +531,6 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-  local:
     path: /mnt/k8s-data/llama-cpp-models
   nodeAffinity:
     required:
