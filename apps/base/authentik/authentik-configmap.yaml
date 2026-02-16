@@ -21,6 +21,9 @@ data:
   AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
   AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
   AUTHENTIK_DISABLE_STARTUP_ANALYTICS: "true"
+  # Host settings (required for Outpost)
+  AUTHENTIK_HOST: "http://auth.k8s.local"
+  AUTHENTIK_HOST_BROWSER: "http://auth.k8s.local"
   # Email (optional - configure if needed)
   # AUTHENTIK_EMAIL__HOST: "smtp.example.com"
   # AUTHENTIK_EMAIL__PORT: "587"
