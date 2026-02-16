@@ -41,6 +41,9 @@ data:
     compactor:
       working_directory: /data/loki/boltdb-shipper-compactor
       retention_enabled: true
+      compactor_ring:
+        kvstore:
+          store: inmemory
 
     # §4b: Enforce 90-day log retention and limit query abuse
     limits_config:
