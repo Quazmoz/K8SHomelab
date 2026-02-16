@@ -10,6 +10,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
+  volumeName: adguard-home-local-pv
   storageClassName: local-storage
 ---
 apiVersion: apps/v1
