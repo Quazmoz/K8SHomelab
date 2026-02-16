@@ -16,34 +16,20 @@ data:
     # This tells Loki to run all components (ingester, querier, etc.) in one process.
     target: all
 
-    # --- THIS IS THE CRITICAL FIX ---
-    # This block configures the ring for a single-node setup, preventing
-    # it from trying to contact a non-existent Consul instance.
-    ingester:
-      lifecycler:
-        ring:
-          kvstore:
-            store: inmemory
-          replication_factor: 1
-      # This tells the ingester where to store its Write-Ahead Log (WAL).
-      wal:
-        enabled: true
-        dir: /data/loki/wal
-
-    storage_config:
-      boltdb_shipper:
-        active_index_directory: /data/loki/boltdb-shipper-active
-        cache_location: /data/loki/boltdb-shipper-cache
-        cache_ttl: 24h
-      filesystem:
-        directory: /data/loki/chunks
-    
-    compactor:
-      working_directory: /data/loki/boltdb-shipper-compactor
-      retention_enabled: true
+    common:
+      path_prefix: /data/loki
+      storage:
+        filesystem:
+          chunks_directory: /data/loki/chunks
+          rules_directory: /data/loki/rules
+      replication_factor: 1
       ring:
         kvstore:
           store: inmemory
+
+    compactor:
+      working_directory: /data/loki/boltdb-shipper-compactor
+      retention_enabled: true
 
     # §4b: Enforce 90-day log retention and limit query abuse
     limits_config:
