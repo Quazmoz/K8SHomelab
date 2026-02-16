@@ -180,6 +180,12 @@ data:
             icon: si-redis
             description: Cache
             statusStyle: dot
+        - AdGuard Home:
+            href: http://192.168.1.222
+            icon: adguard-home.png
+            description: DNS Sinkhole
+            siteMonitor: http://adguard-home.apps.svc.cluster.local:80
+            statusStyle: dot
         - Ingress NGINX:
             icon: nginx.png
             description: Ingress
