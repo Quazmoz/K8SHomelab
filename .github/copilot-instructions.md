@@ -52,7 +52,10 @@
 | | Qdrant | `http://qdrant.k8s.local` | `apps/base/qdrant/` |
 | | Jupyter | `http://jupyter.k8s.local` | `apps/base/jupyter/` |
 | | Phoenix | `http://phoenix.k8s.local` | `apps/base/phoenix/` |
+| | LlamaCpp | internal (ollama API) | `apps/base/llama-cpp/` |
 | **MCP Tools** | Context Forge | `http://mcp.k8s.local` | `apps/base/mcp-servers/contextforge/` |
+| | GroupMe MCP | `http://groupme.k8s.local` | `apps/base/mcp-servers/contextforge/` |
+| | ClickUp MCP | internal (SSE) | `apps/base/mcp-servers/contextforge/` |
 | | MCPO Proxy | `http://mcpo.k8s.local` | `apps/base/mcp-servers/mcpo/` |
 | **DevOps** | Jenkins | `http://jenkins.k8s.local` | `apps/base/jenkins/` |
 | | n8n | `http://n8n.k8s.local` | `apps/base/n8n/` |
@@ -64,12 +67,15 @@
 | | Alloy | (collector) | `apps/base/alloy/` |
 | **Data** | PostgreSQL | internal | `apps/base/postgres/` |
 | | Redis | internal | `apps/base/redis/` |
+| | RedisInsight | `http://redisinsight.k8s.local` | `apps/base/redis/` |
 | | MongoDB | internal | `apps/base/mongodb/` |
 | | pgAdmin | `http://pgadmin.k8s.local` | `apps/base/pgadmin/` |
 | | Mongo Express | `http://mongo-express.k8s.local` | `apps/base/mongo-express/` |
 | **Other** | Homepage | `http://homepage.k8s.local` | `apps/base/homepage/` |
 | | FreshRSS | `http://freshrss.k8s.local` | `apps/base/freshrss/` |
 | | Authentik | `http://authentik.k8s.local` | `apps/base/authentik/` |
+| | AdGuard Home | `http://192.168.1.222` | `apps/base/dns/` |
+| | Backups | internal (CronJobs) | `apps/base/backups/` |
 
 ---
 
@@ -141,6 +147,8 @@ K8SHomelab/
 │       ├── contextforge/         # Context Forge gateway
 │       ├── mcpo/                 # MCPO OpenAPI proxy
 │       └── legacy/               # Disabled/reference resources
+│   ├── dns/                      # AdGuard Home
+│   ├── backups/                  # Database backups
 ├── clusters/my-homelab/          # Flux kustomizations
 │   └── apps.yaml                 # Points to apps/base
 └── docs/                         # Network troubleshooting docs
@@ -327,7 +335,7 @@ flux reconcile helmrelease <name> -n apps --with-source
 Add to your local machine's hosts file:
 
 ```
-192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local jenkins.k8s.local n8n.k8s.local llamafactory.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local librechat.k8s.local freshrss.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local coder.k8s.local
+192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local jenkins.k8s.local n8n.k8s.local llamafactory.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local librechat.k8s.local freshrss.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local coder.k8s.local redisinsight.k8s.local groupme.k8s.local
 ```
 
 ---
