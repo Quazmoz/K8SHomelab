@@ -1,0 +1,4 @@
+2026/02/17 16:24:32 [error] Couldn't get logging settings from the configuration: yaml: line 152: mapping values are not allowed in this context
+2026/02/17 16:24:32 [error] Couldn't get logging settings from the configuration: yaml: line 152: mapping values are not allowed in this context
+2026/02/17 16:24:32.039449 [info] starting adguard home version="AdGuard Home, version v0.107.71"
+2026/02/17 16:24:32.042835 [error] failed to parse configuration file err="parsing config file for upgrade: yaml: line 152: mapping values are not allowed in this context"

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: adguard-debug
+  namespace: apps
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: orangepi6plus
+  tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  containers:
+  - name: debug
+    image: busybox
+    command: ["sleep", "3600"]
+    volumeMounts:
+    - name: data
+      mountPath: /opt/adguardhome/work
+    - name: config
+      mountPath: /opt/adguardhome/conf
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: adguard-home-pvc
+  - name: config
+    persistentVolumeClaim:
+      claimName: adguard-home-pvc
