@@ -246,11 +246,12 @@ metadata:
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Host $http_host;
     # Homepage annotations
-    gethomepage.dev/enabled: "false"
+    gethomepage.dev/enabled: "true"
     gethomepage.dev/group: "MCP Tools"
     gethomepage.dev/name: "Context Forge"
     gethomepage.dev/icon: "mdi-connection"
     gethomepage.dev/description: "MCP Gateway with per-user auth"
+    gethomepage.dev/href: "http://mcp.k8s.local"
 spec:
   ingressClassName: nginx
   rules:

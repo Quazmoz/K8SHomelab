@@ -20,7 +20,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Host $http_host;
     # Homepage annotations
-    gethomepage.dev/enabled: "false"
+    gethomepage.dev/enabled: "true"
     gethomepage.dev/group: "AI & Automation"
     gethomepage.dev/name: "MCP Servers"
     gethomepage.dev/icon: "openai"
