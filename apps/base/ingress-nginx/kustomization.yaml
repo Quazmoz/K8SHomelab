@@ -15,3 +15,13 @@ patches:
         namespace: ingress-nginx
       spec:
         externalTrafficPolicy: Cluster
+  # Enable snippet annotations for Authentik auth integration
+  - patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: ingress-nginx-controller
+        namespace: ingress-nginx
+      data:
+        allow-snippet-annotations: "true"
+        annotations-risk-level: "Critical"
