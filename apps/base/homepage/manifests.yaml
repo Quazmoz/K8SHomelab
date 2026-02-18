@@ -41,7 +41,7 @@ data:
       Operations:
         icon: mdi-monitor-dashboard
         style: row
-        columns: 6
+        columns: 4
       Portfolio:
         icon: mdi-account-star
         style: row
@@ -172,31 +172,11 @@ data:
             description: Redis Admin
             siteMonitor: http://redis-insight.apps.svc.cluster.local:5540
             statusStyle: dot
-        - PostgreSQL:
-            icon: si-postgresql
-            description: Database
-            statusStyle: dot
-        - Redis:
-            icon: si-redis
-            description: Cache
-            statusStyle: dot
         - AdGuard Home:
             href: http://192.168.1.222
             icon: si-adguard
             description: DNS Sinkhole
             siteMonitor: http://adguard-home.apps.svc.cluster.local:80
-            statusStyle: dot
-        - Ingress NGINX:
-            icon: nginx.png
-            description: Ingress
-            statusStyle: dot
-        - MetalLB:
-            icon: mdi-lan-connect
-            description: Load Balancer
-            statusStyle: dot
-        - MongoDB:
-            icon: si-mongodb
-            description: Document DB
             statusStyle: dot
         - Mongo Express:
             href: http://mongo-express.k8s.local

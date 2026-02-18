@@ -14,6 +14,17 @@ Access to `mcpo.k8s.local` is protected by Authentik's Embedded Outpost running 
     -   If not, it returns `401 Unauthorized` causing NGINX to redirect the user to the login page (`auth.k8s.local`).
 4.  **Forwarding**: Upon successful authentication, NGINX forwards the request to the `mcpo` service on port 8000. It injects user identity headers (e.g., `X-authentik-username`, `X-authentik-email`) which the backend application can consume.
 
+## Internal vs External Access
+
+Authentik **only** protects traffic that enters through the NGINX Ingress (i.e., external requests to `mcpo.k8s.local`).
+
+| Path | Route | Auth? |
+|------|-------|-------|
+| **Browser** | `mcpo.k8s.local` → NGINX Ingress → Authentik → MCPO | ✅ Enforced |
+| **OpenWebUI** (cluster-internal) | `mcpo.apps.svc.cluster.local:8000` → MCPO | ❌ Bypassed |
+
+OpenWebUI connects via the internal Kubernetes ClusterIP service, so it never hits the Ingress and Authentik is never invoked. This is the standard Kubernetes pattern: external traffic is authenticated at the edge, internal pod-to-pod traffic trusts the cluster network boundary.
+
 ## Troubleshooting
 
 ### Symptoms

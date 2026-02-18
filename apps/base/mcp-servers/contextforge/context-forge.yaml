@@ -246,7 +246,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Host $http_host;
     # Homepage annotations
-    gethomepage.dev/enabled: "true"
+    gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "MCP Tools"
     gethomepage.dev/name: "Context Forge"
     gethomepage.dev/icon: "mdi-connection"
