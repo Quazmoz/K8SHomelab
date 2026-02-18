@@ -3,4 +3,4 @@ kind: Kustomization
 namespace: apps
 resources:
   - adguard-home.yaml
-  - pv.yaml
+
