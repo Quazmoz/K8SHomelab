@@ -13,7 +13,7 @@ resources:
   - ./metrics-server
   - ./n8n
   - ./postgres
-  - ./jenkins
+#  - ./jenkins # Temporarily disabled to save RAM
   - ./loki
   - ./redis
   - ./mcp-servers
@@ -22,16 +22,16 @@ resources:
 #  - ./llamafactory # Temporarily disabled to save RAM
 #  - ./uptime-kuma  # Removed - not needed
   - ./authentik    # Re-enabled
-  - ./freshrss
+#  - ./freshrss # Temporarily disabled to save RAM
   - ./qdrant
   - ./ansible
   - ./mongodb
-  - ./librechat
+#  - ./librechat # Temporarily disabled to save RAM
   - ./alloy
   - ./mongo-express
   - ./jupyter
   - ./phoenix  # LLM Observability (replaces Langfuse)
-  - ./coder
+#  - ./coder # Temporarily disabled to save RAM
   - ./backups  # Daily database backups to SD card
   - ./llama-cpp  # llama.cpp LLM backend for OpenWebUI
   - ./dns
