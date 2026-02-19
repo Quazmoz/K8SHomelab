@@ -56,6 +56,9 @@ spec:
           - "--config"
           - "/config/config.json"
         env:
+        # Force aggressive garbage collection in Node.js sub-processes
+        - name: NODE_OPTIONS
+          value: "--max-old-space-size=256"
         # Add kubectl to PATH (prepend to default container PATH)
         - name: PATH
           value: "/tools:/app/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin"

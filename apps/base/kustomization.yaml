@@ -19,7 +19,7 @@ resources:
   - ./mcp-servers
   - ./openwebui
   - ./pgadmin
-  - ./llamafactory
+#  - ./llamafactory # Temporarily disabled to save RAM
 #  - ./uptime-kuma  # Removed - not needed
   - ./authentik    # Re-enabled
   - ./freshrss
