@@ -15,16 +15,18 @@ spec:
   projects_storage_size: 10Gi
   web_resource_requirements:
     requests:
-      memory: "256Mi"
+      memory: "512Mi"
       cpu: "100m"
     limits:
-      memory: "1Gi"
+      memory: "1.5Gi"
+      cpu: "1"
   task_resource_requirements:
     requests:
-      memory: "256Mi"
+      memory: "512Mi"
       cpu: "100m"
     limits:
-      memory: "1Gi"
+      memory: "1.5Gi"
+      cpu: "1"
   ingress_annotations: |
     kubernetes.io/ingress.class: nginx
     gethomepage.dev/enabled: "true"
