@@ -444,7 +444,7 @@ spec:
               cpu: "50m"
       containers:
         - name: homepage
-          image: "ghcr.io/gethomepage/homepage:v1.8.0"
+          image: "ghcr.io/gethomepage/homepage:v1.10.1"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
