@@ -22,9 +22,8 @@ spec:
       # - name: regcred
       containers:
       - name: ansible-mcp-server
-        # Using the official Red Hat Tech Preview AAP MCP server image
-        # Alternate community image: ghcr.io/mancubus77/mcp-server-aap:latest
-        image: registry.redhat.io/ansible-automation-platform-tech-preview/mcp-server-rhel9:2.6
+        # Using community alternative
+        image: ghcr.io/mancubus77/mcp-server-aap:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
