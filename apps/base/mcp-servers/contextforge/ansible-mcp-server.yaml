@@ -17,13 +17,10 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
-      # Uncomment if needed for Red Hat registry auth
-      # imagePullSecrets:
-      # - name: regcred
       containers:
       - name: ansible-mcp-server
-        # Using community alternative
-        image: ghcr.io/mancubus77/mcp-server-aap:latest
+        # Using public dockerhub image
+        image: a37ai/ansible-tower-mcp:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -31,13 +28,11 @@ spec:
         env:
         - name: PORT
           value: "8080"
-        - name: AWX_HOST
+        - name: TOWER_HOST
           value: "http://awx-service.apps.svc.cluster.local:80"
-        - name: AAP_URL
-          value: "http://awx-service.apps.svc.cluster.local:80"
-        - name: AWX_TOKEN
-          value: "VxN8JIGZ9UlzdqyNvjEkdn7gc20gpn"
-        - name: AAP_TOKEN
+        - name: TOWER_VERIFY_SSL
+          value: "false"
+        - name: TOWER_TOKEN
           value: "VxN8JIGZ9UlzdqyNvjEkdn7gc20gpn"
         resources:
           requests:
