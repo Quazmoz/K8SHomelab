@@ -15,6 +15,10 @@ spec:
       labels:
         app: ansible-mcp-server
     spec:
+      imagePullSecrets:
+      - name: regcred
+      nodeSelector:
+        kubernetes.io/arch: amd64
       containers:
       - name: ansible-mcp-server
         image: quazmoz/quazmoz:ansible-mcp
