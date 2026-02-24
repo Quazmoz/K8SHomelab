@@ -17,10 +17,13 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
+      # Uncomment if needed for Red Hat registry auth
+      # imagePullSecrets:
+      # - name: regcred
       containers:
       - name: ansible-mcp-server
-        # Using public dockerhub image
-        image: a37ai/ansible-tower-mcp:latest
+        # Using the official Red Hat Tech Preview AAP MCP server image
+        image: registry.redhat.io/ansible-automation-platform-tech-preview/mcp-server-rhel9:2.6
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
