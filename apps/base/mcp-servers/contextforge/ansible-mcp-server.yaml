@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ansible-mcp-server
+  namespace: apps
+  labels:
+    app: ansible-mcp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ansible-mcp-server
+  template:
+    metadata:
+      labels:
+        app: ansible-mcp-server
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      # Uncomment if needed for Red Hat registry auth
+      # imagePullSecrets:
+      # - name: regcred
+      containers:
+      - name: ansible-mcp-server
+        # Using the official Red Hat Tech Preview AAP MCP server image
+        # Alternate community image: ghcr.io/mancubus77/mcp-server-aap:latest
+        image: registry.redhat.io/ansible-automation-platform-tech-preview/mcp-server-rhel9:2.6
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PORT
+          value: "8080"
+        - name: AWX_HOST
+          value: "http://awx-service.apps.svc.cluster.local:80"
+        - name: AAP_URL
+          value: "http://awx-service.apps.svc.cluster.local:80"
+        - name: AWX_TOKEN
+          value: "VxN8JIGZ9UlzdqyNvjEkdn7gc20gpn"
+        - name: AAP_TOKEN
+          value: "VxN8JIGZ9UlzdqyNvjEkdn7gc20gpn"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ansible-mcp-server
+  namespace: apps
+  labels:
+    app: ansible-mcp-server
+spec:
+  type: ClusterIP
+  selector:
+    app: ansible-mcp-server
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http

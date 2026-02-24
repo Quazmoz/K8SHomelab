@@ -48,6 +48,12 @@ data:
           "description": "ClickUp project management",
           "type": "sse", 
           "url": "http://clickup-mcp-server.apps.svc.cluster.local:5000/sse"
+        },
+        {
+          "name": "ansible",
+          "description": "Ansible Automation Platform / AWX",
+          "type": "http",
+          "url": "http://ansible-mcp-server.apps.svc.cluster.local:8080/mcp"
         }
       ],
       "virtual_servers": [
@@ -60,6 +66,11 @@ data:
           "name": "clickup mcp",
           "description": "ClickUp task and project management tools",
           "backend_servers": ["clickup-native"]
+        },
+        {
+          "name": "ansible mcp",
+          "description": "Execute playbooks and manage automation jobs via Ansible AWX/AAP",
+          "backend_servers": ["ansible"]
         }
       ]
     }

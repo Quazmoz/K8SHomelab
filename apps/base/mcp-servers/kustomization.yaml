@@ -11,6 +11,7 @@ resources:
   - contextforge/groupme-netpol.yaml
   - contextforge/clickup-mcp-server.yaml
   - contextforge/azure-mcp-go-deployment.yaml
+  - contextforge/ansible-mcp-server.yaml
   
   # === MCPO - MCP-to-OpenAPI Proxy ===
   # Handles: Postgres, Kubernetes, Prometheus, FreshRSS, n8n (stdio servers)

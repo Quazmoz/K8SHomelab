@@ -51,7 +51,7 @@ spec:
       serviceAccountName: context-forge
       containers:
       - name: context-forge
-        image: ghcr.io/ibm/mcp-context-forge:latest
+        image: ghcr.io/ibm/mcp-context-forge:v1.0.0-RC1
         imagePullPolicy: Always
         ports:
         - containerPort: 4444
