@@ -12,6 +12,9 @@ resources:
   - contextforge/clickup-mcp-server.yaml
   - contextforge/azure-mcp-go-deployment.yaml
   
+  # === Ansible MCP Server ===
+  - ansible-mcp/secret.enc.yaml
+  - ansible-mcp/ansible-mcp-server.yaml
   # === MCPO - MCP-to-OpenAPI Proxy ===
   # Handles: Postgres, Kubernetes, Prometheus, FreshRSS, n8n (stdio servers)
   - mcpo/mcpo-config.secret.enc.yaml

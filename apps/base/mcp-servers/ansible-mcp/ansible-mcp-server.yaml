@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ansible-mcp-server
+  namespace: apps
+  labels:
+    app: ansible-mcp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ansible-mcp-server
+  template:
+    metadata:
+      labels:
+        app: ansible-mcp-server
+    spec:
+      containers:
+      - name: ansible-mcp-server
+        image: quazmoz/quazmoz:ansible-mcp
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - secretRef:
+            name: ansible-mcp-secrets
+        env:
+        - name: PORT
+          value: "5000"
+        - name: RUST_LOG
+          value: "info"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ansible-mcp-server
+  namespace: apps
+spec:
+  selector:
+    app: ansible-mcp-server
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP

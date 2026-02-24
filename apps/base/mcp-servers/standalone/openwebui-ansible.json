@@ -1,0 +1,8 @@
+[
+    {
+        "type": "mcp",
+        "name": "Ansible AWX MCP",
+        "url": "http://ansible-mcp-server.apps.svc.cluster.local:5000/mcp",
+        "headers": {}
+    }
+]
