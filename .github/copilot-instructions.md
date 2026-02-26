@@ -1,6 +1,6 @@
 # Copilot Instructions for K8SHomelab
 
-> **Note:** Your laptop is not the Kubernetes cluster. The K8S cluster runs on your Orange Pi 6 Plus (control plane) and HP ProBook (worker node), not on your local development machine.
+> **Note:** Your laptop is not the Kubernetes cluster. The K8S cluster runs on your Raspberry Pi (control plane) and HP ProBook (worker node), not on your local development machine.
 
 ---
 
@@ -22,7 +22,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                      KUBERNETES CLUSTER                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  Control Plane:  orangepi6plus (192.168.1.21)                   │
+│  Control Plane:  raspberrypi (192.168.1.21)                     │
 │                                                                 │
 │  Workers:                                                       │
 │    • quinn-hpprobook430g6 (192.168.1.15)                        │
@@ -47,8 +47,6 @@
 | Category | Service | URL | Directory |
 |----------|---------|-----|-----------|
 | **AI & LLM** | OpenWebUI | `http://openwebui.k8s.local` | `apps/base/openwebui/` |
-| | LibreChat | `http://librechat.k8s.local` | `apps/base/librechat/` |
-| | LlamaFactory | `http://llamafactory.k8s.local` | `apps/base/llamafactory/` |
 | | Qdrant | `http://qdrant.k8s.local` | `apps/base/qdrant/` |
 | | Jupyter | `http://jupyter.k8s.local` | `apps/base/jupyter/` |
 | | Phoenix | `http://phoenix.k8s.local` | `apps/base/phoenix/` |
@@ -57,10 +55,9 @@
 | | GroupMe MCP | `http://groupme.k8s.local` | `apps/base/mcp-servers/contextforge/` |
 | | ClickUp MCP | internal (SSE) | `apps/base/mcp-servers/contextforge/` |
 | | MCPO Proxy | `http://mcpo.k8s.local` | `apps/base/mcp-servers/mcpo/` |
-| **DevOps** | Jenkins | `http://jenkins.k8s.local` | `apps/base/jenkins/` |
-| | n8n | `http://n8n.k8s.local` | `apps/base/n8n/` |
+| | Ansible MCP | internal | `apps/base/mcp-servers/ansible-mcp/` |
+| **DevOps** | n8n | `http://n8n.k8s.local` | `apps/base/n8n/` |
 | | Ansible AWX | `http://awx.k8s.local` | `apps/base/ansible/` |
-| | Coder | `http://coder.k8s.local` | `apps/base/coder/` |
 | **Monitoring** | Grafana | `http://grafana.k8s.local` | `apps/base/grafana/` |
 | | Prometheus | `http://prometheus.k8s.local` | `apps/base/prometheus/` |
 | | Loki | (via Grafana) | `apps/base/loki/` |
@@ -72,7 +69,6 @@
 | | pgAdmin | `http://pgadmin.k8s.local` | `apps/base/pgadmin/` |
 | | Mongo Express | `http://mongo-express.k8s.local` | `apps/base/mongo-express/` |
 | **Other** | Homepage | `http://homepage.k8s.local` | `apps/base/homepage/` |
-| | FreshRSS | `http://freshrss.k8s.local` | `apps/base/freshrss/` |
 | | Authentik | `http://authentik.k8s.local` | `apps/base/authentik/` |
 | | AdGuard Home | `http://192.168.1.222` | `apps/base/dns/` |
 | | Backups | internal (CronJobs) | `apps/base/backups/` |
@@ -118,8 +114,8 @@ flux reconcile helmrelease <name> -n apps --with-source
 
 | Component | Reason | Workflow |
 |-----------|--------|----------|
-| **Jenkins** | Code-first flow non-functional | Configure jobs via Jenkins GUI |
 | **Context Forge** | Dynamic MCP registration | Configure via `mcp.k8s.local` GUI |
+| **Ansible AWX** | Config state inside DB | Configure via `awx.k8s.local` GUI |
 
 ---
 
@@ -146,6 +142,7 @@ K8SHomelab/
 │   └── mcp-servers/              # MCP integration
 │       ├── contextforge/         # Context Forge gateway
 │       ├── mcpo/                 # MCPO OpenAPI proxy
+│       ├── ansible-mcp/          # Ansible MCP Server
 │       └── legacy/               # Disabled/reference resources
 │   ├── dns/                      # AdGuard Home
 │   ├── backups/                  # Database backups
@@ -227,11 +224,12 @@ K8SHomelab/
         │ - GroupMe (per-user auth)│   │ - Postgres       │
         │ - Azure (HTTP)           │   │ - Kubernetes     │
         │ - ClickUp (SSE)          │   │ - Prometheus     │
-        │ Port: 4444               │   │ - FreshRSS       │
-        │ URL: mcp.k8s.local       │   │ - n8n            │
-        │                          │   │ Port: 8000       │
+        │ Port: 4444               │   │ - n8n            │
+        │ URL: mcp.k8s.local       │   │ Port: 8000       │
         │                          │   │ URL: mcpo.k8s.lo │
         └──────────────────────────┘   └──────────────────┘
+
+        (Other direct MCP servers: Ansible MCP - `ansible-mcp-server`)
 ```
 
 > See `apps/base/mcp-servers/README.md` for detailed MCP setup.
@@ -290,7 +288,7 @@ K8SHomelab/
 | PVC Pending | Missing PV | Add PV to `local-storage/storage.yaml` |
 | Calico pods stuck 0/1 | VXLAN MTU error | Delete vxlan.calico, restart Calico |
 | HelmRelease not reconciling | Source issue | `flux reconcile source helm <repo> -n flux-system` |
-| Jenkins/Context Forge config lost | Pod recreated | Re-apply via GUI |
+| AWX/Context Forge config lost | Pod recreated without DB persist | Re-apply via GUI |
 
 ### Debugging Commands
 
@@ -319,7 +317,7 @@ flux reconcile helmrelease <name> -n apps --with-source
 
 ## Best Practices
 
-1. **GitOps First**: All changes go through git (except Jenkins/Context Forge)
+1. **GitOps First**: All changes go through git (except GUI apps like AWX/Context Forge)
 2. **Test Locally**: Use `kubectl kustomize apps/base/<app>` before committing
 3. **Secrets Management**: Use `.template` files for structure, actual secrets excluded via `.gitignore`
 4. **Homepage Visibility**: Always add new apps to homepage dashboard
@@ -335,7 +333,7 @@ flux reconcile helmrelease <name> -n apps --with-source
 Add to your local machine's hosts file:
 
 ```
-192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local jenkins.k8s.local n8n.k8s.local llamafactory.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local librechat.k8s.local freshrss.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local coder.k8s.local redisinsight.k8s.local groupme.k8s.local
+192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local
 ```
 
 ---
