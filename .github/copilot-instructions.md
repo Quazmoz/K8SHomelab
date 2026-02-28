@@ -1,6 +1,6 @@
 # Copilot Instructions for K8SHomelab
 
-> **Note:** Your laptop is not the Kubernetes cluster. The K8S cluster runs on your Raspberry Pi (control plane) and HP ProBook (worker node), not on your local development machine.
+> **Note:** Your laptop is not the Kubernetes cluster. The K8S cluster runs on your Orange Pi 6 Plus (control plane) and HP ProBook (worker node), not on your local development machine.
 
 ---
 
@@ -22,7 +22,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                      KUBERNETES CLUSTER                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  Control Plane:  raspberrypi (192.168.1.21)                     │
+│  Control Plane:  orangepi6plus (192.168.1.21)                   │
 │                                                                 │
 │  Workers:                                                       │
 │    • quinn-hpprobook430g6 (192.168.1.15)                        │

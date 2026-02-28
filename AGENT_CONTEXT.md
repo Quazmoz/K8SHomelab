@@ -10,7 +10,7 @@ GitOps-managed Kubernetes homelab running on hybrid infrastructure (local nodes 
 
 ```
 NODES:
-├── raspberrypi (Control Plane) - 192.168.1.21 / wg: 10.49.104.3
+├── orangepi6plus (Control Plane) - 192.168.1.21 / wg: 10.49.104.3
 ├── quinn-hpprobook430g6 (Worker) - 192.168.1.15 / wg: 10.49.104.6
 ├── oracle-wireguard (Worker) - wg: 10.49.104.1 (Oracle Cloud)
 └── oracle-groupmebot (Worker) - wg: 10.49.104.4 (Oracle Cloud)

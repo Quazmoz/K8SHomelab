@@ -8,7 +8,7 @@ GitOps-managed Kubernetes homelab running on hybrid infrastructure (local nodes 
 ┌─────────────────────────────────────────────────────────────────┐
 │                      KUBERNETES CLUSTER                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  Control Plane:  raspberrypi (192.168.1.21)                     │
+│  Control Plane:  orangepi6plus (192.168.1.21)                   │
 │                                                                 │
 │  Workers:                                                       │
 │    • quinn-hpprobook430g6 (192.168.1.15) - Main workloads       │

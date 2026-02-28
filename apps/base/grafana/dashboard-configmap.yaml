@@ -416,7 +416,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "up{instance=~\".*raspberrypi.*|.*192.168.1.221.*\"}",
+              "expr": "up{instance=~\".*orangepi6plus.*|.*192.168.1.221.*\"}",
               "instant": true
             }
           ],
@@ -564,7 +564,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\".*raspberrypi.*|.*192.168.1.221.*\"}[5m])) * 100)",
+              "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\".*orangepi6plus.*|.*192.168.1.221.*\"}[5m])) * 100)",
               "instant": true
             }
           ],
@@ -590,7 +590,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "(1 - (avg(node_memory_MemAvailable_bytes{instance=~\".*raspberrypi.*|.*192.168.1.221.*\"}) / avg(node_memory_MemTotal_bytes{instance=~\".*raspberrypi.*|.*192.168.1.221.*\"}))) * 100",
+              "expr": "(1 - (avg(node_memory_MemAvailable_bytes{instance=~\".*orangepi6plus.*|.*192.168.1.221.*\"}) / avg(node_memory_MemTotal_bytes{instance=~\".*orangepi6plus.*|.*192.168.1.221.*\"}))) * 100",
               "instant": true
             }
           ],

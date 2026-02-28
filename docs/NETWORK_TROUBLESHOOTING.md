@@ -64,7 +64,7 @@ kubectl patch deployment coredns -n kube-system --type='json' -p='[
           "matchExpressions": [{
             "key": "kubernetes.io/hostname",
             "operator": "In",
-            "values": ["raspberrypi", "quinn-hpprobook430g6"]
+            "values": ["orangepi6plus", "quinn-hpprobook430g6"]
           }]
         }]
       }
