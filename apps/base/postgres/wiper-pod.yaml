@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: wiper
+  namespace: apps
+spec:
+  restartPolicy: Never
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: postgres-pvc
+  containers:
+  - name: wiper
+    image: busybox
+    command: ["sh", "-c", "rm -rf /mnt/data/* /mnt/data/.[!.]* /mnt/data/..?* && echo 'wiped' && sleep 10"]
+    volumeMounts:
+    - name: data
+      mountPath: /mnt/data

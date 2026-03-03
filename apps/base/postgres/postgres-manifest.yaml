@@ -64,7 +64,7 @@ spec:
       # Scheduling is now driven by the nodeAffinity of the PersistentVolume.
       containers:
       - name: postgres
-        image: postgres:15
+        image: postgres:18
         ports:
         - containerPort: 5432
         env:
@@ -79,6 +79,8 @@ spec:
         # Default database
         - name: POSTGRES_DB
           value: "postgres"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/18/main"
         livenessProbe:
           exec:
             command:
