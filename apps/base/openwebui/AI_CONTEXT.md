@@ -9,7 +9,7 @@ Primary AI chat interface. Connects to local LLM backends, supports RAG via vect
 ## Architecture
 
 - **Type:** Deployment
-- **Image:** `ghcr.io/open-webui/open-webui:v0.8.5`
+- **Image:** `ghcr.io/open-webui/open-webui:v0.8.8`
 - **Namespace:** `apps`
 - **Port:** 8080
 - **Node:** x86 only (`nodeAffinity: NotIn arm, arm64`)

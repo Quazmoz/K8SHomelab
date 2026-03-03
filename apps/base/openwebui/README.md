@@ -13,7 +13,7 @@ OpenWebUI is the primary AI chat interface for the homelab. It connects to LLM b
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `ghcr.io/open-webui/open-webui:v0.8.5` |
+| **Image** | `ghcr.io/open-webui/open-webui:v0.8.8` |
 | **Port** | 8080 |
 | **Storage** | 5Gi PVC (`local-storage`) |
 | **Node** | x86 only (NotIn arm/arm64) |
