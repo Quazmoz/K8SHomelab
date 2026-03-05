@@ -8,12 +8,12 @@ This guide walks you through manually registering the homelab MCP servers inside
 |---|---|
 | **Context Forge URL** | `http://mcp.k8s.local` |
 | **Admin Login** | `admin@k8s.local` / *(your password)* |
-| **Backend Pods Running** | All three MCP server pods must be healthy before registering |
+| **Backend Pods Running** | All four MCP server pods must be healthy before registering |
 
 Verify backend pods are running:
 
 ```bash
-kubectl get pods -n apps | grep -E "azure-mcp-go|groupme-backend|clickup-mcp-server"
+kubectl get pods -n apps | grep -E "azure-mcp-go|groupme-backend|clickup-mcp-server|ansible-mcp-server"
 ```
 
 ---
@@ -76,11 +76,24 @@ Register each server below using the exact values. After filling in each form, c
 | **Authentication Type** | `None` |
 | **Passthrough Headers** | *(leave empty)* |
 
+### Server 4: Ansible MCP
+
+| Field | Value |
+|---|---|
+| **MCP Server Name** | `ansible-mcp-server` |
+| **MCP Server URL** | `http://ansible-mcp-server.apps.svc.cluster.local:5000/mcp` |
+| **Description** | `AWX/Ansible Automation Controller - 35+ tools for managing projects, inventories, jobs, workflows, hosts, and more` |
+| **Tags** | `ansible, awx, automation, infrastructure` |
+| **Visibility** | `Public` |
+| **Transport Type** | `Streamable HTTP` |
+| **Authentication Type** | `None` |
+| **Passthrough Headers** | *(leave empty, or `Authorization, X-Tenant-Id, X-Trace-Id` if using Passthrough auth mode instead of static token)* |
+
 ---
 
 ## Step 3 — Verify Registration
 
-After registering all three servers, the **MCP Servers** page should show them in the list. Context Forge will automatically discover the available tools from each backend.
+After registering all four servers, the **MCP Servers** page should show them in the list. Context Forge will automatically discover the available tools from each backend.
 
 You can verify connectivity by clicking on each server card — a green status indicator means the backend is reachable.
 
@@ -109,6 +122,14 @@ Virtual Servers let you **bundle tools from one or more backends** into a single
 | **Name** | `clickup mcp` |
 | **Description** | `ClickUp task and project management tools` |
 | **Backend Servers** | Select `clickup-native` |
+
+### Virtual Server: Ansible MCP
+
+| Field | Value |
+|---|---|
+| **Name** | `ansible mcp` |
+| **Description** | `Ansible Automation Controller (AWX) tools` |
+| **Backend Servers** | Select `ansible-mcp-server` |
 
 ---
 
@@ -139,15 +160,16 @@ These are pre-configured to point at Context Forge's SSE endpoints. Once the vir
                     │                             │
                     │  Virtual Servers:           │
                     │  ├── azure mcp             │
-                    │  └── clickup mcp           │
-                    └──┬──────────┬──────────┬───┘
-                       │          │          │
-            ┌──────────▼┐  ┌─────▼─────┐  ┌─▼──────────┐
-            │ azure-go  │  │ groupme   │  │  clickup   │
-            │  (HTTP)   │  │(Streamable│  │   (HTTP)   │
-            │ :8080/mcp │  │  HTTP)    │  │ :5000/mcp  │
-            └───────────┘  │ :5000/mcp │  └────────────┘
-                           └───────────┘
+                    │  ├── clickup mcp           │
+                    │  └── ansible mcp           │
+                    └─┬─────────┬──────────┬──────────┬─┘
+                      │         │          │          │
+           ┌──────────▼┐ ┌──────▼────┐ ┌────▼─────┐ ┌──▼───────────┐
+           │ azure-go  │ │ groupme   │ │ clickup  │ │ ansible-mcp  │
+           │  (HTTP)   │ │(Streamable│ │  (HTTP)  │ │ (Streamable  │
+           │ :8080/mcp │ │  HTTP)    │ │ :5000/mcp│ │ HTTP)        │
+           └───────────┘ │ :5000/mcp │ └──────────┘ │ :5000/mcp    │
+                         └───────────┘              └──────────────┘
 ```
 
 ---
@@ -183,4 +205,5 @@ Delete the server from the MCP Servers page in the UI, then re-add it with the c
 | Azure MCP Go | `http://azure-mcp-go.apps.svc.cluster.local:8080/mcp` | HTTP |
 | GroupMe | `http://groupme-backend.apps.svc.cluster.local:5000/mcp` | Streamable HTTP |
 | ClickUp | `http://clickup-mcp-server.apps.svc.cluster.local:5000/mcp` | HTTP |
+| Ansible MCP | `http://ansible-mcp-server.apps.svc.cluster.local:5000/mcp` | Streamable HTTP |
 | Context Forge | `http://context-forge.apps.svc.cluster.local:4444` | — |
