@@ -107,7 +107,7 @@ spec:
         
         # Platform Admin
         - name: PLATFORM_ADMIN_EMAIL
-          value: "admin@localhost"
+          value: "admin@k8s.local"
         - name: PLATFORM_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
