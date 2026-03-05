@@ -1,0 +1,13 @@
+{
+    "type": "mcp",
+    "url": "http://context-forge.apps.svc.cluster.local:4444/servers/c2e8d909fa38437c8998329c03238842/mcp",
+    "spec_type": "url",
+    "path": "openapi.json",
+    "auth_type": "none",
+    "key": "",
+    "info": {
+        "id": "Ansible MCP",
+        "name": "Ansible",
+        "description": "Ansible/AWX MCP server integration"
+    }
+}
