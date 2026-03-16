@@ -6,8 +6,8 @@ metadata:
 data:
   N8N_PORT: "5678"
   N8N_PROTOCOL: "http"
-  N8N_HOST: "n8n.k8s.local"
-  N8N_EDITOR_BASE_URL: "http://n8n.k8s.local"
+  N8N_HOST: "localhost"
+  N8N_EDITOR_BASE_URL: "http://localhost:5678"
   WEBHOOK_URL: "http://localhost:5678"
   NODE_ENV: "production"
   TZ: "America/New_York"
