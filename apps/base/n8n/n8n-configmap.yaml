@@ -6,9 +6,9 @@ metadata:
 data:
   N8N_PORT: "5678"
   N8N_PROTOCOL: "https"
-  N8N_HOST: "n8n.k8s.local"
-  N8N_EDITOR_BASE_URL: "https://n8n.k8s.local"
-  WEBHOOK_URL: "https://n8n.k8s.local"
+  N8N_HOST: "n8n.192.168.1.221.nip.io"
+  N8N_EDITOR_BASE_URL: "https://n8n.192.168.1.221.nip.io"
+  WEBHOOK_URL: "https://n8n.192.168.1.221.nip.io"
   NODE_ENV: "production"
   TZ: "America/New_York"
   N8N_SECURE_COOKIE: "false"  # Add this line to disable secure cookies
