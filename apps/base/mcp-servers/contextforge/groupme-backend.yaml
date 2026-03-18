@@ -22,7 +22,7 @@ spec:
       containers:
       - name: groupme-backend
         image: quazmoz/quazmoz:groupme
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
           name: http
