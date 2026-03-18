@@ -29,7 +29,7 @@ resources:
 #  - ./librechat # Temporarily disabled to save RAM
   - ./alloy
   - ./mongo-express
-  - ./jupyter
+#  - ./jupyter # Temporarily disabled
   - ./phoenix  # LLM Observability (replaces Langfuse)
 #  - ./coder # Temporarily disabled to save RAM
   - ./backups  # Daily database backups to SD card
