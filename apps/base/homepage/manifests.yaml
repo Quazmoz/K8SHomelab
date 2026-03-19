@@ -79,12 +79,12 @@ data:
             description: Alt LLM Interface
             siteMonitor: http://librechat.apps.svc.cluster.local:3080
             statusStyle: dot
-#        - Jupyter:
-#            href: http://jupyter.k8s.local
-#            icon: si-jupyter
-#            description: Python Notebooks
-#            siteMonitor: http://jupyter-svc.apps.svc.cluster.local:8888
-#            statusStyle: dot
+    #    - Jupyter:
+    #        href: http://jupyter.k8s.local
+    #        icon: si-jupyter
+    #        description: Python Notebooks
+    #        siteMonitor: http://jupyter-svc.apps.svc.cluster.local:8888
+    #        statusStyle: dot
         - Phoenix:
             href: http://phoenix.k8s.local
             icon: mdi-chart-timeline-variant
