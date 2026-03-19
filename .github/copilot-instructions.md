@@ -4,6 +4,22 @@
 
 ---
 
+## Available Skills
+
+Domain-specific skills are available in `.github/skills/` for specialized tasks:
+
+| Skill | When to Use |
+|-------|-------------|
+| `k8s-deployment` | Adding/modifying apps, writing manifests, full deployment lifecycle |
+| `flux-gitops` | Flux reconciliation, SOPS secrets, HelmRelease debugging, GitOps workflow |
+| `homelab-troubleshooting` | Pod crashes, networking issues, DNS failures, Calico/WireGuard problems |
+| `mcp-integration` | Adding MCP servers, Context Forge/MCPO setup, OpenWebUI tool connections |
+| `homelab-storage` | PersistentVolumes, PVCs, storage classes, backup/restore operations |
+
+Each app directory also contains `AI_CONTEXT.md` with deployment-specific context and the rule: **if you modify files in a deployment, update its AI_CONTEXT.md and README.md**.
+
+---
+
 ## Prerequisites
 
 | Tool | Purpose | Verification |
