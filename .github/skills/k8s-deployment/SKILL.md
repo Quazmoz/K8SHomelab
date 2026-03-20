@@ -1,6 +1,6 @@
 ---
 name: k8s-deployment
-description: "Create, modify, or debug Kubernetes deployments in the K8S homelab. USE FOR: adding new apps, writing deployment/service/ingress/pvc manifests, configuring health checks, setting resource limits, adding to kustomization.yaml, updating Homepage dashboard. Covers the full deployment lifecycle from manifests to GitOps reconciliation."
+description: "Create, modify, or debug Kubernetes deployments in the K8S homelab. USE FOR: adding new apps, writing deployment/service/ingress/pvc manifests, configuring health checks, setting resource limits, adding to kustomization.yaml, updating Homepage dashboard, configuring OAuth/webhooks for apps like n8n, enabling Authentik SSO protection. Covers the full deployment lifecycle from manifests to GitOps reconciliation. Use this skill whenever the user wants to deploy anything new, change an existing app's config, upgrade an image version, or wire up a new service."
 ---
 
 # K8S Homelab Deployment Skill
@@ -12,6 +12,7 @@ description: "Create, modify, or debug Kubernetes deployments in the K8S homelab
 - Creating Kubernetes manifests (Deployment, Service, Ingress, PVC, ConfigMap)
 - Debugging pod scheduling, CrashLoopBackOff, or ImagePullBackOff issues
 - Enabling/disabling apps in the main kustomization
+- Setting up OAuth redirects, webhooks, or external-facing URLs
 
 ## Project Conventions
 
@@ -127,6 +128,16 @@ spec:
             claimName: <app>-pvc
 ```
 
+**For apps on orangepi6plus (control plane)** — replace `nodeSelector` with:
+```yaml
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
+```
+
 ### Step 4: Write the Service
 
 ```yaml
@@ -175,7 +186,7 @@ spec:
                   number: <port>
 ```
 
-**For WebSocket apps** (Jupyter, OpenWebUI), add these annotations:
+**For WebSocket apps** (Jupyter, OpenWebUI, n8n), add these annotations:
 
 ```yaml
 annotations:
@@ -288,6 +299,19 @@ spec:
   url: https://<helm-repo-url>/
 ```
 
+## App-Specific Considerations
+
+### Apps that need OAuth/external callbacks (n8n, Authentik)
+
+For apps that need OAuth to work (e.g., n8n connecting to Google), the callback URL must be reachable by the external OAuth provider. Since `*.k8s.local` is only available on the local network:
+- Google OAuth requires HTTPS and a publicly-resolvable domain — use a tunnel or expose via WireGuard if needed
+- Set the `WEBHOOK_URL` or equivalent env var to the correct base URL the app will use for callbacks
+- For n8n specifically: `N8N_EDITOR_BASE_URL` and `WEBHOOK_URL` must match the ingress host
+
+### Apps that need persistent sessions (Authentik, n8n)
+
+Set `strategy.type: Recreate` and ensure a PVC is mounted for session/data storage. Rolling updates with RWO volumes will deadlock.
+
 ## Resource Sizing Guide
 
 | Workload Type | Memory Request | Memory Limit | CPU Request | CPU Limit |
@@ -338,4 +362,8 @@ kubectl get pvc -n apps | grep <app>
 # Ingress not routing
 kubectl get ingress -n apps <app>-ingress
 kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx --tail=20
+
+# Check resource usage (is node overloaded?)
+kubectl top nodes
+kubectl top pods -n apps --sort-by=memory
 ```

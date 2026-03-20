@@ -1,6 +1,6 @@
 ---
 name: flux-gitops
-description: "Manage Flux CD GitOps workflows in the K8S homelab. USE FOR: reconciling deployments, debugging HelmRelease failures, managing Flux sources, SOPS secret encryption/decryption, understanding the GitOps pipeline, force-syncing after git push, checking Flux status, managing encrypted secrets with AGE/SOPS."
+description: "Manage Flux CD GitOps workflows in the K8S homelab. USE FOR: reconciling deployments, debugging HelmRelease failures, managing Flux sources, SOPS secret encryption/decryption, understanding the GitOps pipeline, force-syncing after git push, checking Flux status, managing encrypted secrets with AGE/SOPS. Trigger this whenever the user pushes to git and nothing changes, a HelmRelease is stuck or failing, secrets need encrypting/decrypting, or any Flux-related term comes up (reconcile, kustomization, helmrelease, source, sops, age key, gitops)."
 ---
 
 # Flux CD GitOps Skill
@@ -13,6 +13,7 @@ description: "Manage Flux CD GitOps workflows in the K8S homelab. USE FOR: recon
 - Working with SOPS-encrypted secrets
 - Understanding why changes aren't applying
 - Checking overall Flux health
+- Unsticking a failed HelmRelease (upgrade retries exhausted, etc.)
 
 ## Architecture
 
@@ -127,6 +128,14 @@ sops --encrypt --age <AGE_PUBLIC_KEY> my-secret.yaml > my-secret.secret.enc.yaml
 rm my-secret.yaml
 ```
 
+### Decrypting to Inspect
+
+```bash
+# Decrypt in-place (requires AGE private key in env)
+export SOPS_AGE_KEY_FILE=~/.config/sops/age/keys.txt
+sops --decrypt my-secret.secret.enc.yaml
+```
+
 ### Creating a Template
 
 Always create a `.yaml.template` alongside encrypted secrets:
@@ -175,8 +184,29 @@ kubectl logs -n flux-system deploy/kustomize-controller --tail=50
 |---------|-------|-----|
 | `chart pull error` | Repo URL changed or down | `flux reconcile source helm <repo> -n flux-system` |
 | `values validation error` | Bad Helm values | Check `helm-release.yaml` values against chart docs |
-| `upgrade retries exhausted` | Previous failed install | `flux suspend helmrelease <name> -n apps` then `flux resume` |
+| `upgrade retries exhausted` | Previous failed install | Suspend → edit → resume (see below) |
 | `dependency not ready` | Missing CRD or resource | Check dependency ordering in kustomization |
+
+### Unsticking a HelmRelease ("upgrade retries exhausted")
+
+When a HelmRelease is stuck with "upgrade retries exhausted", Flux won't retry until you reset it:
+
+```bash
+# Option 1: Suspend, fix the values, then resume
+flux suspend helmrelease <name> -n apps
+# ... fix the issue in git and push ...
+flux resume helmrelease <name> -n apps
+
+# Option 2: Force reset the release state (use if values are already correct)
+flux suspend helmrelease <name> -n apps
+kubectl patch helmrelease <name> -n apps --type=merge \
+  -p '{"spec":{"install":{"remediation":{"retries":3}}}}'
+flux resume helmrelease <name> -n apps
+
+# Option 3: Nuclear — delete the HelmRelease and let Flux recreate it
+kubectl delete helmrelease <name> -n apps
+flux reconcile kustomization apps --with-source
+```
 
 ## Debugging Kustomization Failures
 
@@ -202,6 +232,7 @@ kubectl kustomize apps/base/<app> 2>&1
 | `resource not found` | File listed but missing | Check kustomization.yaml resource list |
 | `prune stalled` | Finalizer blocking deletion | `kubectl patch <resource> -p '{"metadata":{"finalizers":null}}'` |
 | `decryption failed` | SOPS key issue | Check `sops-age` secret in flux-system |
+| `no such file or directory` | Wrong path in resources | Verify file exists and path is relative |
 
 ## Enabling/Disabling Apps
 
@@ -234,4 +265,13 @@ Comment out with a reason:
 | GitRepository | `source.toolkit.fluxcd.io/v1` |
 | Kustomize (app-level) | `kustomize.config.k8s.io/v1beta1` |
 
-**Critical:** Do NOT use `v2beta1` for HelmRelease or `v1beta2` for Flux Kustomization — these are deprecated.
+**Critical:** Do NOT use `v2beta1` for HelmRelease or `v1beta2` for Flux Kustomization — these are deprecated and will cause reconciliation failures silently.
+
+## Checking Why Nothing Updated After a Push
+
+If `flux reconcile kustomization apps --with-source` completes but pods don't update:
+
+1. Check if Flux even sees the change: `flux get kustomization apps` — look for "Applied revision"
+2. Check if the image tag changed in the manifest (Flux only applies changes, it won't re-pull the same tag)
+3. For `latest` tag updates: you need to either change the tag to a specific version, or manually rollout: `kubectl rollout restart deployment/<name> -n apps`
+4. Check if the HelmRelease chart version pin is blocking: `flux get helmreleases -A`

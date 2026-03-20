@@ -1,6 +1,6 @@
 ---
 name: homelab-troubleshooting
-description: "Diagnose and fix issues in the K8S homelab cluster. USE FOR: pod crashes, CrashLoopBackOff, networking issues, DNS failures, Calico/VXLAN problems, WireGuard tunnel issues, PVC binding failures, node scheduling problems, Flux reconciliation errors, service unreachable, ingress not routing, Oracle VM connectivity."
+description: "Diagnose and fix issues in the K8S homelab cluster. USE FOR: pod crashes, CrashLoopBackOff, networking issues, DNS failures, Calico/VXLAN problems, WireGuard tunnel issues, PVC binding failures, node scheduling problems, Flux reconciliation errors, service unreachable, ingress not routing, Oracle VM connectivity, Authentik SSO issues, MetalLB problems, resource exhaustion. Use this skill for ANY 'something is broken' scenario, even if you're not sure what category the problem falls into — it has the full diagnostic decision tree."
 ---
 
 # Homelab Troubleshooting Skill
@@ -12,7 +12,9 @@ description: "Diagnose and fix issues in the K8S homelab cluster. USE FOR: pod c
 - Network connectivity issues (cross-node, WireGuard, Calico)
 - PVC stuck in Pending state
 - Flux not applying changes
-- Any "it's broken" scenario
+- Authentik SSO/OAuth issues
+- MetalLB load balancer problems
+- Any "it's broken" scenario — start here
 
 ## Cluster Architecture Quick Reference
 
@@ -28,6 +30,9 @@ Service CIDR: 10.96.0.0/12
 MetalLB Pool: 192.168.1.221-250
 Ingress IP: 192.168.1.221
 ```
+
+**Key apps on orangepi6plus (control plane):** AdGuard Home, llama-cpp, freshrss, backup jobs  
+**Key apps on quinn (worker):** Everything else (databases, OpenWebUI, n8n, Prometheus, etc.)
 
 ## Diagnostic Decision Tree
 
@@ -61,6 +66,14 @@ kubectl get events -n apps --field-selector involvedObject.name=<pod>
 | PVC not bound | See PVC Troubleshooting below |
 | Toleration missing | Add control-plane toleration for orangepi6plus pods |
 
+**Control-plane toleration** (required for pods on `orangepi6plus`):
+```yaml
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+```
+
 ### Pod in CrashLoopBackOff
 
 ```bash
@@ -74,6 +87,7 @@ kubectl describe pod -n apps <pod>
 | Database not reachable | Check PostgreSQL/MongoDB/Redis pods are running |
 | Permission denied on volume | Check PVC mount path ownership, use `securityContext.fsGroup` |
 | Config error | Compare ConfigMap with expected format |
+| Port conflict | Check if another pod is using the same port |
 
 ### Pod in ImagePullBackOff
 
@@ -86,6 +100,7 @@ kubectl describe pod -n apps <pod> | grep -A5 "Failed"
 | Wrong image tag | Fix image name/tag in deployment |
 | Rate limited (Docker Hub) | Wait or use alternative registry |
 | Private registry | Add imagePullSecrets |
+| Network issue | Check DNS from node: `ssh <node> "curl -I https://registry-1.docker.io"` |
 
 ## PVC Troubleshooting
 
@@ -200,6 +215,51 @@ curl -v -H "Host: <app>.k8s.local" http://192.168.1.221
 | Wrong backend service/port | Check Ingress spec matches Service name and port |
 | NGINX controller down | `kubectl rollout restart deployment -n ingress-nginx ingress-nginx-controller` |
 | SSL redirect loop | Remove tls section or add `ssl-redirect: "false"` annotation |
+| 413 Request Entity Too Large | Add `nginx.ingress.kubernetes.io/proxy-body-size: "50m"` annotation |
+
+## Authentik / SSO Troubleshooting
+
+**Symptom:** Getting 401/403 after Authentik protects an ingress, or OAuth redirect fails.
+
+```bash
+# Check Authentik server is running
+kubectl get pods -n apps -l app=authentik
+
+# Check outpost is healthy
+kubectl logs -n apps -l app.kubernetes.io/name=authentik -c proxy --tail=50
+
+# Test auth endpoint
+curl -sv http://authentik-server.apps.svc.cluster.local:9000/outpost.goauthentik.io/auth/nginx
+```
+
+| Cause | Fix |
+|-------|-----|
+| Authentik pod down | Restart: `kubectl rollout restart deployment authentik-server -n apps` |
+| OAuth redirect URI mismatch | Check provider redirect URIs in Authentik admin UI |
+| Session expired | User needs to re-auth at `auth.k8s.local` |
+| Forward auth annotation wrong | Verify `auth-url` and `auth-signin` annotation values in ingress |
+
+## MetalLB Troubleshooting
+
+**Symptom:** LoadBalancer service stuck in `<pending>` for external IP.
+
+```bash
+# Check MetalLB pods
+kubectl get pods -n metallb-system
+
+# Check IP pool config
+kubectl get ipaddresspools -n metallb-system
+kubectl get l2advertisements -n metallb-system
+
+# Check service
+kubectl describe svc <service-name> -n <namespace>
+```
+
+| Cause | Fix |
+|-------|-----|
+| MetalLB speaker crashed | Restart: `kubectl rollout restart daemonset speaker -n metallb-system` |
+| IP pool exhausted | Add more IPs to IPAddressPool |
+| L2 advertisement missing | Ensure L2Advertisement exists referencing the pool |
 
 ## Service Troubleshooting
 
@@ -246,17 +306,22 @@ If multiple things are broken, follow this order:
    kubectl run -it --rm dns-test --image=busybox --restart=Never -- nslookup kubernetes.default
    ```
 
-6. **Flux reconcile** — Re-sync all apps
+6. **MetalLB** — Restore load balancer IPs
+   ```bash
+   kubectl rollout restart daemonset speaker -n metallb-system
+   ```
+
+7. **Flux reconcile** — Re-sync all apps
    ```bash
    flux reconcile kustomization apps --with-source
    flux get all -A
    ```
 
-7. **Check critical services first:**
+8. **Check critical services first:**
    - PostgreSQL (`kubectl get pods -n apps -l app=postgres`)
    - Redis (`kubectl get pods -n apps -l app=redis`)
    - Ingress NGINX (`kubectl get pods -n ingress-nginx`)
-   - MetalLB (`kubectl get pods -n metallb-system`)
+   - Authentik (`kubectl get pods -n apps -l app.kubernetes.io/name=authentik`)
 
 ## Quick Health Check Script
 
@@ -276,6 +341,9 @@ flux get helmreleases -A
 echo -e "\n=== PVC Issues ==="
 kubectl get pvc -A | grep -v Bound
 
-echo -e "\n=== Recent Events ==="
-kubectl get events -A --sort-by='.lastTimestamp' | tail -20
+echo -e "\n=== MetalLB ==="
+kubectl get pods -n metallb-system
+
+echo -e "\n=== Recent Events (Warnings) ==="
+kubectl get events -A --field-selector type=Warning --sort-by='.lastTimestamp' | tail -20
 ```

@@ -1,6 +1,6 @@
 ---
 name: homelab-storage
-description: "Manage persistent storage in the K8S homelab. USE FOR: adding PersistentVolumes, creating PVCs, migrating data between nodes, understanding storage classes, debugging PVC binding issues, expanding storage, backup/restore operations, SD card vs SSD storage decisions."
+description: "Manage persistent storage in the K8S homelab. USE FOR: adding PersistentVolumes, creating PVCs, migrating data between nodes, understanding storage classes, debugging PVC binding issues, expanding storage, backup/restore operations, SD card vs SSD storage decisions. Use this skill whenever a new app needs storage, a PVC is stuck in Pending, the user asks about where to put data, or any mention of PV, PVC, local-storage, slow-storage, storage.yaml, or backup jobs."
 ---
 
 # Homelab Storage Skill
@@ -44,7 +44,7 @@ orangepi6plus (Control Plane)
 ├── /mnt/k8s-data/          ← SSD/eMMC (local-storage class)
 │   ├── llama-cpp-models/    50Gi
 │   ├── adguard-home/        1Gi
-│   └── freshrss/            2Gi  (disabled)
+│   └── freshrss/            2Gi
 └── /mnt/backup/            ← SD Card (slow-storage class)
     ├── postgres-backup/     20Gi
     └── mongodb-backup/      20Gi
@@ -63,7 +63,7 @@ Both use `Retain` reclaim policy — PV data persists even after PVC deletion.
 
 ### Step 1: Add PV to storage.yaml
 
-Edit `apps/base/local-storage/storage.yaml` and add:
+Edit `apps/base/local-storage/storage.yaml` and add a new `---` separated block:
 
 ```yaml
 ---
@@ -91,6 +91,8 @@ spec:
                 - quinn-hpprobook430g6
 ```
 
+**For orangepi6plus storage** (backups, models, adguard), change the `path` and node value accordingly.
+
 ### Step 2: Create PVC in app directory
 
 Create `apps/base/<app>/<app>-pvc.yaml`:
@@ -116,6 +118,9 @@ spec:
 
 ```bash
 ssh quinn-hpprobook430g6 "sudo mkdir -p /mnt/k8s-data/<app> && sudo chmod 777 /mnt/k8s-data/<app>"
+
+# For orangepi6plus:
+ssh orangepi6plus "sudo mkdir -p /mnt/k8s-data/<app> && sudo chmod 777 /mnt/k8s-data/<app>"
 ```
 
 ### Step 4: Add PVC to app kustomization
@@ -160,7 +165,7 @@ This prevents two pods trying to mount the same RWO volume during rolling update
 ## Sizing Guidelines
 
 | Workload Type | Recommended Size | Rationale |
-|---------------|-----------------|-----------|
+|---------------|-----------------|-----------| 
 | Config-only (Homepage) | 1Gi | Just config files |
 | Small app (pgAdmin) | No PVC | Stateless |
 | Standard app (n8n) | 5-15Gi | Workflows, uploads |
@@ -180,6 +185,7 @@ This prevents two pods trying to mount the same RWO volume during rolling update
 | Backup storage | `orangepi6plus` | Off-worker-node redundancy |
 | LLM model storage | `orangepi6plus` | Runs Ollama inference there |
 | Cold/archival data | `orangepi6plus` | SD card slow-storage |
+| DNS/always-on | `orangepi6plus` | Separate from worker churn |
 | Most workloads | `quinn-hpprobook430g6` | Default choice |
 
 ## Backup Architecture
@@ -235,20 +241,21 @@ kubectl get nodes --show-labels | grep hostname
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| PVC Pending, no events | No matching PV | Add PV to `storage.yaml` |
+| PVC Pending, no events | No matching PV | Add PV to `apps/base/local-storage/storage.yaml` |
 | PVC Pending, "node affinity" | Pod scheduled on wrong node | Add `nodeSelector` to deployment |
 | PV Available but PVC Pending | `claimRef` mismatch | Check PV `claimRef.name` matches PVC name |
 | PV Released (not Available) | Previous PVC deleted | `kubectl patch pv <name> -p '{"spec":{"claimRef":null}}'` |
 | Permission denied in pod | Directory ownership | `ssh <node> "sudo chown -R 1000:1000 /mnt/k8s-data/<app>"` |
+| PVC size mismatch | PV too small | PV must be >= PVC request size |
 
 ## Expanding Storage
 
-1. **Update PV** in `storage.yaml` (increase `capacity.storage`)
+1. **Update PV** in `apps/base/local-storage/storage.yaml` (increase `capacity.storage`)
 2. **Update PVC** (increase `resources.requests.storage`)
 3. **Expand physical directory** if on a separate partition
 4. **Restart pod** to pick up the change
 
-**Note:** local-path PVs don't enforce size limits — the size is advisory. But keep it accurate for documentation.
+**Note:** local-path PVs don't enforce size limits — the size is advisory. But keep it accurate for documentation and future capacity planning.
 
 ## Documentation Requirement
 
@@ -257,3 +264,4 @@ When adding or modifying storage, update:
 2. `apps/base/local-storage/README.md` — PV table
 3. `apps/base/local-storage/AI_CONTEXT.md` — PV details
 4. The app's own `README.md` and `AI_CONTEXT.md` — storage section
+5. The storage architecture diagram in this skill (if the change is permanent)
