@@ -25,15 +25,15 @@ resources:
 #  - ./freshrss # Temporarily disabled to save RAM
   - ./qdrant
   - ./ansible
-  - ./mongodb
+#  - ./mongodb  # Temporarily disabled to free resources for OpenClaw
 #  - ./librechat # Temporarily disabled to save RAM
   - ./alloy
-  - ./mongo-express
+#  - ./mongo-express  # Temporarily disabled (depends on MongoDB)
 #  - ./jupyter # Temporarily disabled
   - ./phoenix  # LLM Observability (replaces Langfuse)
 #  - ./coder # Temporarily disabled to save RAM
   - ./backups  # Daily database backups to SD card
-  - ./llama-cpp  # llama.cpp LLM backend for OpenWebUI
+#  - ./llama-cpp  # Temporarily disabled to free resources for OpenClaw
   - ./dns
 
 
