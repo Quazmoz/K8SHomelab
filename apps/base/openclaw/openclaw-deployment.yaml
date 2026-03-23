@@ -44,7 +44,7 @@ spec:
       containers:
       - name: openclaw
         image: ghcr.io/openclaw/openclaw:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 18789
           name: gateway
