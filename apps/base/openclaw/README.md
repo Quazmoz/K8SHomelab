@@ -30,6 +30,10 @@ ssh orangepi6plus "sudo mkdir -p /mnt/k8s-data/openclaw && sudo chown 1000:1000 
 
 ### 2. Configure credentials
 Edit `openclaw-credentials.secret.yaml` with your values:
+
+> This is a local plaintext working file and is gitignored (`*.secret.yaml`).
+> If missing, recreate it from the schema in this README or from the encrypted file's structure.
+
 ```bash
 # Generate a gateway token
 openssl rand -hex 32
