@@ -14,10 +14,14 @@ metadata:
       if ($arg_token != "") {
         set $oc_auth "Bearer $arg_token";
       }
+      # Clear Bearer header for WS path (gateway accepts ?token= natively for WS)
+      if ($uri ~ "^/__openclaw__/ws$") {
+        set $oc_auth "";
+      }
     nginx.ingress.kubernetes.io/configuration-snippet: |
       proxy_set_header Authorization $oc_auth;
       # Rewrite /__openclaw__/ws to / for the WebSocket gateway endpoint
-      rewrite ^/__openclaw__/ws$ / break;
+      rewrite ^/__openclaw__/ws$ /?token=$arg_token break;
 spec:
   ingressClassName: nginx
   rules:
