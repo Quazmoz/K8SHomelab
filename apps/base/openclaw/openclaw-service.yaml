@@ -1,7 +1,6 @@
 ---
 # OpenClaw Service
-# Gateway (WebSocket): 18789
-# Canvas HTTP: 18793
+# Gateway (WebSocket + Canvas HTTP) via socat sidecar on 18790
 apiVersion: v1
 kind: Service
 metadata:
@@ -17,9 +16,5 @@ spec:
   ports:
   - name: gateway
     port: 18789
-    targetPort: 18790
-    protocol: TCP
-  - name: canvas
-    port: 18793
     targetPort: 18790
     protocol: TCP

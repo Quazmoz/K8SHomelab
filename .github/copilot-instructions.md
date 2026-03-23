@@ -67,6 +67,7 @@ Each app directory also contains `AI_CONTEXT.md` with deployment-specific contex
 | | Jupyter | `http://jupyter.k8s.local` | `apps/base/jupyter/` |
 | | Phoenix | `http://phoenix.k8s.local` | `apps/base/phoenix/` |
 | | LlamaCpp | internal (ollama API) | `apps/base/llama-cpp/` |
+| | OpenClaw | `http://openclaw.k8s.local` | `apps/base/openclaw/` |
 | **MCP Tools** | Context Forge | `http://mcp.k8s.local` | `apps/base/mcp-servers/contextforge/` |
 | | GroupMe MCP | `http://groupme.k8s.local` | `apps/base/mcp-servers/contextforge/` |
 | | ClickUp MCP | internal (SSE) | `apps/base/mcp-servers/contextforge/` |
@@ -161,6 +162,7 @@ K8SHomelab/
 │       ├── ansible-mcp/          # Ansible MCP Server
 │       └── legacy/               # Disabled/reference resources
 │   ├── dns/                      # AdGuard Home
+│   ├── openclaw/                 # OpenClaw autonomous AI agent
 │   ├── backups/                  # Database backups
 ├── clusters/my-homelab/          # Flux kustomizations
 │   └── apps.yaml                 # Points to apps/base
@@ -273,6 +275,7 @@ K8SHomelab/
 | Workload | Allowed Nodes | Reason |
 |----------|---------------|--------|
 | Prometheus, Grafana, Loki | quinn-hpprobook430g6 | Requires local storage |
+| OpenClaw, AdGuard Home, LlamaCpp | orangepi6plus | ARM64 control plane |
 | Most workloads | quinn-hpprobook430g6 | Storage availability |
 
 ---
@@ -349,7 +352,7 @@ flux reconcile helmrelease <name> -n apps --with-source
 Add to your local machine's hosts file:
 
 ```
-192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local
+192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local openclaw.k8s.local
 ```
 
 ---

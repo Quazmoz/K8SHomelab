@@ -1,5 +1,10 @@
 local.txt
 
+# Debug/env dump files — may contain secrets from kubectl exec
+openclaw_env.txt
+openclaw_debug_logs.txt
+openclaw_logs.txt
+
 # Kubernetes Secrets - NEVER commit real credentials
 apps/base/mcp-servers/mcp-gateway-secrets.yaml
 
