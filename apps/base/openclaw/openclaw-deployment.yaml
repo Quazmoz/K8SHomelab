@@ -64,6 +64,13 @@ spec:
               name: openclaw-credentials
               key: OPENAI_API_KEY
               optional: false
+        # Native Ollama provider auth (reuse the same key as OPENAI-compatible mode)
+        - name: OLLAMA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: OPENAI_API_KEY
+              optional: false
         # Fallback: OpenRouter (used when Ollama Cloud limits are hit)
         - name: OPENROUTER_API_KEY
           valueFrom:

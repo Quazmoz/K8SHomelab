@@ -67,6 +67,22 @@ kubectl port-forward -n apps svc/openclaw 18789:18789
 # Then connect to ws://localhost:18789
 ```
 
+## Ollama Cloud Setup Notes
+
+- The deployment exports both `OPENAI_API_KEY` and `OLLAMA_API_KEY` from the same secret-backed key so OpenClaw can use either OpenAI-compatible or native Ollama provider flows.
+- For native Ollama Cloud provider mode inside the running pod:
+
+```bash
+kubectl -n apps exec deploy/openclaw -c openclaw -- \
+	openclaw config set models.providers.ollama '{"api":"ollama","baseUrl":"https://ollama.com","models":[]}' --strict-json
+```
+
+- Restart OpenClaw after changing provider config:
+
+```bash
+kubectl -n apps rollout restart deploy/openclaw
+```
+
 ## Troubleshooting
 
 ```bash
