@@ -53,7 +53,7 @@ spec:
         env:
         # Gateway binding — bind to all interfaces so K8s service can reach it
         - name: OPENCLAW_GATEWAY_BIND
-          value: "lan"
+          value: "0.0.0.0"
         # State directory inside the container
         - name: OPENCLAW_STATE_DIR
           value: "/home/user/.openclaw"
