@@ -94,7 +94,7 @@ spec:
             memory: "1Gi"
             cpu: "200m"
           limits:
-            memory: "4Gi"
+            memory: "6Gi"
             cpu: "2000m"
         # Probes check 127.0.0.1 directly inside the pod
         livenessProbe:

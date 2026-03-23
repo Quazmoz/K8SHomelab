@@ -4,5 +4,6 @@ resources:
   - openclaw-deployment.yaml
   - openclaw-service.yaml
   - openclaw-pvc.yaml
+  - openclaw-ingress.yaml
   # Uncomment after SOPS encryption:
   - openclaw-credentials.secret.enc.yaml

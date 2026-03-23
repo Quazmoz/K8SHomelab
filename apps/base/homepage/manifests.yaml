@@ -92,6 +92,7 @@ data:
             siteMonitor: http://phoenix.apps.svc.cluster.local:6006
             statusStyle: dot
         - OpenClaw:
+            href: http://openclaw.k8s.local/__openclaw__/canvas/
             icon: mdi-robot-outline
             description: Autonomous AI Agent
             siteMonitor: http://openclaw.apps.svc.cluster.local:18789/__openclaw__/canvas/
@@ -409,7 +410,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v27-openclaw-addition"
+        checksum/config: "v28-openclaw-href"
     spec:
       serviceAccountName: homepage
       nodeSelector:
