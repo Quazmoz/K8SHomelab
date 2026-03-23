@@ -11,6 +11,11 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
     nginx.ingress.kubernetes.io/proxy-set-headers: "Upgrade,Connection"
     nginx.ingress.kubernetes.io/configuration-snippet: |
+      # Support legacy URL auth: ?token=<value> -> Authorization: Bearer <value>
+      set $oc_token $arg_token;
+      if ($oc_token != "") {
+        proxy_set_header Authorization "Bearer $oc_token";
+      }
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection "upgrade";
 spec:
