@@ -3,5 +3,8 @@ local.txt
 # Kubernetes Secrets - NEVER commit real credentials
 apps/base/mcp-servers/mcp-gateway-secrets.yaml
 
+# Unencrypted secret files — only .secret.enc.yaml (SOPS-encrypted) should be committed
+*.secret.yaml
+
 # Use .template files instead - they contain placeholders only
 # Template files ARE committed to git for easy setup documentation

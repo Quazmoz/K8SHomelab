@@ -33,7 +33,8 @@ resources:
   - ./phoenix  # LLM Observability (replaces Langfuse)
 #  - ./coder # Temporarily disabled to save RAM
   - ./backups  # Daily database backups to SD card
-#  - ./llama-cpp  # Temporarily disabled to free resources for OpenClaw
+#  - ./llama-cpp  # Disabled — using Ollama Cloud instead
+  - ./openclaw  # OpenClaw autonomous AI agent
   - ./dns
 
 

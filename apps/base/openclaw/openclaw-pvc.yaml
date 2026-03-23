@@ -1,0 +1,17 @@
+---
+# OpenClaw PersistentVolumeClaim
+# Stores agent state, logs, and artifacts
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openclaw-data-pvc
+  namespace: apps
+  labels:
+    app: openclaw
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

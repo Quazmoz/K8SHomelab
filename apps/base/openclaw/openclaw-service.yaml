@@ -1,0 +1,25 @@
+---
+# OpenClaw Service
+# Gateway (WebSocket): 18789
+# Canvas HTTP: 18793
+apiVersion: v1
+kind: Service
+metadata:
+  name: openclaw
+  namespace: apps
+  labels:
+    app: openclaw
+    app.kubernetes.io/name: openclaw
+spec:
+  type: ClusterIP
+  selector:
+    app: openclaw
+  ports:
+  - name: gateway
+    port: 18789
+    targetPort: 18789
+    protocol: TCP
+  - name: canvas
+    port: 18793
+    targetPort: 18793
+    protocol: TCP

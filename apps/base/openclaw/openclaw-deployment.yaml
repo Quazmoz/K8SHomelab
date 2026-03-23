@@ -1,0 +1,116 @@
+---
+# OpenClaw Deployment - Autonomous AI Agent
+# Runs on Orange Pi 6 Plus (ARM64 control plane)
+# Gateway port: 18789, Canvas HTTP: 18793
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openclaw
+  namespace: apps
+  labels:
+    app: openclaw
+    app.kubernetes.io/name: openclaw
+    app.kubernetes.io/component: ai-agent
+    app.kubernetes.io/part-of: ai-stack
+  annotations:
+    description: "OpenClaw autonomous AI agent with secure containerized runtime"
+    docs: "https://openclaw.ai/docs"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openclaw
+  strategy:
+    type: Recreate  # Single replica, preserve state
+  template:
+    metadata:
+      labels:
+        app: openclaw
+        app.kubernetes.io/name: openclaw
+        app.kubernetes.io/component: ai-agent
+    spec:
+      # Run on Orange Pi 6 Plus (ARM64 control plane)
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      containers:
+      - name: openclaw
+        image: ghcr.io/openclaw/openclaw:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 18789
+          name: gateway
+        - containerPort: 18793
+          name: canvas
+        env:
+        # Gateway binding — bind to all interfaces so K8s service can reach it
+        - name: OPENCLAW_GATEWAY_BIND
+          value: "lan"
+        # State directory inside the container
+        - name: OPENCLAW_STATE_DIR
+          value: "/home/user/.openclaw"
+        # Ollama Cloud backend — OpenAI-compatible endpoint
+        - name: OPENAI_BASE_URL
+          value: "https://api.ollama.com/v1"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: OPENAI_API_KEY
+              optional: false
+        # Fallback: OpenRouter (used when Ollama Cloud limits are hit)
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: OPENROUTER_API_KEY
+              optional: true
+        # Optional: additional provider keys
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: ANTHROPIC_API_KEY
+              optional: true
+        - name: OPENCLAW_GATEWAY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GATEWAY_TOKEN
+              optional: false
+        volumeMounts:
+        - name: openclaw-data
+          mountPath: /home/user/.openclaw
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "200m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          tcpSocket:
+            port: 18789
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 18789
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: openclaw-data
+        persistentVolumeClaim:
+          claimName: openclaw-data-pvc

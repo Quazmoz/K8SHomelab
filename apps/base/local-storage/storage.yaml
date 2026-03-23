@@ -565,3 +565,28 @@ spec:
           operator: In
           values:
           - orangepi6plus
+
+---
+# The Persistent Volume for OpenClaw agent state/data
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: openclaw-local-pv
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/openclaw
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - orangepi6plus
