@@ -11,7 +11,7 @@ Central dashboard providing visibility into all homelab services with health mon
 - **Type:** Custom Deployment (all resources in single `manifests.yaml`)
 - **Image:** `ghcr.io/gethomepage/homepage:v1.10.1`
 - **Namespace:** `apps`
-- **Node:** `orangepi6plus` (with `node-role.kubernetes.io/control-plane` toleration)
+- **Node:** `quinn-hpprobook430g6`
 - **Port:** 3000
 - **URL:** `http://homepage.k8s.local`
 

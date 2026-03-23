@@ -408,11 +408,11 @@ spec:
     spec:
       serviceAccountName: homepage
       nodeSelector:
-        kubernetes.io/hostname: orangepi6plus
-      tolerations:
-      - key: "node-role.kubernetes.io/control-plane"
-        operator: "Exists"
-        effect: "NoSchedule"
+        kubernetes.io/hostname: quinn-hpprobook430g6
+#      tolerations:
+#      - key: "node-role.kubernetes.io/control-plane"
+#        operator: "Exists"
+#        effect: "NoSchedule"
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
