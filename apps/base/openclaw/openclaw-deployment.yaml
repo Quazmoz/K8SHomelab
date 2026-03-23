@@ -48,8 +48,6 @@ spec:
         ports:
         - containerPort: 18789
           name: gateway
-        - containerPort: 18793
-          name: canvas
         env:
         # OpenClaw binds strictly to 127.0.0.1 for security.
         - name: OPENCLAW_GATEWAY_BIND

@@ -3,6 +3,11 @@ kind: Ingress
 metadata:
   name: openclaw-ingress
   namespace: apps
+  annotations:
+    nginx.ingress.kubernetes.io/upstream-vhost: "127.0.0.1"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 spec:
   ingressClassName: nginx
   rules:
