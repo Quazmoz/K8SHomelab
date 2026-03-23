@@ -16,8 +16,8 @@ metadata:
       }
     nginx.ingress.kubernetes.io/configuration-snippet: |
       proxy_set_header Authorization $oc_auth;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection "upgrade";
+      # Rewrite /__openclaw__/ws to / for the WebSocket gateway endpoint
+      rewrite ^/__openclaw__/ws$ / break;
 spec:
   ingressClassName: nginx
   rules:
