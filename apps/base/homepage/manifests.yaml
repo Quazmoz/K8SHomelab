@@ -94,7 +94,7 @@ data:
         - OpenClaw:
             icon: mdi-robot-outline
             description: Autonomous AI Agent
-            siteMonitor: http://openclaw.apps.svc.cluster.local:18793
+            siteMonitor: http://openclaw.apps.svc.cluster.local:18789/__openclaw__/canvas/
             statusStyle: dot
 
     - MCP Tools:
@@ -409,7 +409,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v26-adguard-icon"
+        checksum/config: "v27-openclaw-addition"
     spec:
       serviceAccountName: homepage
       nodeSelector:

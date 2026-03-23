@@ -17,7 +17,7 @@ spec:
   ports:
   - name: gateway
     port: 18789
-    targetPort: 18789
+    targetPort: 18790
     protocol: TCP
   - name: canvas
     port: 18793

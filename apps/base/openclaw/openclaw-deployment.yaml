@@ -51,9 +51,9 @@ spec:
         - containerPort: 18793
           name: canvas
         env:
-        # Gateway binding — bind to all interfaces so K8s service can reach it
+        # OpenClaw binds strictly to 127.0.0.1 for security.
         - name: OPENCLAW_GATEWAY_BIND
-          value: "0.0.0.0"
+          value: "loopback"
         # State directory inside the container
         - name: OPENCLAW_STATE_DIR
           value: "/home/user/.openclaw"
@@ -96,20 +96,41 @@ spec:
           limits:
             memory: "4Gi"
             cpu: "2000m"
+        # Probes check 127.0.0.1 directly inside the pod
         livenessProbe:
-          tcpSocket:
-            port: 18789
+          exec:
+            command:
+            - sh
+            - -c
+            - "nc -z 127.0.0.1 18789 || curl -s http://127.0.0.1:18789"
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
-          tcpSocket:
-            port: 18789
+          exec:
+            command:
+            - sh
+            - -c
+            - "nc -z 127.0.0.1 18789 || curl -s http://127.0.0.1:18789"
           initialDelaySeconds: 15
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
+      # Sidecar proxy to expose 127.0.0.1 to 0.0.0.0 for k8s networking
+      - name: openclaw-proxy
+        image: alpine/socat:latest
+        command:
+        - socat
+        - TCP-LISTEN:18790,fork,bind=0.0.0.0
+        - TCP-CONNECT:127.0.0.1:18789
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
       volumes:
       - name: openclaw-data
         persistentVolumeClaim:
