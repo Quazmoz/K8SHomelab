@@ -92,10 +92,10 @@ data:
             siteMonitor: http://phoenix.apps.svc.cluster.local:6006
             statusStyle: dot
         - OpenClaw:
-            href: http://openclaw.k8s.local/__openclaw__/canvas/
+            href: http://openclaw.k8s.local/__openclaw__/canvas/#token={{HOMEPAGE_VAR_OPENCLAW_TOKEN}}
             icon: mdi-robot-outline
             description: Autonomous AI Agent
-            siteMonitor: http://openclaw.apps.svc.cluster.local:18789/__openclaw__/canvas/
+            ping: openclaw.apps.svc.cluster.local
             statusStyle: dot
 
     - MCP Tools:
@@ -410,7 +410,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v28-openclaw-href"
+        checksum/config: "v29-openclaw-fix"
     spec:
       serviceAccountName: homepage
       nodeSelector:
@@ -459,6 +459,11 @@ spec:
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
               value: "*"
+            - name: HOMEPAGE_VAR_OPENCLAW_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: openclaw-credentials
+                  key: GATEWAY_TOKEN
           # Health checks - using TCP to bypass ALLOWED_HOSTS issue
           livenessProbe:
             tcpSocket:
