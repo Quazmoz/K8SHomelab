@@ -92,7 +92,7 @@ data:
             siteMonitor: http://phoenix.apps.svc.cluster.local:6006
             statusStyle: dot
         - OpenClaw:
-            href: http://openclaw.k8s.local/__openclaw__/canvas/#token={{HOMEPAGE_VAR_OPENCLAW_TOKEN}}
+            href: http://openclaw.k8s.local/__openclaw__/canvas/?token={{HOMEPAGE_VAR_OPENCLAW_TOKEN}}
             icon: mdi-robot-outline
             description: Autonomous AI Agent
             ping: openclaw.apps.svc.cluster.local
@@ -410,7 +410,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v29-openclaw-fix"
+        checksum/config: "v30-openclaw-token-query"
     spec:
       serviceAccountName: homepage
       nodeSelector:
