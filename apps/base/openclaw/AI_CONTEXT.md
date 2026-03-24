@@ -11,7 +11,7 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 
 ## Memory System
 - Provider: `local` (on-device embeddings via node-llama-cpp, no external API needed)
-- Model: `embeddinggemma-300m-qat-Q8_0.gguf` (~328MB, cached on PVC at `~/.openclaw/model-cache/`)
+- Model: `nomic-embed-text-v1.5.Q8_0.gguf` (~146MB, cached on PVC at `~/.openclaw/model-cache/`)
 - Memory files: `~/.openclaw/workspace/memory/*.md`
 - Fallback: `none` (prevents accidental OpenAI API calls with the Ollama Cloud key)
 - Config path: `agents.defaults.memorySearch` in `openclaw.json`
