@@ -49,6 +49,10 @@ spec:
         - containerPort: 18789
           name: gateway
         env:
+        # Align HOME with OPENCLAW_STATE_DIR so memory workspace
+        # (~/.openclaw/workspace) lives on the PVC, not ephemeral storage.
+        - name: HOME
+          value: "/home/user"
         # OpenClaw binds strictly to 127.0.0.1 for security.
         - name: OPENCLAW_GATEWAY_BIND
           value: "loopback"
