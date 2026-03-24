@@ -2,6 +2,11 @@
     "chat.tools.terminal.autoApprove": {
         "kubectl get": true,
         "kubectl -n apps": true,
-        "kubectl top": true
+        "kubectl top": true,
+        "/^kubectl -n apps exec deploy/openclaw -c openclaw -- sh -c 'grep -o \"memory_\\[a-z_\\]\\*\\\\\\|\\\\\"name\\\\\":\\\\\"memory\\[\\^\\\\\"\\]\\*\\\\\"\" /home/user/\\.openclaw/agents/main/sessions/d7bfd8bf\\*\\.reset\\.\\* \\| sort \\| uniq -c \\| sort -rn \\| head -20' 2>&1$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "uniq": true
     }
 }
