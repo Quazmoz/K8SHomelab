@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.24",
+    "lastTouchedAt": "2026-03-27T14:24:36.099Z"
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "https://ollama.com",
+        "api": "ollama",
+        "models": []
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "ollama/nemotron-3-super"
+      },
+      "models": {
+        "ollama/kimi-k2.5": {},
+        "ollama/devstral-2:123b": {},
+        "ollama/qwen3-coder-next": {},
+        "ollama/kimi-k2:1t": {},
+        "ollama/glm-4.6": {},
+        "ollama/glm-4.7": {},
+        "anthropic/claude-opus-4-6": {},
+        "openrouter/anthropic/claude-sonnet-4.5": {},
+        "openrouter/auto": {},
+        "ollama/gemma3:12b": {},
+        "ollama/minimax-m2.5": {},
+        "ollama/deepseek-v3.1:671b": {},
+        "ollama/gpt-oss:20b": {},
+        "ollama/gpt-oss:120b": {},
+        "ollama/gemma3:27b": {},
+        "ollama/kimi-k2-thinking": {},
+        "ollama/minimax-m2.7": {},
+        "ollama/rnj-1:8b": {},
+        "ollama/ministral-3:3b": {},
+        "ollama/gemini-3-flash-preview": {},
+        "ollama/devstral-small-2:24b": {},
+        "ollama/qwen3-coder:480b": {},
+        "ollama/qwen3-vl:235b": {},
+        "ollama/glm-5": {},
+        "ollama/ministral-3:14b": {},
+        "ollama/nemotron-3-super": {},
+        "ollama/deepseek-v3.2": {},
+        "ollama/ministral-3:8b": {},
+        "ollama/mistral-large-3:675b": {},
+        "ollama/minimax-m2": {},
+        "ollama/qwen3-next:80b": {},
+        "ollama/gemma3:4b": {},
+        "ollama/qwen3.5:397b": {},
+        "ollama/qwen3-vl:235b-instruct": {},
+        "ollama/nemotron-3-nano:30b": {},
+        "ollama/minimax-m2.1": {},
+        "ollama/cogito-2.1:671b": {}
+      },
+      "workspace": "/home/user/.openclaw/workspace-ops",
+      "memorySearch": {
+        "provider": "local",
+        "fallback": "none",
+        "local": {
+          "modelPath": "hf:nomic-ai/nomic-embed-text-v1.5-GGUF/nomic-embed-text-v1.5.Q8_0.gguf",
+          "modelCacheDir": "/home/user/.openclaw/model-cache"
+        }
+      }
+    },
+    "list": [
+      {
+        "id": "main"
+      },
+      {
+        "id": "ops",
+        "name": "ops",
+        "workspace": "/home/user/.openclaw/workspace-ops",
+        "agentDir": "/home/user/.openclaw/agents/ops/agent",
+        "model": "ollama/nemotron-3-super",
+        "identity": {
+          "name": "Ops",
+          "emoji": "⚙️"
+        }
+      },
+      {
+        "id": "research",
+        "name": "research",
+        "workspace": "/home/user/.openclaw/workspace-research",
+        "agentDir": "/home/user/.openclaw/agents/research/agent",
+        "identity": {
+          "name": "Research",
+          "emoji": "📚"
+        }
+      },
+      {
+        "id": "homelab",
+        "name": "homelab",
+        "workspace": "/home/user/.openclaw/workspace-homelab",
+        "agentDir": "/home/user/.openclaw/agents/homelab/agent",
+        "model": {
+          "primary": "ollama/nemotron-3-super"
+        },
+        "identity": {
+          "name": "Homelab",
+          "emoji": "🧪"
+        }
+      }
+    ]
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "gateway": {
+    "mode": "local",
+    "controlUi": {
+      "allowedOrigins": [
+        "http://openclaw.k8s.local",
+        "https://openclaw.k8s.local"
+      ]
+    }
+  }
+}
