@@ -50,7 +50,7 @@
         "ollama/minimax-m2.1": {},
         "ollama/cogito-2.1:671b": {}
       },
-      "workspace": "/home/user/.openclaw/workspace-ops",
+      "workspace": "/home/user/.openclaw/workspace",
       "memorySearch": {
         "provider": "local",
         "fallback": "none",
