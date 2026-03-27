@@ -14,6 +14,13 @@
   },
   "agents": {
     "defaults": {
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      },
       "model": {
         "primary": "ollama/nemotron-3-super"
       },
@@ -105,6 +112,9 @@
         }
       }
     ]
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
   },
   "commands": {
     "native": "auto",

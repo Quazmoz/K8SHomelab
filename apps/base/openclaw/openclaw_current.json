@@ -1,19 +1,13 @@
 {
-  "meta": {
-    "lastTouchedVersion": "2026.3.24",
-    "lastTouchedAt": "2026-03-27T14:24:36.099Z"
-  },
-  "models": {
-    "providers": {
-      "ollama": {
-        "baseUrl": "https://ollama.com",
-        "api": "ollama",
-        "models": []
-      }
-    }
-  },
   "agents": {
     "defaults": {
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      },
       "model": {
         "primary": "ollama/nemotron-3-super"
       },
@@ -78,7 +72,7 @@
         "model": "ollama/nemotron-3-super",
         "identity": {
           "name": "Ops",
-          "emoji": "⚙️"
+          "emoji": "\u2699\ufe0f"
         }
       },
       {
@@ -88,7 +82,7 @@
         "agentDir": "/home/user/.openclaw/agents/research/agent",
         "identity": {
           "name": "Research",
-          "emoji": "📚"
+          "emoji": "\ud83d\udcda"
         }
       },
       {
@@ -101,16 +95,23 @@
         },
         "identity": {
           "name": "Homelab",
-          "emoji": "🧪"
+          "emoji": "\ud83e\uddea"
         }
       }
     ]
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
   },
   "commands": {
     "native": "auto",
     "nativeSkills": "auto",
     "restart": true,
     "ownerDisplay": "raw"
+  },
+  "meta": {
+    "lastTouchedVersion": "2026.3.24",
+    "lastTouchedAt": "2026-03-27T14:53:17.443Z"
   },
   "gateway": {
     "mode": "local",
@@ -119,6 +120,15 @@
         "http://openclaw.k8s.local",
         "https://openclaw.k8s.local"
       ]
+    }
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "https://ollama.com",
+        "api": "ollama",
+        "models": []
+      }
     }
   }
 }
