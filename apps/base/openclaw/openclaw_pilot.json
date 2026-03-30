@@ -6,8 +6,9 @@
   "models": {
     "providers": {
       "ollama": {
-        "baseUrl": "https://api.ollama.com/v1",
-        "api": "openai",
+        "baseUrl": "https://ollama.com",
+        "api": "ollama",
+        "apiKey": "env:OLLAMA_API_KEY",
         "models": []
       }
     }
