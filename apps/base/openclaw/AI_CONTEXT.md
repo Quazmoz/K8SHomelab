@@ -31,11 +31,16 @@ Preferred recovery path is OpenAI-compatible Ollama Cloud + OpenRouter fallback:
 kubectl -n apps exec deploy/openclaw -c openclaw -- \
   openclaw config set models.providers.openai '{"baseUrl":"https://ollama.com/v1","api":"openai-completions","apiKey":"env:OPENAI_API_KEY","models":[{"id":"nemotron-3-super","name":"nemotron-3-super","reasoning":false,"input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0},"contextWindow":262144,"maxTokens":8192}]}' --strict-json
 kubectl -n apps exec deploy/openclaw -c openclaw -- \
-  openclaw config set agents.defaults.model.primary 'openrouter/auto'
+  openclaw config set agents.defaults.model.primary 'openai/kimi-k2.5'
 kubectl -n apps exec deploy/openclaw -c openclaw -- \
   openclaw config set agents.defaults.thinkingDefault 'minimal'
 kubectl -n apps rollout restart deploy/openclaw
 ```
+
+Current runtime caveats:
+- `ollama/<model>` refs return `401` in this build even with valid API keys.
+- Use `openai/<model>` refs for Ollama Cloud (`openai/kimi-k2.5`, `openai/nemotron-3-super`).
+- `openai/gemma3:27b` can return provider `500` from OpenClaw runtime; keep `openai/kimi-k2.5` as default.
 
 To use native Ollama provider mode when healthy again:
 

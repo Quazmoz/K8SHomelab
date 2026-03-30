@@ -81,7 +81,7 @@ kubectl -n apps exec deploy/openclaw -c openclaw -- \
 
 # 2) Set a stable default and avoid OpenRouter "reasoning required" failures
 kubectl -n apps exec deploy/openclaw -c openclaw -- \
-	openclaw config set agents.defaults.model.primary 'openrouter/auto'
+	openclaw config set agents.defaults.model.primary 'openai/kimi-k2.5'
 kubectl -n apps exec deploy/openclaw -c openclaw -- \
 	openclaw config set agents.defaults.thinkingDefault 'minimal'
 
@@ -97,6 +97,12 @@ kubectl -n apps exec deploy/openclaw -c openclaw -- \
 ```
 
 - Restart OpenClaw after changing provider config:
+
+Known behavior in current build:
+
+- `ollama/<model>` refs still return `401` in OpenClaw even when keys are valid.
+- Use `openai/<model>` refs for Ollama Cloud routing (`openai/kimi-k2.5`, `openai/nemotron-3-super`).
+- `openai/gemma3:27b` may return provider-side `500` errors from this runtime path; use `openai/kimi-k2.5` as the stable default.
 
 ## Troubleshooting
 
