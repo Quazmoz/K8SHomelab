@@ -3,6 +3,6 @@ kind: Kustomization
 namespace: apps
 resources:
   - redis-deployment.yaml
-  - redisinsight-deployment.yaml
-  - ingress.yaml
+  # - redisinsight-deployment.yaml # Temporarily disabled to free RAM
+  # - ingress.yaml # RedisInsight ingress disabled with RedisInsight
   - redis-pdb.yaml

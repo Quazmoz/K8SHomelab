@@ -4,19 +4,19 @@
 
 ## Purpose
 
-In-memory cache and session store. Used by Authentik (session/cache backend) and Context Forge (caching). RedisInsight provides a management UI.
+In-memory cache and session store. Used by Authentik (session/cache backend) and Context Forge (caching). RedisInsight is currently disabled to reduce RAM usage.
 
 ## Architecture
 
-- **Type:** Two Deployments (Redis + RedisInsight)
+- **Type:** One active Deployment (Redis). RedisInsight manifests are present but disabled in kustomization.
 - **Redis Image:** `redis:8.4-alpine`
 - **RedisInsight Image:** `redis/redisinsight` (SHA pinned)
 - **Namespace:** `apps`
 - **Redis Port:** 6379, **RedisInsight Port:** 5540
-- **Node:** `quinn-hpprobook430g6` (both)
+- **Node:** `quinn-hpprobook430g6`
 - **Storage:** emptyDir (ephemeral!) with AOF enabled
 - **Redis URL:** `redis.apps.svc.cluster.local:6379`
-- **RedisInsight URL:** `http://redisinsight.k8s.local`
+- **RedisInsight URL:** Disabled (temporarily)
 
 ## Files
 
@@ -24,8 +24,8 @@ In-memory cache and session store. Used by Authentik (session/cache backend) and
 |------|---------|
 | `kustomization.yaml` | Resource list |
 | `redis-deployment.yaml` | Redis Deployment + ClusterIP Service |
-| `redisinsight-deployment.yaml` | RedisInsight Deployment + ClusterIP Service |
-| `ingress.yaml` | Ingress for RedisInsight |
+| `redisinsight-deployment.yaml` | RedisInsight Deployment + ClusterIP Service (currently disabled) |
+| `ingress.yaml` | Ingress for RedisInsight (currently disabled) |
 | `redis-pdb.yaml` | PodDisruptionBudget |
 
 ## Key Details
@@ -44,3 +44,4 @@ In-memory cache and session store. Used by Authentik (session/cache backend) and
 - If persistence is needed, add a PVC and change emptyDir to persistentVolumeClaim
 - No secrets configured — Redis is unauthenticated (cluster-internal only)
 - RedisInsight image is SHA-pinned for reproducibility
+- RedisInsight and its ingress are commented out in `kustomization.yaml` to free RAM on `quinn-hpprobook430g6`
