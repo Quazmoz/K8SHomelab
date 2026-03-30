@@ -6,7 +6,7 @@ OpenClaw is an autonomous AI agent that can execute tasks, orchestrate tools, an
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `ghcr.io/openclaw/openclaw:latest` (ARM64 multi-arch) |
+| **Image** | `ghcr.io/openclaw/openclaw:2026.3.28` (pinned to avoid `latest` regressions) |
 | **Node** | `orangepi6plus` (with control-plane toleration) |
 | **Gateway Port** | `18789` (WebSocket) |
 | **Canvas Port** | `18793` (HTTP) |
@@ -69,8 +69,27 @@ kubectl port-forward -n apps svc/openclaw 18789:18789
 
 ## Ollama Cloud Setup Notes
 
-- The deployment exports both `OPENAI_API_KEY` and `OLLAMA_API_KEY` from the same secret-backed key so OpenClaw can use either OpenAI-compatible or native Ollama provider flows.
-- For native Ollama Cloud provider mode inside the running pod:
+- The deployment exports both `OPENAI_API_KEY` and `OLLAMA_API_KEY` from the same secret-backed key.
+- If OpenClaw returns `HTTP 401: unauthorized` with `ollama/<model>` after an upgrade, switch to OpenAI-compatible Ollama Cloud models and keep OpenRouter as fallback.
+
+Recommended recovery commands:
+
+```bash
+# 1) Use OpenAI-compatible provider for Ollama Cloud
+kubectl -n apps exec deploy/openclaw -c openclaw -- \
+	openclaw config set models.providers.openai '{"baseUrl":"https://ollama.com/v1","api":"openai-completions","apiKey":"env:OPENAI_API_KEY","models":[{"id":"nemotron-3-super","name":"nemotron-3-super","reasoning":false,"input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0},"contextWindow":262144,"maxTokens":8192}]}' --strict-json
+
+# 2) Set a stable default and avoid OpenRouter "reasoning required" failures
+kubectl -n apps exec deploy/openclaw -c openclaw -- \
+	openclaw config set agents.defaults.model.primary 'openrouter/auto'
+kubectl -n apps exec deploy/openclaw -c openclaw -- \
+	openclaw config set agents.defaults.thinkingDefault 'minimal'
+
+# 3) Restart deployment
+kubectl -n apps rollout restart deploy/openclaw
+```
+
+If native Ollama mode works again in a future release, you can re-enable it:
 
 ```bash
 kubectl -n apps exec deploy/openclaw -c openclaw -- \
@@ -78,10 +97,6 @@ kubectl -n apps exec deploy/openclaw -c openclaw -- \
 ```
 
 - Restart OpenClaw after changing provider config:
-
-```bash
-kubectl -n apps rollout restart deploy/openclaw
-```
 
 ## Troubleshooting
 

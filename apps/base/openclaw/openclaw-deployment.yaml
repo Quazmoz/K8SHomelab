@@ -43,8 +43,8 @@ spec:
         fsGroupChangePolicy: "OnRootMismatch"
       containers:
       - name: openclaw
-        image: ghcr.io/openclaw/openclaw:latest
-        imagePullPolicy: Always
+        image: ghcr.io/openclaw/openclaw:2026.3.28
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 18789
           name: gateway
@@ -61,7 +61,7 @@ spec:
           value: "/home/user/.openclaw"
         # Ollama Cloud backend — OpenAI-compatible endpoint
         - name: OPENAI_BASE_URL
-          value: "https://api.ollama.com/v1"
+          value: "https://ollama.com/v1"
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:

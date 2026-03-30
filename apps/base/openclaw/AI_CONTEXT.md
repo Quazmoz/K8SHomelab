@@ -8,6 +8,7 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 - Device identity and pairing are required by the Control UI.
 - TLS is enabled at ingress for secure-context browser requirements.
 - `HOME` is explicitly set to `/home/user` so that OpenClaw's memory workspace (`~/.openclaw/workspace/`) resolves to the PVC mount, not ephemeral storage.
+- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.3.28` to avoid `latest` regressions.
 
 ## Memory System
 - Provider: `local` (on-device embeddings via node-llama-cpp, no external API needed)
@@ -23,7 +24,20 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 - **Important:** The `OPENAI_API_KEY` is NOT a real OpenAI key. Do not use `auto` or `openai` as the memory embedding provider — it will 401.
 
 ## Ollama Cloud Configuration
-To use native Ollama provider mode in this build:
+Native `ollama/<model>` mode can return `401` on some newer builds even when keys are present.
+Preferred recovery path is OpenAI-compatible Ollama Cloud + OpenRouter fallback:
+
+```bash
+kubectl -n apps exec deploy/openclaw -c openclaw -- \
+  openclaw config set models.providers.openai '{"baseUrl":"https://ollama.com/v1","api":"openai-completions","apiKey":"env:OPENAI_API_KEY","models":[{"id":"nemotron-3-super","name":"nemotron-3-super","reasoning":false,"input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0},"contextWindow":262144,"maxTokens":8192}]}' --strict-json
+kubectl -n apps exec deploy/openclaw -c openclaw -- \
+  openclaw config set agents.defaults.model.primary 'openrouter/auto'
+kubectl -n apps exec deploy/openclaw -c openclaw -- \
+  openclaw config set agents.defaults.thinkingDefault 'minimal'
+kubectl -n apps rollout restart deploy/openclaw
+```
+
+To use native Ollama provider mode when healthy again:
 
 ```bash
 kubectl -n apps exec deploy/openclaw -c openclaw -- \
