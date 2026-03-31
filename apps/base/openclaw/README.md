@@ -41,6 +41,13 @@ openssl rand -hex 32
 # Add your LLM provider API key(s) — at least one is required
 ```
 
+Optional provider keys supported by this deployment:
+
+- `OPENAI_API_KEY`: current Ollama Cloud key used by the repo's existing `openai/*` model refs.
+- `CHATGPT_API_KEY`: real OpenAI Platform key for the additional `chatgpt/*` backend. A ChatGPT Plus/Pro subscription alone is not enough; API billing lives on the OpenAI Platform account.
+- `MISTRAL_API_KEY`: Mistral API key from `console.mistral.ai` for the additional `mistral/*` backend.
+- `OPENROUTER_API_KEY` and `ANTHROPIC_API_KEY`: optional fallbacks already supported by the deployment.
+
 ### 3. Encrypt the secret with SOPS
 ```bash
 sops -e -i openclaw-credentials.secret.yaml
@@ -104,6 +111,18 @@ Known behavior in current build:
 - Use `openai/<model>` refs for Ollama Cloud routing (`openai/kimi-k2.5`, `openai/nemotron-3-super`).
 - `openai/gemma3:27b` may return provider-side `500` errors from this runtime path; use `openai/kimi-k2.5` as the stable default.
 
+## Additional OpenAI And Mistral Backends
+
+- Pod startup now seeds persistent `chatgpt` and `mistral` provider definitions into `openclaw.json` via the bootstrap init container.
+- These providers are kept separate from the existing Ollama Cloud `openai/*` routing so your current defaults do not break.
+- Seeded model refs available in OpenClaw after restart:
+	- `chatgpt/gpt-4.1-mini`
+	- `chatgpt/gpt-4.1`
+	- `chatgpt/gpt-4o-mini`
+	- `mistral/mistral-small-latest`
+	- `mistral/mistral-medium-latest`
+- If your OpenAI or Mistral account only exposes different model IDs, keep the provider wiring and adjust the seeded model names in `openclaw-bootstrap-configmap.yaml`.
+
 ## n8n Skill Notes
 
 - OpenClaw includes an `n8n` skill seeded onto the PVC at startup.
@@ -158,4 +177,8 @@ kubectl logs -n apps -l app=openclaw --tail=50
 
 # Check if the gateway is responding
 kubectl exec -n apps -it deploy/openclaw -- curl -s http://localhost:18789
+
+# Verify repo-managed additional backends
+kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.providers.chatgpt
+kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.providers.mistral
 ```

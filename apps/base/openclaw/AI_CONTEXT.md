@@ -51,6 +51,7 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - A repo-managed init container now runs `bootstrap_openclaw.py` on pod start.
 - It seeds skill folders onto the PVC, deletes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from all workspaces, and replaces the main workspace `AGENTS.md` with a leaner version that does not auto-load `MEMORY.md` every session.
 - It now also materializes per-agent runtime directories (`agents/<id>/agent`, `agents/<id>/sessions`) and normalizes agent entries (`main`, `ops`, `research`, `homelab`) so selector-visible agents are fully bootstrap-backed on every restart.
+- It also seeds optional `chatgpt` and `mistral` provider definitions into `openclaw.json` so those backends survive pod restarts when API keys are present.
 - It normalizes agent models to stable OpenAI-compatible Ollama Cloud refs:
   - `main`: `openai/kimi-k2.5`
   - `research`: `openai/kimi-k2.5`
@@ -62,7 +63,15 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - Secrets are sourced from `openclaw-credentials`.
 - `OPENAI_API_KEY` is provided for OpenAI-compatible mode (actually an Ollama Cloud key).
 - `OLLAMA_API_KEY` is also exported (mapped to the same secret key) so native Ollama provider auth can work without extra secret wiring.
+- `CHATGPT_API_KEY` is optional and should be an OpenAI Platform API key for the repo-managed `chatgpt/*` provider entries. A ChatGPT web subscription by itself does not supply API credits.
+- `MISTRAL_API_KEY` is optional and should come from `console.mistral.ai` for the repo-managed `mistral/*` provider entries.
 - **Important:** The `OPENAI_API_KEY` is NOT a real OpenAI key. Do not use `auto` or `openai` as the memory embedding provider — it will 401.
+
+## Additional Backends
+- OpenAI Platform is exposed in OpenClaw as `chatgpt/*` model refs to avoid colliding with the existing Ollama Cloud `openai/*` provider mapping.
+- Seeded ChatGPT model refs: `chatgpt/gpt-4.1-mini`, `chatgpt/gpt-4.1`, `chatgpt/gpt-4o-mini`.
+- Seeded Mistral model refs: `mistral/mistral-small-latest`, `mistral/mistral-medium-latest`.
+- Both providers are configured via OpenAI-compatible chat-completions endpoints in bootstrap so they persist after every pod restart.
 
 ## Ollama Cloud Configuration
 Native `ollama/<model>` mode can return `401` on some newer builds even when keys are present.
@@ -95,6 +104,8 @@ kubectl -n apps rollout restart deploy/openclaw
 Use these checks after rollout:
 
 ```bash
+kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.providers.chatgpt
+kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.providers.mistral
 kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.providers.ollama
 kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw models list
 ```

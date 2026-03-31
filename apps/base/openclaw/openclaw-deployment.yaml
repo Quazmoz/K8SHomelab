@@ -90,7 +90,8 @@ spec:
         # State directory inside the container
         - name: OPENCLAW_STATE_DIR
           value: "/home/user/.openclaw"
-        # Ollama Cloud backend — OpenAI-compatible endpoint
+        # Ollama Cloud backend exposed through OpenAI-compatible routing.
+        # This is not a real OpenAI key despite the env var name.
         - name: OPENAI_BASE_URL
           value: "https://ollama.com/v1"
         - name: OPENAI_API_KEY
@@ -112,6 +113,19 @@ spec:
             secretKeyRef:
               name: openclaw-credentials
               key: OPENROUTER_API_KEY
+              optional: true
+        # Optional additional backends.
+        - name: CHATGPT_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: CHATGPT_API_KEY
+              optional: true
+        - name: MISTRAL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: MISTRAL_API_KEY
               optional: true
         # n8n skill: internal service URL and API key
         - name: N8N_BASE_URL

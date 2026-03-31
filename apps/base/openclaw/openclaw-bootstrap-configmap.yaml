@@ -33,9 +33,29 @@ data:
         "homelab": "workspace-homelab",
     }
 
+    PROVIDER_CONFIGS = {
+        "chatgpt": {
+            "baseUrl": "https://api.openai.com/v1",
+            "api": "openai-completions",
+            "apiKey": "env:CHATGPT_API_KEY",
+            "models": [],
+        },
+        "mistral": {
+            "baseUrl": "https://api.mistral.ai/v1",
+            "api": "openai-completions",
+            "apiKey": "env:MISTRAL_API_KEY",
+            "models": [],
+        },
+    }
+
     DEFAULT_MODELS = {
         "openai/kimi-k2.5": {},
         "openai/nemotron-3-super": {},
+        "chatgpt/gpt-4.1-mini": {},
+        "chatgpt/gpt-4.1": {},
+        "chatgpt/gpt-4o-mini": {},
+        "mistral/mistral-small-latest": {},
+        "mistral/mistral-medium-latest": {},
     }
 
 
@@ -91,6 +111,11 @@ data:
             return
 
         data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        model_config = data.setdefault("models", {})
+        providers = model_config.setdefault("providers", {})
+        for provider_id, provider_config in PROVIDER_CONFIGS.items():
+            providers[provider_id] = provider_config
+
         agents = data.setdefault("agents", {})
         defaults = agents.setdefault("defaults", {})
         defaults["model"] = {"primary": AGENT_MODELS["main"]}
