@@ -115,12 +115,19 @@ Known behavior in current build:
 
 - Pod startup now seeds persistent `chatgpt` and `mistral` provider definitions into `openclaw.json` via the bootstrap init container.
 - These providers are kept separate from the existing Ollama Cloud `openai/*` routing so your current defaults do not break.
+- Seeded Mistral refs are now biased toward the cheapest still-strong hosted options instead of the premium tiers.
+- This keeps a low-cost general model, a stronger multimodal fallback, and two coding-focused options without paying for `mistral-large-*` or `magistral-medium-*` by default.
+- Seeded Mistral refs are pinned to explicit versioned IDs instead of `*-latest` aliases so provider-side rotations do not silently change behavior.
 - Seeded model refs available in OpenClaw after restart:
 	- `chatgpt/gpt-4.1-mini`
 	- `chatgpt/gpt-4.1`
 	- `chatgpt/gpt-4o-mini`
-	- `mistral/mistral-small-latest`
-	- `mistral/mistral-medium-latest`
+	- `mistral/ministral-14b-2512`
+	- `mistral/codestral-2508`
+	- `mistral/mistral-medium-2508`
+	- `mistral/devstral-2512`
+- The premium-priced `mistral-large-*` and `magistral-medium-*` seeds were intentionally removed from the default set.
+- The older weak-budget `mistral-small-*` seeds remain intentionally excluded.
 - If your OpenAI or Mistral account only exposes different model IDs, keep the provider wiring and adjust the seeded model names in `openclaw-bootstrap-configmap.yaml`.
 
 ## n8n Skill Notes

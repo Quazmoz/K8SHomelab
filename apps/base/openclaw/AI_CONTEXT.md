@@ -70,7 +70,9 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 ## Additional Backends
 - OpenAI Platform is exposed in OpenClaw as `chatgpt/*` model refs to avoid colliding with the existing Ollama Cloud `openai/*` provider mapping.
 - Seeded ChatGPT model refs: `chatgpt/gpt-4.1-mini`, `chatgpt/gpt-4.1`, `chatgpt/gpt-4o-mini`.
-- Seeded Mistral model refs: `mistral/mistral-small-latest`, `mistral/mistral-medium-latest`.
+- Seeded Mistral model refs: `mistral/ministral-14b-2512`, `mistral/codestral-2508`, `mistral/mistral-medium-2508`, `mistral/devstral-2512`.
+- The default Mistral seed set is budget-oriented: it avoids premium-priced `mistral-large-*` and `magistral-medium-*` while still keeping stronger general and coding options.
+- The older weak-budget `mistral-small-*` seeds remain intentionally excluded, and the remaining seeded Mistral refs are version-pinned instead of `*-latest` aliases to avoid provider-side rotations changing behavior under OpenClaw.
 - Both providers are configured via OpenAI-compatible chat-completions endpoints in bootstrap so they persist after every pod restart.
 
 ## Ollama Cloud Configuration
