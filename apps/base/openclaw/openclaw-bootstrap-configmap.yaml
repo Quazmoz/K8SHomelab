@@ -17,6 +17,7 @@ data:
     TEMPLATE_DIR = Path("/opt/bootstrap")
     SKILLS_SRC = TEMPLATE_DIR / "skills"
     LEAN_MAIN_AGENTS = TEMPLATE_DIR / "main-AGENTS.md"
+    N8N_CONTROL_AGENTS = TEMPLATE_DIR / "n8n-control-AGENTS.md"
     CONFIG_PATH = ROOT / "openclaw.json"
     SKILL_ALLOWLIST = {
         name.strip().lower()
@@ -31,6 +32,7 @@ data:
         "main": "openai/kimi-k2.5",
         "research": "openai/kimi-k2.5",
         "homelab": "openai/kimi-k2.5",
+        "n8n-control": "openai/kimi-k2.5",
         "ops": "openai/nemotron-3-super",
     }
 
@@ -39,6 +41,14 @@ data:
         "ops": "workspace-ops",
         "research": "workspace-research",
         "homelab": "workspace-homelab",
+        "n8n-control": "workspace-n8n",
+    }
+
+    AGENT_IDENTITIES = {
+        "ops": "Ops",
+        "research": "Research",
+        "homelab": "Homelab",
+        "n8n-control": "n8n Control",
     }
 
     PROVIDER_CONFIGS = {
@@ -71,6 +81,11 @@ data:
     TOKEN_TUNED_DEFAULTS = {
         "maxConcurrent": 2,
         "subagents": {"maxConcurrent": 3},
+        "thinkingDefault": "minimal",
+    }
+
+    N8N_CONTROL_TUNING = {
+        "subagents": {"maxConcurrent": 1},
         "thinkingDefault": "minimal",
     }
 
@@ -130,6 +145,9 @@ data:
                 shutil.copy2(main_agents_path, backup)
         shutil.copy2(LEAN_MAIN_AGENTS, main_agents_path)
 
+        n8n_agents_path = ROOT / "workspace-n8n" / "AGENTS.md"
+        shutil.copy2(N8N_CONTROL_AGENTS, n8n_agents_path)
+
 
     def patch_config() -> None:
         if not CONFIG_PATH.exists():
@@ -157,7 +175,7 @@ data:
             if isinstance(entry, dict) and entry.get("id")
         }
 
-        for agent_id in ("main", "ops", "research", "homelab"):
+        for agent_id in ("main", "ops", "research", "homelab", "n8n-control"):
             agent = by_id.get(agent_id)
             if agent is None:
                 agent = {"id": agent_id}
@@ -172,7 +190,11 @@ data:
             if agent_id != "main":
                 agent.setdefault("name", agent_id)
                 identity = agent.setdefault("identity", {})
-                identity.setdefault("name", agent_id.capitalize())
+                identity.setdefault("name", AGENT_IDENTITIES.get(agent_id, agent_id.capitalize()))
+
+            if agent_id == "n8n-control":
+                for key, value in N8N_CONTROL_TUNING.items():
+                    agent[key] = value
 
         CONFIG_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
@@ -215,3 +237,38 @@ data:
 
     - `BOOTSTRAP.md` should not exist after initial setup.
     - `HEARTBEAT.md` should stay absent unless periodic checks are intentionally configured.
+    n8n-control-AGENTS.md: |
+        # AGENTS.md - n8n Control Workspace
+
+        This workspace is dedicated to n8n operations only.
+
+        ## Scope
+
+        Allowed work:
+
+        - list workflows
+        - find workflows by name/tag/content (for example GroupMe)
+        - inspect workflow JSON
+        - trigger manual runs
+        - inspect execution status/errors
+        - apply n8n workflow updates via the `n8n-editor` helper
+
+        Out of scope in this workspace:
+
+        - general coding tasks
+        - Kubernetes troubleshooting unrelated to n8n workflow operations
+        - broad research tasks
+
+        ## Execution Rules
+
+        - Prefer one direct helper path for list/filter queries:
+            `python3 /home/user/.openclaw/skills/n8n/n8n_query_helper.py workflows --match <text> --limit 50`
+        - Retry at most once on auth/transport errors.
+        - Do not spawn subagents for simple read-only n8n queries.
+        - If both attempts fail, stop and return a concise error containing the exact HTTP/transport failure.
+        - Never claim workflow edits succeeded unless the helper returns success.
+
+        ## Output Format
+
+        - For list/filter: return count plus compact items (`id`, `name`, `active`, `updatedAt`).
+        - For execution failures: include `executionId`, failed node name, and error message when available.

@@ -147,6 +147,16 @@ Known behavior in current build:
 	- `POST /api/v1/workflows` creates workflows with the same sanitized body shape
 - Use the `n8n-editor` helper for durable updates/creates instead of hand-written raw calls.
 
+### n8n Control Agent Profile
+
+- OpenClaw now seeds a dedicated Control UI agent id `n8n-control` with workspace `workspace-n8n`.
+- This profile is tuned for deterministic n8n operations and lower tool noise.
+- Its workspace `AGENTS.md` constrains behavior to n8n tasks and enforces:
+	- one direct helper path for list/filter queries
+	- max one retry on auth/transport failure
+	- no subagent spawning for simple n8n reads
+- In Control UI, select the `n8n-control` agent when asking for workflow listings, GroupMe lookups, run status checks, or n8n workflow edits.
+
 ## n8n Editor Helper
 
 - OpenClaw now also seeds an `n8n-editor` skill containing a Python helper at `/home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py`.
@@ -180,12 +190,14 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 	- `main`: `openai/kimi-k2.5`
 	- `research`: `openai/kimi-k2.5`
 	- `homelab`: `openai/kimi-k2.5`
+	- `n8n-control`: `openai/kimi-k2.5`
 	- `ops`: `openai/nemotron-3-super`
 - Agent defaults are now token-tuned and deterministic on each restart:
 	- model catalog is replaced with a small curated set (stale legacy model entries are removed)
 	- `maxConcurrent` is set to `2`
 	- `subagents.maxConcurrent` is set to `3`
 	- `thinkingDefault` is set to `minimal`
+- The `n8n-control` agent is further constrained to `subagents.maxConcurrent = 1` to reduce loop risk on n8n queries.
 - No chat-channel bindings are applied by default because the current deployment only exposes Control UI and has no external routed channels configured.
 
 ## Troubleshooting
