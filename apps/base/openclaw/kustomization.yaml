@@ -5,5 +5,6 @@ resources:
   - openclaw-service.yaml
   - openclaw-pvc.yaml
   - openclaw-ingress.yaml
+  - n8n-skill-configmap.yaml
   # Uncomment after SOPS encryption:
   - openclaw-credentials.secret.enc.yaml

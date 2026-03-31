@@ -43,7 +43,15 @@ Visual workflow automation platform for integrations, MCP-connected automations,
 ## Dependencies
 
 - **Depends on:** PostgreSQL (if DB configured externally), local-storage (PV)
-- **Depended on by:** MCPO (n8n MCP tools), Homepage (monitoring)
+- **Depended on by:** MCPO (n8n MCP tools), Homepage (monitoring), **OpenClaw (n8n skill)**
+
+## OpenClaw Integration
+
+OpenClaw has an `n8n` skill that calls the n8n REST API (`/api/v1`).
+- The API is enabled via `N8N_PUBLIC_API_DISABLED=false` in the ConfigMap.
+- An API key must be generated in n8n **Settings → API → Create an API key** and stored as `N8N_API_KEY` in the `openclaw-credentials` Kubernetes Secret.
+- OpenClaw connects at `http://n8n.apps.svc.cluster.local:5678` (internal service).
+- Skill definition: `apps/base/openclaw/n8n-skill-configmap.yaml`.
 
 ## Modification Notes
 

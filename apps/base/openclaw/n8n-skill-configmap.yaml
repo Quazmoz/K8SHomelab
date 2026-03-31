@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-n8n-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: n8n
+    description: >
+      Interact with the n8n workflow automation platform running in the homelab.
+      Use when the user asks to: list workflows, trigger/run a workflow, activate
+      or deactivate a workflow, check execution status, or query n8n for automation
+      state. Available for any n8n management request.
+    ---
+
+    # n8n Skill
+
+    n8n is the homelab's workflow automation platform. Its REST API is available
+    internally at the URL stored in the `N8N_BASE_URL` environment variable.
+    All requests require the header `X-N8N-API-KEY: <value of N8N_API_KEY env var>`.
+
+    **Base URL:** `$N8N_BASE_URL` (resolves to `http://n8n.apps.svc.cluster.local:5678`)
+    **API prefix:** `/api/v1`
+    **Auth header:** `X-N8N-API-KEY: $N8N_API_KEY`
+
+    ---
+
+    ## Capabilities
+
+    ### List all workflows
+    ```
+    GET $N8N_BASE_URL/api/v1/workflows
+    Headers: X-N8N-API-KEY: $N8N_API_KEY
+    ```
+    Returns an array of workflows with `id`, `name`, `active` (bool), `updatedAt`.
+
+    ### Get a specific workflow
+    ```
+    GET $N8N_BASE_URL/api/v1/workflows/{id}
+    Headers: X-N8N-API-KEY: $N8N_API_KEY
+    ```
+
+    ### Activate a workflow
+    ```
+    PATCH $N8N_BASE_URL/api/v1/workflows/{id}
+    Headers: X-N8N-API-KEY: $N8N_API_KEY, Content-Type: application/json
+    Body: {"active": true}
+    ```
+
+    ### Deactivate a workflow
+    ```
+    PATCH $N8N_BASE_URL/api/v1/workflows/{id}
+    Headers: X-N8N-API-KEY: $N8N_API_KEY, Content-Type: application/json
+    Body: {"active": false}
+    ```
+
+    ### Trigger a workflow (manual run)
+    ```
+    POST $N8N_BASE_URL/api/v1/workflows/{id}/run
+    Headers: X-N8N-API-KEY: $N8N_API_KEY, Content-Type: application/json
+    Body: {} (or {"runData": {}} for empty trigger input)
+    ```
+    Returns `{"data": {"executionId": "<id>"}}`.
+
+    ### List recent executions
+    ```
+    GET $N8N_BASE_URL/api/v1/executions?limit=20
+    Headers: X-N8N-API-KEY: $N8N_API_KEY
+    ```
+    Add `&workflowId={id}` to filter by workflow.
+    Each execution has `id`, `workflowId`, `status` (success/error/waiting/running),
+    `startedAt`, `stoppedAt`.
+
+    ### Get single execution detail
+    ```
+    GET $N8N_BASE_URL/api/v1/executions/{executionId}
+    Headers: X-N8N-API-KEY: $N8N_API_KEY
+    ```
+    Returns full execution data including node outputs and error messages.
+
+    ### Delete an execution
+    ```
+    DELETE $N8N_BASE_URL/api/v1/executions/{executionId}
+    Headers: X-N8N-API-KEY: $N8N_API_KEY
+    ```
+
+    ---
+
+    ## Usage Instructions
+
+    1. Always resolve workflow names to IDs by calling `GET /api/v1/workflows` first
+       if the user refers to a workflow by name rather than numeric ID.
+    2. When triggering a workflow, confirm the execution ID returned, then optionally
+       poll `GET /api/v1/executions/{executionId}` until `status` is no longer `running`.
+    3. If an execution shows `status: error`, retrieve the full execution detail and
+       surface the error message from the failed node.
+    4. Never expose the N8N_API_KEY value in responses — refer to it only as "the API key".
+    5. The n8n UI is reachable at `http://n8n.k8s.local` for the user to inspect
+       workflows visually; direct them there for creating/editing workflows.
+
+    ---
+
+    ## Webhook-Based Workflow Invocation
+
+    For workflows that expose a Webhook trigger node, call them directly:
+    ```
+    POST <webhook-url>
+    Headers: X-API-Key: <workflow-specific-key>  (set inside n8n on the webhook node)
+    Body: {<parameters>}
+    ```
+    The webhook URL format is:
+    `$N8N_BASE_URL/webhook/<path>` (production) or
+    `$N8N_BASE_URL/webhook-test/<path>` (test mode)
+
+    Ask the user for the webhook path and any required authentication when using
+    webhook-based invocation.

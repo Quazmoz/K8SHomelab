@@ -41,6 +41,35 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: "OnRootMismatch"
+      # initContainers run to completion before main containers start.
+      # Used here to seed skill files from ConfigMaps onto the PVC so that
+      # OpenClaw can load them from ~/.openclaw/skills/<name>/SKILL.md
+      initContainers:
+      - name: install-skills
+        image: busybox:stable
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /data/skills/n8n
+          cp /opt/skills-src/n8n/SKILL.md /data/skills/n8n/SKILL.md
+          echo "n8n skill installed"
+        volumeMounts:
+        - name: openclaw-data
+          mountPath: /data
+        - name: n8n-skill
+          mountPath: /opt/skills-src/n8n
+          readOnly: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi
       containers:
       - name: openclaw
         image: ghcr.io/openclaw/openclaw:2026.3.28
@@ -81,6 +110,15 @@ spec:
             secretKeyRef:
               name: openclaw-credentials
               key: OPENROUTER_API_KEY
+              optional: true
+        # n8n skill: internal service URL and API key
+        - name: N8N_BASE_URL
+          value: "http://n8n.apps.svc.cluster.local:5678"
+        - name: N8N_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: N8N_API_KEY
               optional: true
         # Optional: additional provider keys
         - name: ANTHROPIC_API_KEY
@@ -144,3 +182,6 @@ spec:
       - name: openclaw-data
         persistentVolumeClaim:
           claimName: openclaw-data-pvc
+      - name: n8n-skill
+        configMap:
+          name: openclaw-n8n-skill
