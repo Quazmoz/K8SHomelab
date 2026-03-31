@@ -108,17 +108,24 @@ Known behavior in current build:
 
 - OpenClaw includes an `n8n` skill seeded onto the PVC at startup.
 - Current verified behavior: list workflows, inspect workflow JSON, trigger manual runs, inspect executions.
-- Current limitation: the live n8n instance rejects `PATCH /api/v1/workflows/{id}` with `405 Method Not Allowed`, so workflow edits and activation toggles should be treated as unsupported until a tested helper path is added.
-- For workflow authoring or structural changes, use the n8n UI at `http://n8n.k8s.local` or add a dedicated helper script/tool instead of relying on pure prompt instructions.
+- Live contract in this environment:
+	- `PATCH /api/v1/workflows/{id}` returns `405 Method Not Allowed`
+	- `PUT /api/v1/workflows/{id}` updates workflows when sent a sanitized full workflow body
+	- `POST /api/v1/workflows` creates workflows with the same sanitized body shape
+- Use the `n8n-editor` helper for durable updates/creates instead of hand-written raw calls.
 
 ## n8n Editor Helper
 
 - OpenClaw now also seeds an `n8n-editor` skill containing a Python helper at `/home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py`.
 - The helper uses the live, tested write path for this n8n build: `PUT /api/v1/workflows/{id}`.
+- The helper supports both validated write paths for this n8n build:
+	- update via `PUT /api/v1/workflows/{id}`
+	- create via `POST /api/v1/workflows`
 - It sanitizes workflow payloads before update so the agent only sends fields this n8n build accepts: `name`, `nodes`, `connections`, filtered `settings`, and optional `staticData` / `pinData`.
 - Supported workflows updates include:
 	- export a workflow into editable JSON
 	- apply an edited JSON file back to n8n
+	- create a new workflow from JSON
 	- apply tested recipes such as `groupme-two-videos`
 - Example usage inside the OpenClaw container:
 
@@ -132,6 +139,7 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 - Pod startup now runs a repo-managed bootstrap script before the main container starts.
 - This prunes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from the PVC workspaces.
 - The main workspace `AGENTS.md` is replaced with a lighter version that avoids auto-loading the large `MEMORY.md` on every chat.
+- Per-agent runtime directories are now materialized at startup (`agents/<id>/agent` and `agents/<id>/sessions`) and all configured agents are normalized in config so selector-visible agents stay usable after restart.
 - Agent models are normalized to stable provider refs:
 	- `main`: `openai/kimi-k2.5`
 	- `research`: `openai/kimi-k2.5`

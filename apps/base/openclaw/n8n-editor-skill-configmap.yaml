@@ -34,6 +34,11 @@ data:
     python3 {baseDir}/n8n_workflow_helper.py apply-file <workflow-id> /tmp/workflow.json
     ```
 
+    ### Create a new workflow from JSON
+    ```
+    python3 {baseDir}/n8n_workflow_helper.py create-file /tmp/workflow.json
+    ```
+
     ### Apply a tested recipe
     ```
     python3 {baseDir}/n8n_workflow_helper.py apply-recipe <workflow-id> groupme-two-videos
@@ -51,7 +56,8 @@ data:
     2. Prefer `apply-recipe` when an existing recipe matches the task.
     3. For custom edits, modify the exported JSON and use `apply-file`.
     4. Do not use raw `PATCH /api/v1/workflows/{id}` in this environment.
-    5. Summarize the exact change you applied and surface any validation errors from the helper.
+    5. Use `PUT /api/v1/workflows/{id}` for updates and `POST /api/v1/workflows` for create.
+    6. Summarize the exact change you applied and surface any validation errors from the helper.
 
   n8n_workflow_helper.py: |
     import argparse
@@ -141,6 +147,22 @@ data:
         return payload
 
 
+    def build_create_payload(workflow_like):
+        payload = {
+            "name": workflow_like.get("name"),
+            "nodes": workflow_like.get("nodes", []),
+            "connections": workflow_like.get("connections", {}),
+            "settings": sanitize_settings(workflow_like.get("settings", {})),
+        }
+        for optional_key in ("pinData", "staticData"):
+            value = workflow_like.get(optional_key)
+            if value is not None:
+                payload[optional_key] = value
+        if not payload["name"]:
+            fail("Workflow JSON must include a non-empty 'name' for create")
+        return payload
+
+
     def export_workflow(args):
         workflow = get_workflow(args.workflow_id)
         payload = build_update_payload(workflow)
@@ -172,6 +194,20 @@ data:
         file_payload = json.loads(Path(args.file_path).read_text(encoding="utf-8"))
         payload = build_update_payload(current, file_payload)
         apply_payload(args.workflow_id, payload)
+
+
+    def create_file(args):
+        file_payload = json.loads(Path(args.file_path).read_text(encoding="utf-8"))
+        payload = build_create_payload(file_payload)
+        status, response = request("/workflows", method="POST", body=payload)
+        print(json.dumps({
+            "ok": True,
+            "status": status,
+            "workflowId": response.get("id"),
+            "name": response.get("name"),
+            "createdAt": response.get("createdAt"),
+            "active": response.get("active"),
+        }, indent=2))
 
 
     def publish(args):
@@ -247,6 +283,10 @@ data:
         apply_file_parser.add_argument("workflow_id")
         apply_file_parser.add_argument("file_path")
         apply_file_parser.set_defaults(func=apply_file)
+
+        create_file_parser = subparsers.add_parser("create-file")
+        create_file_parser.add_argument("file_path")
+        create_file_parser.set_defaults(func=create_file)
 
         recipe_parser = subparsers.add_parser("apply-recipe")
         recipe_parser.add_argument("workflow_id")

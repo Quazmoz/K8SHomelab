@@ -26,6 +26,13 @@ data:
         "ops": "openai/nemotron-3-super",
     }
 
+    AGENT_WORKSPACES = {
+        "main": "workspace",
+        "ops": "workspace-ops",
+        "research": "workspace-research",
+        "homelab": "workspace-homelab",
+    }
+
     DEFAULT_MODELS = {
         "openai/kimi-k2.5": {},
         "openai/nemotron-3-super": {},
@@ -50,6 +57,15 @@ data:
         for skill_dir in SKILLS_SRC.iterdir():
             if skill_dir.is_dir():
                 copy_tree(skill_dir, skills_dst / skill_dir.name)
+
+
+    def ensure_agent_state() -> None:
+        agents_root = ROOT / "agents"
+        agents_root.mkdir(parents=True, exist_ok=True)
+        for agent_id, workspace_name in AGENT_WORKSPACES.items():
+            (ROOT / workspace_name).mkdir(parents=True, exist_ok=True)
+            (agents_root / agent_id / "agent").mkdir(parents=True, exist_ok=True)
+            (agents_root / agent_id / "sessions").mkdir(parents=True, exist_ok=True)
 
 
     def prune_workspace_noise() -> None:
@@ -78,20 +94,41 @@ data:
         agents = data.setdefault("agents", {})
         defaults = agents.setdefault("defaults", {})
         defaults["model"] = {"primary": AGENT_MODELS["main"]}
+        defaults["workspace"] = "/home/user/.openclaw/workspace"
         models = defaults.setdefault("models", {})
         for model_id, model_value in DEFAULT_MODELS.items():
             models.setdefault(model_id, model_value)
 
-        for agent in agents.get("list", []):
-            agent_id = agent.get("id")
-            if agent_id in AGENT_MODELS and agent_id != "main":
-                agent["model"] = AGENT_MODELS[agent_id]
+        agent_list = agents.setdefault("list", [])
+        by_id = {
+            entry.get("id"): entry
+            for entry in agent_list
+            if isinstance(entry, dict) and entry.get("id")
+        }
+
+        for agent_id in ("main", "ops", "research", "homelab"):
+            agent = by_id.get(agent_id)
+            if agent is None:
+                agent = {"id": agent_id}
+                agent_list.append(agent)
+                by_id[agent_id] = agent
+
+            workspace_name = AGENT_WORKSPACES[agent_id]
+            agent["workspace"] = f"/home/user/.openclaw/{workspace_name}"
+            agent["agentDir"] = f"/home/user/.openclaw/agents/{agent_id}/agent"
+            agent["model"] = AGENT_MODELS[agent_id]
+
+            if agent_id != "main":
+                agent.setdefault("name", agent_id)
+                identity = agent.setdefault("identity", {})
+                identity.setdefault("name", agent_id.capitalize())
 
         CONFIG_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
     def main() -> None:
         install_skills()
+        ensure_agent_state()
         prune_workspace_noise()
         patch_config()
         print("OpenClaw bootstrap complete")
