@@ -165,8 +165,9 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 - Pod startup now runs a repo-managed bootstrap script before the main container starts.
 - This prunes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from the PVC workspaces.
 - The main workspace `AGENTS.md` is replaced with a lighter version that avoids auto-loading the large `MEMORY.md` on every chat.
-- Skills are now reconciled on every startup: old skill directories are removed and then reseeded from `/opt/bootstrap/skills`.
-- Apple/macOS/iOS-oriented bundled skills are now blocked by default (`apple, mac, macos, ios, ipados, xcode, swift, safari`) to reduce irrelevant tool chatter and prompt bloat.
+- Skills are now reconciled in strict allowlist mode on every startup: old skill directories are removed and only allowlisted skills are reseeded from `/opt/bootstrap/skills`.
+- Default allowlist is tuned for deterministic low-noise behavior: `n8n, n8n-editor, terminal, shell, filesystem, git, web-search, http, memory`.
+- Any bundled skill not in `OPENCLAW_SKILL_ALLOWLIST` is excluded, including Apple/macOS/iOS-related skills.
 - Per-agent runtime directories are now materialized at startup (`agents/<id>/agent` and `agents/<id>/sessions`) and all configured agents are normalized in config so selector-visible agents stay usable after restart.
 - Agent models are normalized to stable provider refs:
 	- `main`: `openai/kimi-k2.5`

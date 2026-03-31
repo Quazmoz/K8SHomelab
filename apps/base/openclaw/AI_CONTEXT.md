@@ -50,8 +50,9 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 ## Bootstrap Cleanup
 - A repo-managed init container now runs `bootstrap_openclaw.py` on pod start.
 - It seeds skill folders onto the PVC, deletes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from all workspaces, and replaces the main workspace `AGENTS.md` with a leaner version that does not auto-load `MEMORY.md` every session.
-- It now reconciles skills on each startup (clears old skill directories, then reseeds from bootstrap sources) so removed skills stay removed.
-- It excludes Apple/macOS/iOS-related bundled skills by default via `OPENCLAW_SKILL_DENY_PATTERNS` (`apple,mac,macos,ios,ipados,xcode,swift,safari`).
+- It now reconciles skills in strict allowlist mode on each startup (clears old skill directories, then reseeds only allowlisted skills from bootstrap sources) so removed skills stay removed.
+- Default allowlist is set via `OPENCLAW_SKILL_ALLOWLIST` and currently includes `n8n,n8n-editor,terminal,shell,filesystem,git,web-search,http,memory`.
+- Any bundled skill not in the allowlist is excluded, including Apple/macOS/iOS-related skills.
 - It now also materializes per-agent runtime directories (`agents/<id>/agent`, `agents/<id>/sessions`) and normalizes agent entries (`main`, `ops`, `research`, `homelab`) so selector-visible agents are fully bootstrap-backed on every restart.
 - It also seeds optional `chatgpt` and `mistral` provider definitions into `openclaw.json` so those backends survive pod restarts when API keys are present.
 - It normalizes agent models to stable OpenAI-compatible Ollama Cloud refs:
