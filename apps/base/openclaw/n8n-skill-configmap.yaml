@@ -87,17 +87,22 @@ data:
 
     1. Always resolve workflow names to IDs by calling `GET /api/v1/workflows` first
        if the user refers to a workflow by name rather than numeric ID.
-    2. When triggering a workflow, confirm the execution ID returned, then optionally
+    2. For requests like "find GroupMe workflows", use the bundled helper first:
+       `python3 {baseDir}/n8n_query_helper.py workflows --match groupme --limit 50`
+    3. Retry helper calls at most once on transport/auth errors.
+    4. If both attempts fail, stop and return a concise failure with the exact HTTP error.
+    5. Do not spawn subagents for simple read-only n8n queries.
+    6. When triggering a workflow, confirm the execution ID returned, then optionally
        poll `GET /api/v1/executions/{executionId}` until `status` is no longer `running`.
-    3. If an execution shows `status: error`, retrieve the full execution detail and
+    7. If an execution shows `status: error`, retrieve the full execution detail and
        surface the error message from the failed node.
-    4. Never expose the N8N_API_KEY value in responses — refer to it only as "the API key".
-    5. For workflow edits, do one of these instead of pretending the change succeeded:
+    8. Never expose the N8N_API_KEY value in responses — refer to it only as "the API key".
+    9. For workflow edits, do one of these instead of pretending the change succeeded:
        fetch the current workflow JSON and summarize the exact nodes/fields to change,
        or prepare a replacement JSON document for the user to apply through the n8n UI
        or a separately tested helper.
-    6. The n8n UI is reachable at `http://n8n.k8s.local` for the user to inspect
-       workflows visually; direct them there for creating/editing workflows.
+    10. The n8n UI is reachable at `http://n8n.k8s.local` for the user to inspect
+        workflows visually; direct them there for creating/editing workflows.
 
     ---
 
@@ -115,3 +120,133 @@ data:
 
     Ask the user for the webhook path and any required authentication when using
     webhook-based invocation.
+
+  n8n_query_helper.py: |
+   import argparse
+   import json
+   import os
+   import re
+   import sys
+   import urllib.error
+   import urllib.request
+
+
+   BASE_URL = os.environ.get("N8N_BASE_URL")
+   API_KEY = os.environ.get("N8N_API_KEY")
+
+
+   def fail(message, code=1):
+      print(json.dumps({"ok": False, "error": message}, indent=2))
+      sys.exit(code)
+
+
+   def require_env():
+      if not BASE_URL:
+         fail("N8N_BASE_URL is not set")
+      if not API_KEY:
+         fail("N8N_API_KEY is not set")
+
+
+   def request(path):
+      req = urllib.request.Request(
+         f"{BASE_URL}/api/v1{path}",
+         method="GET",
+         headers={"X-N8N-API-KEY": API_KEY, "Content-Type": "application/json"},
+      )
+      try:
+         with urllib.request.urlopen(req, timeout=20) as response:
+            payload = response.read().decode("utf-8")
+            return response.status, json.loads(payload) if payload else None
+      except urllib.error.HTTPError as exc:
+         detail = exc.read().decode("utf-8")
+         fail(f"HTTP {exc.code}: {detail}")
+      except urllib.error.URLError as exc:
+         fail(f"Transport error: {exc}")
+
+
+   def unwrap_workflows(payload):
+      if isinstance(payload, list):
+         return payload
+      if isinstance(payload, dict):
+         for key in ("data", "workflows", "items"):
+            value = payload.get(key)
+            if isinstance(value, list):
+               return value
+      return []
+
+
+   def workflow_matches(workflow, needle):
+      if not needle:
+         return True
+
+      pat = re.compile(re.escape(needle), re.IGNORECASE)
+      name = str(workflow.get("name", ""))
+      if pat.search(name):
+         return True
+
+      tags = workflow.get("tags") or []
+      if isinstance(tags, list):
+         for tag in tags:
+            if isinstance(tag, dict):
+               tag_name = str(tag.get("name", ""))
+            else:
+               tag_name = str(tag)
+            if pat.search(tag_name):
+               return True
+
+      for node in workflow.get("nodes") or []:
+         if not isinstance(node, dict):
+            continue
+         node_name = str(node.get("name", ""))
+         node_type = str(node.get("type", ""))
+         if pat.search(node_name) or pat.search(node_type):
+            return True
+
+      return False
+
+
+   def list_workflows(args):
+      require_env()
+      _, payload = request(f"/workflows?limit={args.limit}")
+      workflows = unwrap_workflows(payload)
+
+      matches = [wf for wf in workflows if workflow_matches(wf, args.match)]
+      compact = []
+      for workflow in matches:
+         compact.append(
+            {
+               "id": workflow.get("id"),
+               "name": workflow.get("name"),
+               "active": workflow.get("active"),
+               "updatedAt": workflow.get("updatedAt"),
+            }
+         )
+
+      print(
+         json.dumps(
+            {
+               "ok": True,
+               "count": len(compact),
+               "match": args.match,
+               "workflows": compact,
+            },
+            indent=2,
+         )
+      )
+
+
+   def main():
+      parser = argparse.ArgumentParser(description="n8n query helper")
+      subparsers = parser.add_subparsers(dest="command", required=True)
+
+      workflows_parser = subparsers.add_parser("workflows", help="List workflows")
+      workflows_parser.add_argument("--match", default="", help="Case-insensitive text filter")
+      workflows_parser.add_argument("--limit", type=int, default=100, help="Max workflows to request")
+      workflows_parser.set_defaults(func=list_workflows)
+
+      args = parser.parse_args()
+      args.func(args)
+
+
+   if __name__ == "__main__":
+      main()

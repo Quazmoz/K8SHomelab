@@ -33,6 +33,8 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - **Env vars injected:** `N8N_BASE_URL` (`http://n8n.apps.svc.cluster.local:5678`), `N8N_API_KEY` (from `openclaw-credentials` secret key `N8N_API_KEY`)
 - **To add the API key:** Decrypt the SOPS secret, add `N8N_API_KEY: <key>`, re-encrypt. Generate the key in n8n **Settings → API → Create an API key**.
 - **Skill path on PVC:** `/home/user/.openclaw/skills/n8n/SKILL.md`
+- **Query helper:** `/home/user/.openclaw/skills/n8n/n8n_query_helper.py`
+- **Deterministic query pattern:** use helper for list/filter queries (for example GroupMe workflows) with max one retry, then return failure details instead of looping.
 - **Live API contract (validated 2026-03-31):**
   - `PATCH /api/v1/workflows/{id}` returns `405 Method Not Allowed`
   - `PUT /api/v1/workflows/{id}` works with a sanitized full workflow body (`name`, `nodes`, `connections`, filtered `settings`)

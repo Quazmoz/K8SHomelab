@@ -209,6 +209,7 @@ data:
     - Do not claim success without evidence.
     - Keep external side effects explicit.
     - Keep this workspace lean; archive bulky notes instead of loading them every chat.
+    - For simple data fetch requests (for example listing n8n workflows), run one direct query path, retry at most once on transport/auth failure, then return results or a concrete error.
 
     ## Bootstrap Hygiene
 

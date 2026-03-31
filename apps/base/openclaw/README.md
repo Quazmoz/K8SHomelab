@@ -134,6 +134,13 @@ Known behavior in current build:
 
 - OpenClaw includes an `n8n` skill seeded onto the PVC at startup.
 - Current verified behavior: list workflows, inspect workflow JSON, trigger manual runs, inspect executions.
+- Read/query operations now include a bundled helper script (`n8n_query_helper.py`) to avoid repeated plan loops for simple lookups.
+- For requests like "show GroupMe workflows", the recommended path is:
+	- `python3 /home/user/.openclaw/skills/n8n/n8n_query_helper.py workflows --match groupme --limit 50`
+- n8n read-query retry policy is intentionally strict to reduce loops and token burn:
+	- one initial attempt
+	- at most one retry on transport/auth errors
+	- then stop and return the exact failure
 - Live contract in this environment:
 	- `PATCH /api/v1/workflows/{id}` returns `405 Method Not Allowed`
 	- `PUT /api/v1/workflows/{id}` updates workflows when sent a sanitized full workflow body
