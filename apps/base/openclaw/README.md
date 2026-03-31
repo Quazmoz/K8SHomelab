@@ -104,6 +104,41 @@ Known behavior in current build:
 - Use `openai/<model>` refs for Ollama Cloud routing (`openai/kimi-k2.5`, `openai/nemotron-3-super`).
 - `openai/gemma3:27b` may return provider-side `500` errors from this runtime path; use `openai/kimi-k2.5` as the stable default.
 
+## n8n Skill Notes
+
+- OpenClaw includes an `n8n` skill seeded onto the PVC at startup.
+- Current verified behavior: list workflows, inspect workflow JSON, trigger manual runs, inspect executions.
+- Current limitation: the live n8n instance rejects `PATCH /api/v1/workflows/{id}` with `405 Method Not Allowed`, so workflow edits and activation toggles should be treated as unsupported until a tested helper path is added.
+- For workflow authoring or structural changes, use the n8n UI at `http://n8n.k8s.local` or add a dedicated helper script/tool instead of relying on pure prompt instructions.
+
+## n8n Editor Helper
+
+- OpenClaw now also seeds an `n8n-editor` skill containing a Python helper at `/home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py`.
+- The helper uses the live, tested write path for this n8n build: `PUT /api/v1/workflows/{id}`.
+- It sanitizes workflow payloads before update so the agent only sends fields this n8n build accepts: `name`, `nodes`, `connections`, filtered `settings`, and optional `staticData` / `pinData`.
+- Supported workflows updates include:
+	- export a workflow into editable JSON
+	- apply an edited JSON file back to n8n
+	- apply tested recipes such as `groupme-two-videos`
+- Example usage inside the OpenClaw container:
+
+```bash
+python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py export ldih2yDXF9sgHbt1 --output /tmp/groupme.json
+python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-recipe ldih2yDXF9sgHbt1 groupme-two-videos
+```
+
+## Agent Bootstrap Cleanup
+
+- Pod startup now runs a repo-managed bootstrap script before the main container starts.
+- This prunes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from the PVC workspaces.
+- The main workspace `AGENTS.md` is replaced with a lighter version that avoids auto-loading the large `MEMORY.md` on every chat.
+- Agent models are normalized to stable provider refs:
+	- `main`: `openai/kimi-k2.5`
+	- `research`: `openai/kimi-k2.5`
+	- `homelab`: `openai/kimi-k2.5`
+	- `ops`: `openai/nemotron-3-super`
+- No chat-channel bindings are applied by default because the current deployment only exposes Control UI and has no external routed channels configured.
+
 ## Troubleshooting
 
 ```bash

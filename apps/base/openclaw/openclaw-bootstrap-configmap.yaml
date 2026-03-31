@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-bootstrap
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  bootstrap_openclaw.py: |
+    import json
+    import os
+    import shutil
+    from pathlib import Path
+
+
+    ROOT = Path("/home/user/.openclaw")
+    TEMPLATE_DIR = Path("/opt/bootstrap")
+    SKILLS_SRC = TEMPLATE_DIR / "skills"
+    LEAN_MAIN_AGENTS = TEMPLATE_DIR / "main-AGENTS.md"
+    CONFIG_PATH = ROOT / "openclaw.json"
+
+    AGENT_MODELS = {
+        "main": "openai/kimi-k2.5",
+        "research": "openai/kimi-k2.5",
+        "homelab": "openai/kimi-k2.5",
+        "ops": "openai/nemotron-3-super",
+    }
+
+    DEFAULT_MODELS = {
+        "openai/kimi-k2.5": {},
+        "openai/nemotron-3-super": {},
+    }
+
+
+    def copy_tree(src: Path, dst: Path) -> None:
+        if not src.exists():
+            return
+        dst.mkdir(parents=True, exist_ok=True)
+        for item in src.iterdir():
+            target = dst / item.name
+            if item.is_dir():
+                copy_tree(item, target)
+            else:
+                shutil.copy2(item, target)
+
+
+    def install_skills() -> None:
+        skills_dst = ROOT / "skills"
+        skills_dst.mkdir(parents=True, exist_ok=True)
+        for skill_dir in SKILLS_SRC.iterdir():
+            if skill_dir.is_dir():
+                copy_tree(skill_dir, skills_dst / skill_dir.name)
+
+
+    def prune_workspace_noise() -> None:
+        workspaces = [ROOT / "workspace"]
+        workspaces.extend(path for path in ROOT.iterdir() if path.name.startswith("workspace-"))
+
+        for workspace in workspaces:
+            for noisy_name in ("BOOTSTRAP.md", "HEARTBEAT.md"):
+                noisy_file = workspace / noisy_name
+                if noisy_file.exists():
+                    noisy_file.unlink()
+
+        main_agents_path = ROOT / "workspace" / "AGENTS.md"
+        if main_agents_path.exists():
+            backup = main_agents_path.with_suffix(".md.pre-bootstrap.bak")
+            if not backup.exists():
+                shutil.copy2(main_agents_path, backup)
+        shutil.copy2(LEAN_MAIN_AGENTS, main_agents_path)
+
+
+    def patch_config() -> None:
+        if not CONFIG_PATH.exists():
+            return
+
+        data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        agents = data.setdefault("agents", {})
+        defaults = agents.setdefault("defaults", {})
+        defaults["model"] = {"primary": AGENT_MODELS["main"]}
+        models = defaults.setdefault("models", {})
+        for model_id, model_value in DEFAULT_MODELS.items():
+            models.setdefault(model_id, model_value)
+
+        for agent in agents.get("list", []):
+            agent_id = agent.get("id")
+            if agent_id in AGENT_MODELS and agent_id != "main":
+                agent["model"] = AGENT_MODELS[agent_id]
+
+        CONFIG_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+    def main() -> None:
+        install_skills()
+        prune_workspace_noise()
+        patch_config()
+        print("OpenClaw bootstrap complete")
+
+
+    if __name__ == "__main__":
+        main()
+  main-AGENTS.md: |
+    # AGENTS.md - Main Workspace
+
+    This workspace is for direct conversations in Control UI.
+
+    ## Session Startup
+
+    Read these first:
+
+    1. `SOUL.md`
+    2. `USER.md`
+    3. `memory/YYYY-MM-DD.md` for today, then yesterday if needed
+
+    Only open `MEMORY.md` when the user asks for long-term context, personal history,
+    resume/profile material, or older decisions that are not in the daily notes.
+
+    ## Working Rules
+
+    - Prefer action over ceremony.
+    - Do not claim success without evidence.
+    - Keep external side effects explicit.
+    - Keep this workspace lean; archive bulky notes instead of loading them every chat.
+
+    ## Bootstrap Hygiene
+
+    - `BOOTSTRAP.md` should not exist after initial setup.
+    - `HEARTBEAT.md` should stay absent unless periodic checks are intentionally configured.

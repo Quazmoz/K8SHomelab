@@ -42,34 +42,36 @@ spec:
         fsGroup: 1000
         fsGroupChangePolicy: "OnRootMismatch"
       # initContainers run to completion before main containers start.
-      # Used here to seed skill files from ConfigMaps onto the PVC so that
-      # OpenClaw can load them from ~/.openclaw/skills/<name>/SKILL.md
+      # Used here to seed skills, prune heavyweight bootstrap files, and
+      # normalize agent models from repo-managed templates.
       initContainers:
-      - name: install-skills
-        image: busybox:stable
+      - name: bootstrap-openclaw
+        image: ghcr.io/openclaw/openclaw:2026.3.28
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
         command:
-        - sh
-        - -c
-        - |
-          mkdir -p /data/skills/n8n
-          cp /opt/skills-src/n8n/SKILL.md /data/skills/n8n/SKILL.md
-          echo "n8n skill installed"
+        - python3
+        - /opt/bootstrap/bootstrap_openclaw.py
         volumeMounts:
         - name: openclaw-data
-          mountPath: /data
+          mountPath: /home/user/.openclaw
+        - name: openclaw-bootstrap
+          mountPath: /opt/bootstrap
+          readOnly: true
         - name: n8n-skill
-          mountPath: /opt/skills-src/n8n
+          mountPath: /opt/bootstrap/skills/n8n
+          readOnly: true
+        - name: n8n-editor-skill
+          mountPath: /opt/bootstrap/skills/n8n-editor
           readOnly: true
         resources:
           requests:
             cpu: 10m
-            memory: 16Mi
-          limits:
-            cpu: 50m
             memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
       containers:
       - name: openclaw
         image: ghcr.io/openclaw/openclaw:2026.3.28
@@ -185,3 +187,9 @@ spec:
       - name: n8n-skill
         configMap:
           name: openclaw-n8n-skill
+      - name: n8n-editor-skill
+        configMap:
+          name: openclaw-n8n-editor-skill
+      - name: openclaw-bootstrap
+        configMap:
+          name: openclaw-bootstrap

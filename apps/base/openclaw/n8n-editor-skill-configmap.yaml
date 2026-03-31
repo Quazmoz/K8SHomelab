@@ -1,0 +1,275 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-n8n-editor-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: n8n-editor
+    description: >
+      Safely edit n8n workflows using a tested helper script and the live `PUT`
+      workflow update path. Use when the user asks to modify, update, edit,
+      refactor, fix, publish, unpublish, or create replacement JSON for an n8n
+      workflow.
+    ---
+
+    # n8n Editor Skill
+
+    Use the bundled helper script instead of hand-writing raw API calls.
+
+    **Helper path:** `{baseDir}/n8n_workflow_helper.py`
+
+    ## Supported commands
+
+    ### Export an editable workflow JSON
+    ```
+    python3 {baseDir}/n8n_workflow_helper.py export <workflow-id> --output /tmp/workflow.json
+    ```
+
+    ### Apply an edited workflow JSON back to n8n
+    ```
+    python3 {baseDir}/n8n_workflow_helper.py apply-file <workflow-id> /tmp/workflow.json
+    ```
+
+    ### Apply a tested recipe
+    ```
+    python3 {baseDir}/n8n_workflow_helper.py apply-recipe <workflow-id> groupme-two-videos
+    ```
+
+    ### Publish or unpublish a workflow
+    ```
+    python3 {baseDir}/n8n_workflow_helper.py publish <workflow-id>
+    python3 {baseDir}/n8n_workflow_helper.py unpublish <workflow-id>
+    ```
+
+    ## Workflow editing rules
+
+    1. Export the current workflow before any non-trivial change.
+    2. Prefer `apply-recipe` when an existing recipe matches the task.
+    3. For custom edits, modify the exported JSON and use `apply-file`.
+    4. Do not use raw `PATCH /api/v1/workflows/{id}` in this environment.
+    5. Summarize the exact change you applied and surface any validation errors from the helper.
+
+  n8n_workflow_helper.py: |
+    import argparse
+    import json
+    import os
+    import sys
+    import urllib.error
+    import urllib.request
+    from copy import deepcopy
+    from pathlib import Path
+
+
+    BASE_URL = os.environ.get("N8N_BASE_URL")
+    API_KEY = os.environ.get("N8N_API_KEY")
+    ALLOWED_SETTINGS = {
+        "timezone",
+        "errorWorkflow",
+        "callerIds",
+        "callerPolicy",
+        "saveDataErrorExecution",
+        "saveDataSuccessExecution",
+        "saveManualExecutions",
+        "saveExecutionProgress",
+        "executionTimeout",
+        "executionOrder",
+        "timeSavedPerExecution",
+        "timeSavedMode",
+        "availableInMCP",
+        "credentialResolverId",
+        "redactionPolicy",
+    }
+
+
+    def fail(message, code=1):
+        print(json.dumps({"ok": False, "error": message}, indent=2))
+        sys.exit(code)
+
+
+    def require_env():
+        if not BASE_URL:
+            fail("N8N_BASE_URL is not set")
+        if not API_KEY:
+            fail("N8N_API_KEY is not set")
+
+
+    def request(path, method="GET", body=None):
+        req = urllib.request.Request(
+            f"{BASE_URL}/api/v1{path}",
+            method=method,
+            headers={
+                "X-N8N-API-KEY": API_KEY,
+                "Content-Type": "application/json",
+            },
+            data=None if body is None else json.dumps(body).encode("utf-8"),
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as response:
+                payload = response.read().decode("utf-8")
+                return response.status, json.loads(payload) if payload else None
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8")
+            fail(f"HTTP {exc.code}: {detail}")
+
+
+    def get_workflow(workflow_id):
+        _, payload = request(f"/workflows/{workflow_id}")
+        return payload
+
+
+    def sanitize_settings(settings):
+        settings = settings or {}
+        return {key: value for key, value in settings.items() if key in ALLOWED_SETTINGS}
+
+
+    def build_update_payload(workflow, override=None):
+        override = override or {}
+        payload = {
+            "name": override.get("name", workflow.get("name")),
+            "nodes": override.get("nodes", workflow.get("nodes", [])),
+            "connections": override.get("connections", workflow.get("connections", {})),
+            "settings": sanitize_settings(override.get("settings", workflow.get("settings", {}))),
+        }
+        for optional_key in ("pinData", "staticData"):
+            value = override.get(optional_key, workflow.get(optional_key))
+            if value is not None:
+                payload[optional_key] = value
+        return payload
+
+
+    def export_workflow(args):
+        workflow = get_workflow(args.workflow_id)
+        payload = build_update_payload(workflow)
+        output_path = Path(args.output)
+        output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({
+            "ok": True,
+            "workflowId": args.workflow_id,
+            "output": str(output_path),
+            "name": payload["name"],
+            "nodeCount": len(payload.get("nodes", [])),
+        }, indent=2))
+
+
+    def apply_payload(workflow_id, payload):
+        status, response = request(f"/workflows/{workflow_id}", method="PUT", body=payload)
+        print(json.dumps({
+            "ok": True,
+            "status": status,
+            "workflowId": response.get("id"),
+            "name": response.get("name"),
+            "updatedAt": response.get("updatedAt"),
+            "versionId": response.get("versionId"),
+        }, indent=2))
+
+
+    def apply_file(args):
+        current = get_workflow(args.workflow_id)
+        file_payload = json.loads(Path(args.file_path).read_text(encoding="utf-8"))
+        payload = build_update_payload(current, file_payload)
+        apply_payload(args.workflow_id, payload)
+
+
+    def publish(args):
+        workflow = get_workflow(args.workflow_id)
+        body = {
+            "versionId": workflow["versionId"],
+            "name": workflow.get("name"),
+            "description": workflow.get("description"),
+        }
+        status, response = request(f"/workflows/{args.workflow_id}/activate", method="POST", body=body)
+        print(json.dumps({
+            "ok": True,
+            "status": status,
+            "workflowId": response.get("id"),
+            "active": response.get("active"),
+            "activeVersionId": response.get("activeVersionId"),
+        }, indent=2))
+
+
+    def unpublish(args):
+        status, response = request(f"/workflows/{args.workflow_id}/deactivate", method="POST", body={})
+        print(json.dumps({
+            "ok": True,
+            "status": status,
+            "workflowId": response.get("id"),
+            "active": response.get("active"),
+            "activeVersionId": response.get("activeVersionId"),
+        }, indent=2))
+
+
+    def apply_groupme_two_videos(workflow):
+        workflow = deepcopy(workflow)
+        target_node = None
+        for node in workflow.get("nodes", []):
+            if node.get("id") == "1edab203-67d3-4bc2-bc94-b7660de1041d" or node.get("name") == "Normalize and Dedupe":
+                target_node = node
+                break
+
+        if target_node is None:
+            fail("Could not find the expected Normalize and Dedupe node")
+
+        target_node["name"] = "Normalize and Select Two"
+        target_node.setdefault("parameters", {})["jsCode"] = """const staticData = $getWorkflowStaticData('global');\nconst raw = $json.output || $json.text || $json.response || $json.data || $json;\nlet data = raw;\n\nif (typeof raw === 'string') {\n  try {\n    data = JSON.parse(raw);\n  } catch (error) {\n    return [];\n  }\n}\n\nlet candidates = [];\nif (Array.isArray(data)) {\n  candidates = data;\n} else if (data && typeof data === 'object') {\n  candidates = [data];\n}\n\nconst validVideos = [];\nfor (const video of candidates) {\n  if (!video || typeof video !== 'object') continue;\n\n  const id = String(video.source_message_id || video.message_id || '');\n  const url = video.youtube_url || null;\n  if (!id || !url || typeof url !== 'string') continue;\n\n  const isYoutube = url.includes('youtube.com/watch') || url.includes('youtu.be/');\n  if (!isYoutube) continue;\n\n  validVideos.push({\n    source_message_id: id,\n    youtube_url: url,\n    post_text: 'Here is the latest online mission video: ' + url,\n  });\n}\n\nconst lastPosted = String(staticData.lastPostedMessageId || '');\nlet unseenVideos = validVideos;\nif (lastPosted) {\n  const lastPostedIndex = validVideos.findIndex((video) => video.source_message_id === lastPosted);\n  if (lastPostedIndex >= 0) {\n    unseenVideos = validVideos.slice(lastPostedIndex + 1);\n  }\n}\n\nreturn unseenVideos.slice(-2).map((video) => ({ json: video }));"""
+
+        for node in workflow.get("nodes", []):
+            if node.get("id") == "613bab54-f82a-4c02-8b8e-06e00efc4484" or node.get("name") == "Save Last Posted ID":
+                node.setdefault("parameters", {})["jsCode"] = """const staticData = $getWorkflowStaticData('global');\nif ($json && $json.source_message_id) {\n  staticData.lastPostedMessageId = String($json.source_message_id);\n}\nreturn [{\n  json: {\n    status: 'posted',\n    source_message_id: $json.source_message_id,\n    youtube_url: $json.youtube_url,\n    posted_text: $json.post_text,\n    destination_group_id: '113899158',\n  },\n}];"""
+                break
+
+        return workflow
+
+
+    def apply_recipe(args):
+        workflow = get_workflow(args.workflow_id)
+        if args.recipe == "groupme-two-videos":
+            updated = apply_groupme_two_videos(workflow)
+        else:
+            fail(f"Unknown recipe: {args.recipe}")
+        payload = build_update_payload(workflow, updated)
+        apply_payload(args.workflow_id, payload)
+
+
+    def build_parser():
+        parser = argparse.ArgumentParser(description="Safely edit n8n workflows via the live public API")
+        subparsers = parser.add_subparsers(dest="command", required=True)
+
+        export_parser = subparsers.add_parser("export")
+        export_parser.add_argument("workflow_id")
+        export_parser.add_argument("--output", required=True)
+        export_parser.set_defaults(func=export_workflow)
+
+        apply_file_parser = subparsers.add_parser("apply-file")
+        apply_file_parser.add_argument("workflow_id")
+        apply_file_parser.add_argument("file_path")
+        apply_file_parser.set_defaults(func=apply_file)
+
+        recipe_parser = subparsers.add_parser("apply-recipe")
+        recipe_parser.add_argument("workflow_id")
+        recipe_parser.add_argument("recipe")
+        recipe_parser.set_defaults(func=apply_recipe)
+
+        publish_parser = subparsers.add_parser("publish")
+        publish_parser.add_argument("workflow_id")
+        publish_parser.set_defaults(func=publish)
+
+        unpublish_parser = subparsers.add_parser("unpublish")
+        unpublish_parser.add_argument("workflow_id")
+        unpublish_parser.set_defaults(func=unpublish)
+
+        return parser
+
+
+    def main():
+        require_env()
+        parser = build_parser()
+        args = parser.parse_args()
+        args.func(args)
+
+
+    if __name__ == "__main__":
+        main()

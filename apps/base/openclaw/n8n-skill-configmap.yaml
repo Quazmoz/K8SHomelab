@@ -11,9 +11,10 @@ data:
     name: n8n
     description: >
       Interact with the n8n workflow automation platform running in the homelab.
-      Use when the user asks to: list workflows, trigger/run a workflow, activate
-      or deactivate a workflow, check execution status, or query n8n for automation
-      state. Available for any n8n management request.
+         Use when the user asks to: list workflows, inspect workflow JSON, trigger/run
+         a workflow, check execution status, or query n8n for automation state.
+         Use this for read/query operations and manual runs. Do not assume workflow
+         editing is supported unless the exact write endpoint has been tested live.
     ---
 
     # n8n Skill
@@ -41,20 +42,6 @@ data:
     ```
     GET $N8N_BASE_URL/api/v1/workflows/{id}
     Headers: X-N8N-API-KEY: $N8N_API_KEY
-    ```
-
-    ### Activate a workflow
-    ```
-    PATCH $N8N_BASE_URL/api/v1/workflows/{id}
-    Headers: X-N8N-API-KEY: $N8N_API_KEY, Content-Type: application/json
-    Body: {"active": true}
-    ```
-
-    ### Deactivate a workflow
-    ```
-    PATCH $N8N_BASE_URL/api/v1/workflows/{id}
-    Headers: X-N8N-API-KEY: $N8N_API_KEY, Content-Type: application/json
-    Body: {"active": false}
     ```
 
     ### Trigger a workflow (manual run)
@@ -87,6 +74,13 @@ data:
     Headers: X-N8N-API-KEY: $N8N_API_KEY
     ```
 
+    ### Workflow editing caveat
+
+    The current homelab n8n instance rejects `PATCH /api/v1/workflows/{id}` with
+    `405 Method Not Allowed`. Do not claim that workflow edits, activation changes,
+    or workflow creation have been applied unless the exact write endpoint and
+    payload have been validated live in the current n8n version.
+
     ---
 
     ## Usage Instructions
@@ -98,7 +92,11 @@ data:
     3. If an execution shows `status: error`, retrieve the full execution detail and
        surface the error message from the failed node.
     4. Never expose the N8N_API_KEY value in responses — refer to it only as "the API key".
-    5. The n8n UI is reachable at `http://n8n.k8s.local` for the user to inspect
+    5. For workflow edits, do one of these instead of pretending the change succeeded:
+       fetch the current workflow JSON and summarize the exact nodes/fields to change,
+       or prepare a replacement JSON document for the user to apply through the n8n UI
+       or a separately tested helper.
+    6. The n8n UI is reachable at `http://n8n.k8s.local` for the user to inspect
        workflows visually; direct them there for creating/editing workflows.
 
     ---
