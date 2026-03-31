@@ -50,6 +50,9 @@ spec:
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
+        env:
+        - name: OPENCLAW_SKILL_DENY_PATTERNS
+          value: "apple,mac,macos,ios,ipados,xcode,swift,safari"
         command:
         - python3
         - /opt/bootstrap/bootstrap_openclaw.py

@@ -11,7 +11,7 @@ OpenClaw is an autonomous AI agent that can execute tasks, orchestrate tools, an
 | **Gateway Port** | `18789` (WebSocket) |
 | **Canvas Port** | `18793` (HTTP) |
 | **Storage** | 5Gi PV on `/mnt/k8s-data/openclaw` |
-| **Memory** | 512Mi request / 1Gi limit |
+| **Memory** | 1Gi request / 6Gi limit |
 | **CPU** | 200m request / 2000m limit |
 
 ## Security
@@ -165,12 +165,19 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 - Pod startup now runs a repo-managed bootstrap script before the main container starts.
 - This prunes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from the PVC workspaces.
 - The main workspace `AGENTS.md` is replaced with a lighter version that avoids auto-loading the large `MEMORY.md` on every chat.
+- Skills are now reconciled on every startup: old skill directories are removed and then reseeded from `/opt/bootstrap/skills`.
+- Apple/macOS/iOS-oriented bundled skills are now blocked by default (`apple, mac, macos, ios, ipados, xcode, swift, safari`) to reduce irrelevant tool chatter and prompt bloat.
 - Per-agent runtime directories are now materialized at startup (`agents/<id>/agent` and `agents/<id>/sessions`) and all configured agents are normalized in config so selector-visible agents stay usable after restart.
 - Agent models are normalized to stable provider refs:
 	- `main`: `openai/kimi-k2.5`
 	- `research`: `openai/kimi-k2.5`
 	- `homelab`: `openai/kimi-k2.5`
 	- `ops`: `openai/nemotron-3-super`
+- Agent defaults are now token-tuned and deterministic on each restart:
+	- model catalog is replaced with a small curated set (stale legacy model entries are removed)
+	- `maxConcurrent` is set to `2`
+	- `subagents.maxConcurrent` is set to `3`
+	- `thinkingDefault` is set to `minimal`
 - No chat-channel bindings are applied by default because the current deployment only exposes Control UI and has no external routed channels configured.
 
 ## Troubleshooting

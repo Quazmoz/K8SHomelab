@@ -50,6 +50,8 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 ## Bootstrap Cleanup
 - A repo-managed init container now runs `bootstrap_openclaw.py` on pod start.
 - It seeds skill folders onto the PVC, deletes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from all workspaces, and replaces the main workspace `AGENTS.md` with a leaner version that does not auto-load `MEMORY.md` every session.
+- It now reconciles skills on each startup (clears old skill directories, then reseeds from bootstrap sources) so removed skills stay removed.
+- It excludes Apple/macOS/iOS-related bundled skills by default via `OPENCLAW_SKILL_DENY_PATTERNS` (`apple,mac,macos,ios,ipados,xcode,swift,safari`).
 - It now also materializes per-agent runtime directories (`agents/<id>/agent`, `agents/<id>/sessions`) and normalizes agent entries (`main`, `ops`, `research`, `homelab`) so selector-visible agents are fully bootstrap-backed on every restart.
 - It also seeds optional `chatgpt` and `mistral` provider definitions into `openclaw.json` so those backends survive pod restarts when API keys are present.
 - It normalizes agent models to stable OpenAI-compatible Ollama Cloud refs:
@@ -57,6 +59,11 @@ keeping skill content in Git while placing it where OpenClaw expects it.
   - `research`: `openai/kimi-k2.5`
   - `homelab`: `openai/kimi-k2.5`
   - `ops`: `openai/nemotron-3-super`
+- It enforces token-efficiency defaults at bootstrap time:
+  - replaces `agents.defaults.models` with a curated small model set (removes stale legacy model entries)
+  - `agents.defaults.maxConcurrent = 2`
+  - `agents.defaults.subagents.maxConcurrent = 3`
+  - `agents.defaults.thinkingDefault = minimal`
 - No routing bindings are configured in repo because the current runtime has no external chat channels configured; Control UI agent selection is still done via the dropdown + new chat.
 
 ## Credentials
