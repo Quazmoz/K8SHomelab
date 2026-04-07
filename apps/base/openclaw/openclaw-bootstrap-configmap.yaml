@@ -85,7 +85,6 @@ data:
     }
 
     N8N_CONTROL_TUNING = {
-        "subagents": {"maxConcurrent": 1},
         "thinkingDefault": "minimal",
     }
 
