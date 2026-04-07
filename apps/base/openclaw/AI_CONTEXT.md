@@ -8,7 +8,7 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 - Device identity and pairing are required by the Control UI.
 - TLS is enabled at ingress for secure-context browser requirements.
 - `HOME` is explicitly set to `/home/user` so that OpenClaw's memory workspace (`~/.openclaw/workspace/`) resolves to the PVC mount, not ephemeral storage.
-- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.3.28` to avoid `latest` regressions.
+- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.4.5-arm64` (latest verified ARM64 release).
 
 ## Memory System
 - Provider: `local` (on-device embeddings via node-llama-cpp, no external API needed)
@@ -67,9 +67,8 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - It enforces token-efficiency defaults at bootstrap time:
   - replaces `agents.defaults.models` with a curated small model set (removes stale legacy model entries)
   - `agents.defaults.maxConcurrent = 2`
-  - `agents.defaults.subagents.maxConcurrent = 3`
-  - `agents.defaults.thinkingDefault = minimal`
-- The dedicated `n8n-control` agent applies tighter runtime behavior for n8n tasks (`subagents.maxConcurrent = 1`) and seeds a workspace-specific `AGENTS.md` that forces single-path helper usage for read queries.
+  - removes deprecated keys rejected by newer OpenClaw builds (`subagents.maxConcurrent`, `thinkingDefault`) from defaults and agent entries during bootstrap
+- The dedicated `n8n-control` agent seeds a workspace-specific `AGENTS.md` that forces single-path helper usage for read queries.
 - No routing bindings are configured in repo because the current runtime has no external chat channels configured; Control UI agent selection is still done via the dropdown + new chat.
 
 ## Credentials

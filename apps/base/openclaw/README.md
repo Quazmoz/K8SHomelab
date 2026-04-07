@@ -6,7 +6,7 @@ OpenClaw is an autonomous AI agent that can execute tasks, orchestrate tools, an
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `ghcr.io/openclaw/openclaw:2026.3.28` (pinned to avoid `latest` regressions) |
+| **Image** | `ghcr.io/openclaw/openclaw:2026.4.5-arm64` (pinned to latest verified ARM64 release) |
 | **Node** | `orangepi6plus` (with control-plane toleration) |
 | **Gateway Port** | `18789` (WebSocket) |
 | **Canvas Port** | `18793` (HTTP) |
@@ -195,9 +195,7 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 - Agent defaults are now token-tuned and deterministic on each restart:
 	- model catalog is replaced with a small curated set (stale legacy model entries are removed)
 	- `maxConcurrent` is set to `2`
-	- `subagents.maxConcurrent` is set to `3`
-	- `thinkingDefault` is set to `minimal`
-- The `n8n-control` agent is further constrained to `subagents.maxConcurrent = 1` to reduce loop risk on n8n queries.
+	- deprecated keys rejected by newer OpenClaw builds are removed during bootstrap (`subagents.maxConcurrent`, `thinkingDefault`)
 - No chat-channel bindings are applied by default because the current deployment only exposes Control UI and has no external routed channels configured.
 
 ## Troubleshooting
