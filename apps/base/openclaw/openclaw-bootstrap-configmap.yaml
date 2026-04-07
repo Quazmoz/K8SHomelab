@@ -52,6 +52,12 @@ data:
     }
 
     PROVIDER_CONFIGS = {
+        "openai": {
+            "baseUrl": "https://ollama.com/v1",
+            "api": "openai-completions",
+            "apiKey": "env:OPENAI_API_KEY",
+            "models": [],
+        },
         "chatgpt": {
             "baseUrl": "https://api.openai.com/v1",
             "api": "openai-completions",
@@ -163,6 +169,8 @@ data:
 
         model_config = data.setdefault("models", {})
         providers = model_config.setdefault("providers", {})
+        # Remove legacy ollama provider (duplicate of openai; wrong URL persisted on PVC).
+        providers.pop("ollama", None)
         for provider_id, provider_config in PROVIDER_CONFIGS.items():
             providers[provider_id] = provider_config
 
