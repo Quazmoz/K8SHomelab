@@ -80,7 +80,7 @@ data:
 
     TOKEN_TUNED_DEFAULTS = {
         "maxConcurrent": 2,
-        "subagents": {"maxConcurrent": 3},
+        "subagents": {},
         "thinkingDefault": "minimal",
     }
 
@@ -167,6 +167,11 @@ data:
         for key, value in TOKEN_TUNED_DEFAULTS.items():
             defaults[key] = value
 
+        # Remove deprecated keys that newer versions reject.
+        defaults.get("subagents", {}).pop("maxConcurrent", None)
+        if defaults.get("subagents") == {}:
+            defaults.pop("subagents", None)
+
         agent_list = agents.setdefault("list", [])
         by_id = {
             entry.get("id"): entry
@@ -194,6 +199,11 @@ data:
             if agent_id == "n8n-control":
                 for key, value in N8N_CONTROL_TUNING.items():
                     agent[key] = value
+
+            # Remove deprecated keys that newer versions reject.
+            agent.get("subagents", {}).pop("maxConcurrent", None)
+            if agent.get("subagents") == {}:
+                agent.pop("subagents", None)
 
         CONFIG_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
