@@ -93,6 +93,9 @@ spec:
         # State directory inside the container
         - name: OPENCLAW_STATE_DIR
           value: "/home/user/.openclaw"
+        # Restrict skill discovery to curated PVC-backed skills only.
+        - name: OPENCLAW_BUNDLED_PLUGINS_DIR
+          value: "/home/user/.openclaw/skills"
         # Ollama Cloud backend exposed through OpenAI-compatible routing.
         # This is not a real OpenAI key despite the env var name.
         - name: OPENAI_BASE_URL

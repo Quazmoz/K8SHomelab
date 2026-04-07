@@ -69,7 +69,9 @@ keeping skill content in Git while placing it where OpenClaw expects it.
   - `agents.defaults.maxConcurrent = 2`
   - removes deprecated keys rejected by newer OpenClaw builds (`subagents.maxConcurrent`, `thinkingDefault`) from defaults and agent entries during bootstrap
 - It forces `commands.restart = false` so in-app restart requests do not cause pod flapping.
+- It forces `commands.nativeSkills = false` so bundled native skill catalogs stay disabled.
 - It removes stale explicit per-agent `skills` lists during bootstrap to prevent drift from old runtime catalogs.
+- Deployment sets `OPENCLAW_BUNDLED_PLUGINS_DIR=/home/user/.openclaw/skills`, constraining discovery to curated PVC-backed skills.
 - The dedicated `n8n-control` agent seeds a workspace-specific `AGENTS.md` that forces single-path helper usage for read queries.
 - No routing bindings are configured in repo because the current runtime has no external chat channels configured; Control UI agent selection is still done via the dropdown + new chat.
 
