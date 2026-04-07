@@ -228,11 +228,45 @@ data:
         CONFIG_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
+    def patch_agent_model_overrides() -> None:
+        """Overwrite per-agent models.json files to eliminate stale provider overrides.
+
+        OpenClaw merges per-agent models.json on top of the global openclaw.json
+        providers config.  Old GUI-created files can have missing env: prefixes or
+        wrong base URLs that cause 401s even after the global config is correct.
+        We write a clean authoritative models.json for every managed agent so that
+        the in-process merge always produces the right credential references.
+        """
+        clean_providers = {k: v for k, v in PROVIDER_CONFIGS.items()}
+        clean_models_json = json.dumps({"providers": clean_providers}, indent=2) + "\n"
+        agents_root = ROOT / "agents"
+        for agent_id in AGENT_WORKSPACES:
+            models_path = agents_root / agent_id / "agent" / "models.json"
+            if models_path.exists():
+                try:
+                    existing = json.loads(models_path.read_text(encoding="utf-8"))
+                    existing_providers = existing.get("providers", {})
+                    # Overwrite all provider entries we manage; leave any extra
+                    # provider keys the user may have added via GUI intact.
+                    for pid, pcfg in PROVIDER_CONFIGS.items():
+                        existing_providers[pid] = pcfg
+                    # Remove the legacy ollama provider (duplicate, sometimes stale keys).
+                    existing_providers.pop("ollama", None)
+                    existing["providers"] = existing_providers
+                    models_path.write_text(json.dumps(existing, indent=2) + "\n", encoding="utf-8")
+                except (json.JSONDecodeError, OSError):
+                    # Corrupt file — replace entirely with clean config.
+                    models_path.write_text(clean_models_json, encoding="utf-8")
+            else:
+                models_path.write_text(clean_models_json, encoding="utf-8")
+
+
     def main() -> None:
         install_skills()
         ensure_agent_state()
         prune_workspace_noise()
         patch_config()
+        patch_agent_model_overrides()
         print("OpenClaw bootstrap complete")
 
 
