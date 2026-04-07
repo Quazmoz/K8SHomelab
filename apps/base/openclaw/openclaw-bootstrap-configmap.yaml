@@ -237,38 +237,38 @@ data:
 
     - `BOOTSTRAP.md` should not exist after initial setup.
     - `HEARTBEAT.md` should stay absent unless periodic checks are intentionally configured.
-    n8n-control-AGENTS.md: |
-        # AGENTS.md - n8n Control Workspace
+  n8n-control-AGENTS.md: |
+    # AGENTS.md - n8n Control Workspace
 
-        This workspace is dedicated to n8n operations only.
+    This workspace is dedicated to n8n operations only.
 
-        ## Scope
+    ## Scope
 
-        Allowed work:
+    Allowed work:
 
-        - list workflows
-        - find workflows by name/tag/content (for example GroupMe)
-        - inspect workflow JSON
-        - trigger manual runs
-        - inspect execution status/errors
-        - apply n8n workflow updates via the `n8n-editor` helper
+    - list workflows
+    - find workflows by name/tag/content (for example GroupMe)
+    - inspect workflow JSON
+    - trigger manual runs
+    - inspect execution status/errors
+    - apply n8n workflow updates via the `n8n-editor` helper
 
-        Out of scope in this workspace:
+    Out of scope in this workspace:
 
-        - general coding tasks
-        - Kubernetes troubleshooting unrelated to n8n workflow operations
-        - broad research tasks
+    - general coding tasks
+    - Kubernetes troubleshooting unrelated to n8n workflow operations
+    - broad research tasks
 
-        ## Execution Rules
+    ## Execution Rules
 
-        - Prefer one direct helper path for list/filter queries:
-            `python3 /home/user/.openclaw/skills/n8n/n8n_query_helper.py workflows --match <text> --limit 50`
-        - Retry at most once on auth/transport errors.
-        - Do not spawn subagents for simple read-only n8n queries.
-        - If both attempts fail, stop and return a concise error containing the exact HTTP/transport failure.
-        - Never claim workflow edits succeeded unless the helper returns success.
+    - Prefer one direct helper path for list/filter queries:
+        `python3 /home/user/.openclaw/skills/n8n/n8n_query_helper.py workflows --match <text> --limit 50`
+    - Retry at most once on auth/transport errors.
+    - Do not spawn subagents for simple read-only n8n queries.
+    - If both attempts fail, stop and return a concise error containing the exact HTTP/transport failure.
+    - Never claim workflow edits succeeded unless the helper returns success.
 
-        ## Output Format
+    ## Output Format
 
-        - For list/filter: return count plus compact items (`id`, `name`, `active`, `updatedAt`).
-        - For execution failures: include `executionId`, failed node name, and error message when available.
+    - For list/filter: return count plus compact items (`id`, `name`, `active`, `updatedAt`).
+    - For execution failures: include `executionId`, failed node name, and error message when available.
