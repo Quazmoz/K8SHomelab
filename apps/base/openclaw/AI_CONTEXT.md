@@ -68,8 +68,14 @@ keeping skill content in Git while placing it where OpenClaw expects it.
   - replaces `agents.defaults.models` with a curated small model set (removes stale legacy model entries)
   - `agents.defaults.maxConcurrent = 2`
   - removes deprecated keys rejected by newer OpenClaw builds (`subagents.maxConcurrent`, `thinkingDefault`) from defaults and agent entries during bootstrap
+- It forces `commands.restart = false` so in-app restart requests do not cause pod flapping.
+- It removes stale explicit per-agent `skills` lists during bootstrap to prevent drift from old runtime catalogs.
 - The dedicated `n8n-control` agent seeds a workspace-specific `AGENTS.md` that forces single-path helper usage for read queries.
 - No routing bindings are configured in repo because the current runtime has no external chat channels configured; Control UI agent selection is still done via the dropdown + new chat.
+
+## Probe Behavior
+- Deployment probes check `http://127.0.0.1:18789` from inside the OpenClaw container.
+- Probe success accepts both `200` and `401` responses to tolerate auth-state transitions while still failing closed on socket errors/timeouts.
 
 ## Credentials
 - Secrets are sourced from `openclaw-credentials`.

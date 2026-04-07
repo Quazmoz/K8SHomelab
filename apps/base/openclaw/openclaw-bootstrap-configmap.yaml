@@ -150,6 +150,10 @@ data:
             return
 
         data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        commands = data.setdefault("commands", {})
+        # Prevent accidental in-app restart requests from flapping the pod.
+        commands["restart"] = False
+
         model_config = data.setdefault("models", {})
         providers = model_config.setdefault("providers", {})
         for provider_id, provider_config in PROVIDER_CONFIGS.items():
@@ -188,6 +192,8 @@ data:
             agent["workspace"] = f"/home/user/.openclaw/{workspace_name}"
             agent["agentDir"] = f"/home/user/.openclaw/agents/{agent_id}/agent"
             agent["model"] = AGENT_MODELS[agent_id]
+            # Drop stale explicit skill pins so runtime uses current bundled set.
+            agent.pop("skills", None)
 
             if agent_id != "main":
                 agent.setdefault("name", agent_id)
