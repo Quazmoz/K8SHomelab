@@ -94,6 +94,71 @@ data:
     N8N_CONTROL_TUNING = {}
 
 
+    def resolve_api_key_spec(api_key_spec: str | None) -> str | None:
+        if not isinstance(api_key_spec, str):
+            return api_key_spec
+
+        candidate = api_key_spec.strip()
+        if not candidate:
+            return None
+
+        env_name = None
+        if candidate.startswith("env:"):
+            env_name = candidate.split(":", 1)[1].strip()
+        elif candidate.isupper() and "_" in candidate:
+            env_name = candidate
+
+        if env_name:
+            resolved = os.environ.get(env_name, "").strip()
+            return resolved or None
+
+        return candidate
+
+
+    def resolve_provider_config(provider_config: dict) -> dict | None:
+        resolved = dict(provider_config)
+        api_key = resolve_api_key_spec(resolved.get("apiKey"))
+
+        if api_key is None and "apiKey" in resolved:
+            return None
+
+        if api_key is not None:
+            resolved["apiKey"] = api_key
+
+        return resolved
+
+
+    def build_runtime_provider_configs() -> dict:
+        runtime_provider_configs = {}
+        for provider_id, provider_config in PROVIDER_CONFIGS.items():
+            resolved = resolve_provider_config(provider_config)
+            if resolved is not None:
+                runtime_provider_configs[provider_id] = resolved
+        return runtime_provider_configs
+
+
+    def normalize_provider_map(provider_map: dict) -> dict:
+        normalized = {}
+        for provider_id, provider_config in provider_map.items():
+            if not isinstance(provider_config, dict):
+                normalized[provider_id] = provider_config
+                continue
+
+            resolved = resolve_provider_config(provider_config)
+            if resolved is not None:
+                normalized[provider_id] = resolved
+
+        return normalized
+
+
+    def build_default_models(active_provider_ids: set[str]) -> dict:
+        return {
+            model_id: model_config
+            for model_id, model_config in DEFAULT_MODELS.items()
+            if model_id.split("/", 1)[0] in active_provider_ids
+        }
+
+
     def copy_tree(src: Path, dst: Path) -> None:
         if not src.exists():
             return
@@ -168,18 +233,22 @@ data:
         data.pop("plugins", None)
 
         model_config = data.setdefault("models", {})
-        providers = model_config.setdefault("providers", {})
+        providers = normalize_provider_map(model_config.setdefault("providers", {}))
+        runtime_provider_configs = build_runtime_provider_configs()
         # Remove legacy ollama provider (duplicate of openai; wrong URL persisted on PVC).
         providers.pop("ollama", None)
-        for provider_id, provider_config in PROVIDER_CONFIGS.items():
+        for provider_id in PROVIDER_CONFIGS:
+            providers.pop(provider_id, None)
+        for provider_id, provider_config in runtime_provider_configs.items():
             providers[provider_id] = provider_config
+        model_config["providers"] = providers
 
         agents = data.setdefault("agents", {})
         defaults = agents.setdefault("defaults", {})
         defaults["model"] = {"primary": AGENT_MODELS["main"]}
         defaults["workspace"] = "/home/user/.openclaw/workspace"
         # Replace the model catalog to prevent stale model sprawl/token overhead.
-        defaults["models"] = DEFAULT_MODELS.copy()
+        defaults["models"] = build_default_models(set(runtime_provider_configs))
         for key, value in TOKEN_TUNED_DEFAULTS.items():
             defaults[key] = value
 
@@ -232,12 +301,13 @@ data:
         """Overwrite per-agent models.json files to eliminate stale provider overrides.
 
         OpenClaw merges per-agent models.json on top of the global openclaw.json
-        providers config.  Old GUI-created files can have missing env: prefixes or
+        providers config. Old GUI-created files can retain env placeholders or
         wrong base URLs that cause 401s even after the global config is correct.
         We write a clean authoritative models.json for every managed agent so that
         the in-process merge always produces the right credential references.
         """
-        clean_providers = {k: v for k, v in PROVIDER_CONFIGS.items()}
+        runtime_provider_configs = build_runtime_provider_configs()
+        clean_providers = {k: v for k, v in runtime_provider_configs.items()}
         clean_models_json = json.dumps({"providers": clean_providers}, indent=2) + "\n"
         agents_root = ROOT / "agents"
         for agent_id in AGENT_WORKSPACES:
@@ -245,10 +315,12 @@ data:
             if models_path.exists():
                 try:
                     existing = json.loads(models_path.read_text(encoding="utf-8"))
-                    existing_providers = existing.get("providers", {})
+                    existing_providers = normalize_provider_map(existing.get("providers", {}))
                     # Overwrite all provider entries we manage; leave any extra
                     # provider keys the user may have added via GUI intact.
-                    for pid, pcfg in PROVIDER_CONFIGS.items():
+                    for pid in PROVIDER_CONFIGS:
+                        existing_providers.pop(pid, None)
+                    for pid, pcfg in runtime_provider_configs.items():
                         existing_providers[pid] = pcfg
                     # Remove the legacy ollama provider (duplicate, sometimes stale keys).
                     existing_providers.pop("ollama", None)

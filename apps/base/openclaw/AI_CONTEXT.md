@@ -53,6 +53,7 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - A repo-managed init container now runs `bootstrap_openclaw.py` on pod start.
 - It seeds skill folders onto the PVC, deletes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from all workspaces, and replaces the main workspace `AGENTS.md` with a leaner version that does not auto-load `MEMORY.md` every session.
 - It now reconciles skills in strict allowlist mode on each startup (clears old skill directories, then reseeds only allowlisted skills from bootstrap sources) so removed skills stay removed.
+- The init container now also receives LLM provider secrets and resolves env-backed `apiKey` placeholders into concrete runtime-local values before writing `openclaw.json` and per-agent `models.json`; this avoids OpenClaw treating `env:...` as a literal API key during model calls.
 - Default allowlist is set via `OPENCLAW_SKILL_ALLOWLIST` and currently includes `n8n,n8n-editor,terminal,shell,filesystem,git,web-search,http,memory`.
 - Any bundled skill not in the allowlist is excluded, including Apple/macOS/iOS-related skills.
 - It now also materializes per-agent runtime directories (`agents/<id>/agent`, `agents/<id>/sessions`) and normalizes agent entries (`main`, `ops`, `research`, `homelab`) so selector-visible agents are fully bootstrap-backed on every restart.
@@ -87,6 +88,7 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - `OLLAMA_API_KEY` is also exported (mapped to the same secret key) so native Ollama provider auth can work without extra secret wiring.
 - `CHATGPT_API_KEY` is optional and should be an OpenAI Platform API key for the repo-managed `chatgpt/*` provider entries. A ChatGPT web subscription by itself does not supply API credits.
 - `MISTRAL_API_KEY` is optional and should come from `console.mistral.ai` for the repo-managed `mistral/*` provider entries.
+- Optional providers with blank keys are omitted from the seeded runtime config and from the curated default model catalog, so Control UI should no longer advertise dead `chatgpt/*` or other env-backed backends when their secrets are empty.
 - **Important:** The `OPENAI_API_KEY` is NOT a real OpenAI key. Do not use `auto` or `openai` as the memory embedding provider — it will 401.
 
 ## Additional Backends

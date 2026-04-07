@@ -114,7 +114,9 @@ Known behavior in current build:
 ## Additional OpenAI And Mistral Backends
 
 - Pod startup now seeds persistent `chatgpt` and `mistral` provider definitions into `openclaw.json` via the bootstrap init container.
+- The bootstrap init container now resolves env-backed provider `apiKey` values before writing runtime config on the PVC because this OpenClaw build can otherwise send the literal string `env:...` during model calls.
 - These providers are kept separate from the existing Ollama Cloud `openai/*` routing so your current defaults do not break.
+- Optional providers with blank secrets are omitted from the runtime provider map and model catalog, so they no longer appear as selectable dead backends in Control UI.
 - Seeded Mistral refs are now biased toward the cheapest still-strong hosted options instead of the premium tiers.
 - This keeps a low-cost general model, a stronger multimodal fallback, and two coding-focused options without paying for `mistral-large-*` or `magistral-medium-*` by default.
 - Seeded Mistral refs are pinned to explicit versioned IDs instead of `*-latest` aliases so provider-side rotations do not silently change behavior.
