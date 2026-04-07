@@ -153,8 +153,11 @@ data:
         commands = data.setdefault("commands", {})
         # Prevent accidental in-app restart requests from flapping the pod.
         commands["restart"] = False
-        # Disable bundled/native skill catalogs and keep only curated PVC skills.
+        # Disable bundled/native capabilities and keep only curated PVC skills.
+        commands["native"] = False
         commands["nativeSkills"] = False
+        # Drop stale plugin state from previous versions to avoid warning churn.
+        data.pop("plugins", None)
 
         model_config = data.setdefault("models", {})
         providers = model_config.setdefault("providers", {})

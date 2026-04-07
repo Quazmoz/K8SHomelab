@@ -197,8 +197,9 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 	- `maxConcurrent` is set to `2`
 	- deprecated keys rejected by newer OpenClaw builds are removed during bootstrap (`subagents.maxConcurrent`, `thinkingDefault`)
 - Bootstrap now forces `commands.restart = false` so in-app restart requests do not flap the Kubernetes pod lifecycle.
-- Bootstrap now forces `commands.nativeSkills = false` so bundled native skill catalogs are disabled.
+- Bootstrap now forces `commands.native = false` and `commands.nativeSkills = false` so bundled native tools/skill catalogs are disabled.
 - Bootstrap removes stale per-agent `skills` arrays so old pinned skill catalogs do not linger after upgrades.
+- Bootstrap removes stale `plugins` config entries from older runtimes to prevent plugin warning churn.
 - Deployment sets `OPENCLAW_BUNDLED_PLUGINS_DIR=/home/user/.openclaw/skills` so discovery is limited to curated PVC-backed skills.
 - Probes now accept both `200` and `401` on localhost gateway checks to stay healthy when auth state changes during startup.
 - No chat-channel bindings are applied by default because the current deployment only exposes Control UI and has no external routed channels configured.
