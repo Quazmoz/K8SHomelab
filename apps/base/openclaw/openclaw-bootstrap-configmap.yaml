@@ -81,12 +81,9 @@ data:
     TOKEN_TUNED_DEFAULTS = {
         "maxConcurrent": 2,
         "subagents": {},
-        "thinkingDefault": "minimal",
     }
 
-    N8N_CONTROL_TUNING = {
-        "thinkingDefault": "minimal",
-    }
+    N8N_CONTROL_TUNING = {}
 
 
     def copy_tree(src: Path, dst: Path) -> None:
@@ -171,6 +168,7 @@ data:
         defaults.get("subagents", {}).pop("maxConcurrent", None)
         if defaults.get("subagents") == {}:
             defaults.pop("subagents", None)
+        defaults.pop("thinkingDefault", None)
 
         agent_list = agents.setdefault("list", [])
         by_id = {
@@ -204,6 +202,7 @@ data:
             agent.get("subagents", {}).pop("maxConcurrent", None)
             if agent.get("subagents") == {}:
                 agent.pop("subagents", None)
+            agent.pop("thinkingDefault", None)
 
         CONFIG_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
