@@ -201,6 +201,7 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 - Bootstrap removes stale per-agent `skills` arrays so old pinned skill catalogs do not linger after upgrades.
 - Bootstrap removes stale `plugins` config entries from older runtimes to prevent plugin warning churn.
 - Deployment sets `OPENCLAW_BUNDLED_PLUGINS_DIR=/home/user/.openclaw/skills` so discovery is limited to curated PVC-backed skills.
+- Deployment also masks `/app/extensions` with an `emptyDir` volume (`bundled-extensions-mask`) to hide bundled built-in skill catalogs in pod runtime.
 - Probes now accept both `200` and `401` on localhost gateway checks to stay healthy when auth state changes during startup.
 - No chat-channel bindings are applied by default because the current deployment only exposes Control UI and has no external routed channels configured.
 

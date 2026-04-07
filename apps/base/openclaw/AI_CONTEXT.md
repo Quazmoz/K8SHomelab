@@ -73,6 +73,7 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - It removes stale explicit per-agent `skills` lists during bootstrap to prevent drift from old runtime catalogs.
 - It removes stale top-level `plugins` config entries from older runtimes to prevent invalid plugin warnings.
 - Deployment sets `OPENCLAW_BUNDLED_PLUGINS_DIR=/home/user/.openclaw/skills`, constraining discovery to curated PVC-backed skills.
+- Deployment masks `/app/extensions` with `bundled-extensions-mask` (`emptyDir`) so built-in bundled skill catalogs are hidden in pod runtime.
 - The dedicated `n8n-control` agent seeds a workspace-specific `AGENTS.md` that forces single-path helper usage for read queries.
 - No routing bindings are configured in repo because the current runtime has no external chat channels configured; Control UI agent selection is still done via the dropdown + new chat.
 
