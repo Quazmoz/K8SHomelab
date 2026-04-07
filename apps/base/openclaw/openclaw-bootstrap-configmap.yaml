@@ -83,6 +83,8 @@ data:
         "subagents": {},
     }
 
+    CORE_AGENT_SKILLS = ["n8n", "n8n-editor"]
+
     N8N_CONTROL_TUNING = {}
 
 
@@ -197,8 +199,8 @@ data:
             agent["workspace"] = f"/home/user/.openclaw/{workspace_name}"
             agent["agentDir"] = f"/home/user/.openclaw/agents/{agent_id}/agent"
             agent["model"] = AGENT_MODELS[agent_id]
-            # Drop stale explicit skill pins so runtime uses current bundled set.
-            agent.pop("skills", None)
+            # Hard-pin agents to core homelab skills only.
+            agent["skills"] = CORE_AGENT_SKILLS.copy()
 
             if agent_id != "main":
                 agent.setdefault("name", agent_id)

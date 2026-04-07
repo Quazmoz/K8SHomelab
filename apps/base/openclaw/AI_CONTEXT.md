@@ -70,7 +70,7 @@ keeping skill content in Git while placing it where OpenClaw expects it.
   - removes deprecated keys rejected by newer OpenClaw builds (`subagents.maxConcurrent`, `thinkingDefault`) from defaults and agent entries during bootstrap
 - It forces `commands.restart = false` so in-app restart requests do not cause pod flapping.
 - It forces `commands.native = false` and `commands.nativeSkills = false` so bundled native tools and skill catalogs stay disabled.
-- It removes stale explicit per-agent `skills` lists during bootstrap to prevent drift from old runtime catalogs.
+- It hard-pins every agent's `skills` list to the core set: `n8n`, `n8n-editor`.
 - It removes stale top-level `plugins` config entries from older runtimes to prevent invalid plugin warnings.
 - Deployment sets `OPENCLAW_BUNDLED_PLUGINS_DIR=/home/user/.openclaw/skills`, constraining discovery to curated PVC-backed skills.
 - Deployment masks `/app/extensions` with `bundled-extensions-mask` (`emptyDir`) so built-in bundled skill catalogs are hidden in pod runtime.

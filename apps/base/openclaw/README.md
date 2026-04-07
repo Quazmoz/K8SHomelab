@@ -198,7 +198,7 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 	- deprecated keys rejected by newer OpenClaw builds are removed during bootstrap (`subagents.maxConcurrent`, `thinkingDefault`)
 - Bootstrap now forces `commands.restart = false` so in-app restart requests do not flap the Kubernetes pod lifecycle.
 - Bootstrap now forces `commands.native = false` and `commands.nativeSkills = false` so bundled native tools/skill catalogs are disabled.
-- Bootstrap removes stale per-agent `skills` arrays so old pinned skill catalogs do not linger after upgrades.
+- Bootstrap now hard-pins every agent's `skills` list to core homelab skills only: `n8n`, `n8n-editor`.
 - Bootstrap removes stale `plugins` config entries from older runtimes to prevent plugin warning churn.
 - Deployment sets `OPENCLAW_BUNDLED_PLUGINS_DIR=/home/user/.openclaw/skills` so discovery is limited to curated PVC-backed skills.
 - Deployment also masks `/app/extensions` with an `emptyDir` volume (`bundled-extensions-mask`) to hide bundled built-in skill catalogs in pod runtime.
