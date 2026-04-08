@@ -172,14 +172,12 @@ Known behavior in current build:
 	- `groq/llama-3.3-70b-versatile`
 	- `huggingface/Qwen/Qwen3-8B:cheapest`
 	- `huggingface/deepseek-ai/DeepSeek-R1:fastest`
-	- `cerebras/gpt-oss-120b`
-	- `cerebras/llama3.1-8b`
 - The premium-priced `mistral-large-*` and `magistral-medium-*` seeds were intentionally removed from the default set.
 - The older weak-budget `mistral-small-*` seeds remain intentionally excluded.
 - If your OpenAI or Mistral account only exposes different model IDs, keep the provider wiring and adjust the seeded model names in `openclaw-bootstrap-configmap.yaml`.
 - Bundled providers such as `openrouter`, `google`, `groq`, `huggingface`, and `cerebras` are activated by environment variables and curated model refs, not by persistent `models.providers.<id>` entries. If the key is blank, the provider stays hidden from the default catalog.
 - The bootstrap now also seeds SecretRef-backed auth profiles for those bundled providers into every managed agent directory so `main`, `ops`, `research`, `homelab`, and `n8n-control` all resolve the same provider auth consistently.
-- Cerebras was previously seeded with `zai-glm-4.7` / `zai-glm-4.6`, but the live pod returned `404` for `zai-glm-4.7` on April 8, 2026 and `zai-glm-4.6` already showed as missing in `openclaw models list`, so the repo now seeds the safer currently-documented `gpt-oss-120b` and `llama3.1-8b` entries instead.
+- Cerebras remains wired via env/auth profiles, but its model seeds are currently hidden from the default OpenClaw catalog in this repo. On April 8, 2026, `gpt-oss-120b` returned provider `404 model_not_found`, while `llama3.1-8b` succeeded via direct API but still returned provider `400` through `openclaw infer model run`, so leaving Cerebras advertised in the default catalog would surface a broken option.
 
 ## n8n Skill Notes
 

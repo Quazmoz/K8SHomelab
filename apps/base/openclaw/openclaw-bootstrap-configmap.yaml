@@ -106,8 +106,6 @@ data:
         "groq/llama-3.3-70b-versatile": {},
         "huggingface/Qwen/Qwen3-8B:cheapest": {},
         "huggingface/deepseek-ai/DeepSeek-R1:fastest": {},
-        "cerebras/gpt-oss-120b": {},
-        "cerebras/llama3.1-8b": {},
     }
 
     TOKEN_TUNED_DEFAULTS = {

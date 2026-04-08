@@ -103,11 +103,11 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - OpenAI Platform is exposed in OpenClaw as `chatgpt/*` model refs to avoid colliding with the existing Ollama Cloud `openai/*` provider mapping.
 - Seeded ChatGPT model refs: `chatgpt/gpt-4.1-mini`, `chatgpt/gpt-4.1`, `chatgpt/gpt-4o-mini`.
 - Seeded Mistral model refs: `mistral/ministral-14b-2512`, `mistral/codestral-2508`, `mistral/mistral-medium-2508`, `mistral/devstral-2512`.
-- Curated bundled free/freemium refs: `openrouter/free`, `google/gemini-2.5-flash-lite`, `google/gemini-2.5-flash`, `google/gemini-2.5-pro`, `groq/llama-3.1-8b-instant`, `groq/llama-3.3-70b-versatile`, `huggingface/Qwen/Qwen3-8B:cheapest`, `huggingface/deepseek-ai/DeepSeek-R1:fastest`, `cerebras/gpt-oss-120b`, `cerebras/llama3.1-8b`.
+- Curated bundled free/freemium refs: `openrouter/free`, `google/gemini-2.5-flash-lite`, `google/gemini-2.5-flash`, `google/gemini-2.5-pro`, `groq/llama-3.1-8b-instant`, `groq/llama-3.3-70b-versatile`, `huggingface/Qwen/Qwen3-8B:cheapest`, `huggingface/deepseek-ai/DeepSeek-R1:fastest`.
 - The default Mistral seed set is budget-oriented: it avoids premium-priced `mistral-large-*` and `magistral-medium-*` while still keeping stronger general and coding options.
 - The older weak-budget `mistral-small-*` seeds remain intentionally excluded, and the remaining seeded Mistral refs are version-pinned instead of `*-latest` aliases to avoid provider-side rotations changing behavior under OpenClaw.
 - The repo-managed `chatgpt` and `mistral` providers are configured via OpenAI-compatible chat-completions endpoints in bootstrap so they persist after every pod restart.
-- The previous Cerebras seeds (`zai-glm-4.7`, `zai-glm-4.6`) were retired from the repo after the live pod returned `404` for `zai-glm-4.7` and marked `zai-glm-4.6` missing on April 8, 2026.
+- Cerebras auth remains wired, but its model refs are currently not advertised in the default catalog because April 8, 2026 validation showed `gpt-oss-120b` returning provider `404 model_not_found`, while `llama3.1-8b` succeeded via direct API but still returned provider `400` through OpenClaw's own `infer` path.
 
 ## Ollama Cloud Configuration
 Native `ollama/<model>` mode can return `401` on some newer builds even when keys are present.
