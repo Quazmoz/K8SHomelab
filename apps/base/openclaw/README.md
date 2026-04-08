@@ -46,12 +46,47 @@ Optional provider keys supported by this deployment:
 - `OPENAI_API_KEY`: current Ollama Cloud key used by the repo's existing `openai/*` model refs.
 - `CHATGPT_API_KEY`: real OpenAI Platform key for the additional `chatgpt/*` backend. A ChatGPT Plus/Pro subscription alone is not enough; API billing lives on the OpenAI Platform account.
 - `MISTRAL_API_KEY`: Mistral API key from `console.mistral.ai` for the additional `mistral/*` backend.
-- `OPENROUTER_API_KEY` and `ANTHROPIC_API_KEY`: optional fallbacks already supported by the deployment.
+- `OPENROUTER_API_KEY`: enables OpenClaw's bundled `openrouter/*` provider. For a zero-cost starting point, use `openrouter/free`.
+- `GEMINI_API_KEY`: enables OpenClaw's bundled `google/*` provider through Google AI Studio.
+- `GROQ_API_KEY`: enables OpenClaw's bundled `groq/*` provider.
+- `HUGGINGFACE_HUB_TOKEN`: enables OpenClaw's bundled `huggingface/*` provider. The deployment also exports it as `HF_TOKEN` for compatibility.
+- `CEREBRAS_API_KEY`: enables OpenClaw's bundled `cerebras/*` provider.
+- `ANTHROPIC_API_KEY`: optional non-free fallback already supported by the deployment.
 
-### 3. Encrypt the secret with SOPS
+Recommended `stringData` additions when you edit the SOPS secret:
+
+```yaml
+stringData:
+  GATEWAY_TOKEN: "<existing-or-new-token>"
+  OPENAI_API_KEY: "<existing-ollama-cloud-key>"
+  OPENROUTER_API_KEY: ""
+  GEMINI_API_KEY: ""
+  GROQ_API_KEY: ""
+  HUGGINGFACE_HUB_TOKEN: ""
+  CEREBRAS_API_KEY: ""
+  CHATGPT_API_KEY: ""
+  MISTRAL_API_KEY: ""
+  ANTHROPIC_API_KEY: ""
+  N8N_API_KEY: "<existing-n8n-key-if-used>"
+```
+
+### 3. Encrypt or edit the secret with SOPS
 ```bash
 sops -e -i openclaw-credentials.secret.yaml
 mv openclaw-credentials.secret.yaml openclaw-credentials.secret.enc.yaml
+```
+
+For later edits on Windows, prefer the repo helper so `sops` always has an editor:
+
+```powershell
+.\scripts\sops-edit.ps1 apps/base/openclaw/openclaw-credentials.secret.enc.yaml
+```
+
+Direct `sops` also works if you set `SOPS_EDITOR` first:
+
+```powershell
+$env:SOPS_EDITOR = 'Code.exe --wait'
+sops apps/base/openclaw/openclaw-credentials.secret.enc.yaml
 ```
 
 ### 4. Enable the encrypted secret in kustomization.yaml
@@ -111,7 +146,7 @@ Known behavior in current build:
 - Use `openai/<model>` refs for Ollama Cloud routing (`openai/kimi-k2.5`, `openai/nemotron-3-super`).
 - `openai/gemma3:27b` may return provider-side `500` errors from this runtime path; use `openai/kimi-k2.5` as the stable default.
 
-## Additional OpenAI And Mistral Backends
+## Additional Hosted Backends
 
 - Pod startup now seeds persistent `chatgpt` and `mistral` provider definitions into `openclaw.json` via the bootstrap init container.
 - The bootstrap init container now resolves env-backed provider `apiKey` values before writing runtime config on the PVC because this OpenClaw build can otherwise send the literal string `env:...` during model calls.
@@ -128,9 +163,20 @@ Known behavior in current build:
 	- `mistral/codestral-2508`
 	- `mistral/mistral-medium-2508`
 	- `mistral/devstral-2512`
+	- `openrouter/free`
+	- `google/gemini-2.5-flash-lite`
+	- `google/gemini-2.5-flash`
+	- `google/gemini-2.5-pro`
+	- `groq/llama-3.1-8b-instant`
+	- `groq/llama-3.3-70b-versatile`
+	- `huggingface/Qwen/Qwen3-8B:cheapest`
+	- `huggingface/deepseek-ai/DeepSeek-R1:fastest`
+	- `cerebras/zai-glm-4.7`
+	- `cerebras/zai-glm-4.6`
 - The premium-priced `mistral-large-*` and `magistral-medium-*` seeds were intentionally removed from the default set.
 - The older weak-budget `mistral-small-*` seeds remain intentionally excluded.
 - If your OpenAI or Mistral account only exposes different model IDs, keep the provider wiring and adjust the seeded model names in `openclaw-bootstrap-configmap.yaml`.
+- Bundled providers such as `openrouter`, `google`, `groq`, `huggingface`, and `cerebras` are activated by environment variables and curated model refs, not by persistent `models.providers.<id>` entries. If the key is blank, the provider stays hidden from the default catalog.
 
 ## n8n Skill Notes
 
@@ -222,4 +268,5 @@ kubectl exec -n apps -it deploy/openclaw -- curl -s http://localhost:18789
 # Verify repo-managed additional backends
 kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.providers.chatgpt
 kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.providers.mistral
+kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw models list
 ```

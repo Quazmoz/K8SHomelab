@@ -31,13 +31,20 @@ We use [SOPS](https://github.com/getsops/sops) (Secret Operations) with **Age** 
 #### Editing an Encrypted Secret
 To edit a secret that is already encrypted:
 ```powershell
+.\scripts\sops-edit.ps1 apps/base/path/to/secret.enc.yaml
+```
+This chooses a Windows editor automatically (`Code.exe --wait` first, then `notepad.exe`), sets `SOPS_EDITOR`, and re-encrypts on save.
+
+If you want to run `sops` directly instead of the helper, use:
+```powershell
+$env:SOPS_EDITOR = 'Code.exe --wait'
 sops apps/base/path/to/secret.enc.yaml
 ```
-This opens the decrypted file in your default editor. Upon saving, it is re-encrypted automatically.
 
 #### Troubleshooting
 - **MAC Error**: Ensure your private key is in the correct location (`%APPDATA%\sops\age\keys.txt`).
 - **No Matching Rules**: Ensure the filename matches `.sops.yaml` regex (e.g. ends in `.enc.yaml`).
+- **No editor available**: Use `.\scripts\sops-edit.ps1 ...` or set `SOPS_EDITOR` before running `sops`.
 
 ## 2. Authentication
 

@@ -72,6 +72,14 @@ data:
         },
     }
 
+    BUNDLED_PROVIDER_ENV_VARS = {
+        "openrouter": ("OPENROUTER_API_KEY",),
+        "google": ("GEMINI_API_KEY", "GOOGLE_API_KEY"),
+        "groq": ("GROQ_API_KEY",),
+        "huggingface": ("HUGGINGFACE_HUB_TOKEN", "HF_TOKEN"),
+        "cerebras": ("CEREBRAS_API_KEY",),
+    }
+
     DEFAULT_MODELS = {
         "openai/kimi-k2.5": {},
         "openai/nemotron-3-super": {},
@@ -82,6 +90,16 @@ data:
         "mistral/codestral-2508": {},
         "mistral/mistral-medium-2508": {},
         "mistral/devstral-2512": {},
+        "openrouter/free": {},
+        "google/gemini-2.5-flash-lite": {},
+        "google/gemini-2.5-flash": {},
+        "google/gemini-2.5-pro": {},
+        "groq/llama-3.1-8b-instant": {},
+        "groq/llama-3.3-70b-versatile": {},
+        "huggingface/Qwen/Qwen3-8B:cheapest": {},
+        "huggingface/deepseek-ai/DeepSeek-R1:fastest": {},
+        "cerebras/zai-glm-4.7": {},
+        "cerebras/zai-glm-4.6": {},
     }
 
     TOKEN_TUNED_DEFAULTS = {
@@ -157,6 +175,14 @@ data:
             for model_id, model_config in DEFAULT_MODELS.items()
             if model_id.split("/", 1)[0] in active_provider_ids
         }
+
+
+    def detect_active_provider_ids(runtime_provider_configs: dict) -> set[str]:
+        active_provider_ids = set(runtime_provider_configs)
+        for provider_id, env_names in BUNDLED_PROVIDER_ENV_VARS.items():
+            if any(os.environ.get(env_name, "").strip() for env_name in env_names):
+                active_provider_ids.add(provider_id)
+        return active_provider_ids
 
 
     def copy_tree(src: Path, dst: Path) -> None:
@@ -235,6 +261,7 @@ data:
         model_config = data.setdefault("models", {})
         providers = normalize_provider_map(model_config.setdefault("providers", {}))
         runtime_provider_configs = build_runtime_provider_configs()
+        active_provider_ids = detect_active_provider_ids(runtime_provider_configs)
         # Remove legacy ollama provider (duplicate of openai; wrong URL persisted on PVC).
         providers.pop("ollama", None)
         for provider_id in PROVIDER_CONFIGS:
@@ -248,7 +275,7 @@ data:
         defaults["model"] = {"primary": AGENT_MODELS["main"]}
         defaults["workspace"] = "/home/user/.openclaw/workspace"
         # Replace the model catalog to prevent stale model sprawl/token overhead.
-        defaults["models"] = build_default_models(set(runtime_provider_configs))
+        defaults["models"] = build_default_models(active_provider_ids)
         for key, value in TOKEN_TUNED_DEFAULTS.items():
             defaults[key] = value
 
@@ -367,6 +394,7 @@ data:
     - Keep external side effects explicit.
     - Keep this workspace lean; archive bulky notes instead of loading them every chat.
     - For simple data fetch requests (for example listing n8n workflows), run one direct query path, retry at most once on transport/auth failure, then return results or a concrete error.
+    - For SOPS-encrypted secret edits on Windows, prefer the repo helper `.\scripts\sops-edit.ps1 <path-to-secret.enc.yaml>` instead of raw `sops <file>` unless `SOPS_EDITOR` is already set.
 
     ## Bootstrap Hygiene
 

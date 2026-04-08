@@ -77,6 +77,42 @@ spec:
               name: openclaw-credentials
               key: OPENROUTER_API_KEY
               optional: true
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GEMINI_API_KEY
+              optional: true
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GEMINI_API_KEY
+              optional: true
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GROQ_API_KEY
+              optional: true
+        - name: HUGGINGFACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: HUGGINGFACE_HUB_TOKEN
+              optional: true
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: HUGGINGFACE_HUB_TOKEN
+              optional: true
+        - name: CEREBRAS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: CEREBRAS_API_KEY
+              optional: true
         command:
         - python3
         - /opt/bootstrap/bootstrap_openclaw.py
@@ -143,6 +179,43 @@ spec:
             secretKeyRef:
               name: openclaw-credentials
               key: OPENROUTER_API_KEY
+              optional: true
+        # Free/freemium bundled providers.
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GEMINI_API_KEY
+              optional: true
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GEMINI_API_KEY
+              optional: true
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GROQ_API_KEY
+              optional: true
+        - name: HUGGINGFACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: HUGGINGFACE_HUB_TOKEN
+              optional: true
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: HUGGINGFACE_HUB_TOKEN
+              optional: true
+        - name: CEREBRAS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: CEREBRAS_API_KEY
               optional: true
         # Optional additional backends.
         - name: CHATGPT_API_KEY
