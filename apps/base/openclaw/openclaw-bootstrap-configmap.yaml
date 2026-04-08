@@ -80,6 +80,14 @@ data:
         "cerebras": ("CEREBRAS_API_KEY",),
     }
 
+    BUNDLED_PROVIDER_AUTH_ENV = {
+        "openrouter": "OPENROUTER_API_KEY",
+        "google": "GEMINI_API_KEY",
+        "groq": "GROQ_API_KEY",
+        "huggingface": "HUGGINGFACE_HUB_TOKEN",
+        "cerebras": "CEREBRAS_API_KEY",
+    }
+
     DEFAULT_MODELS = {
         "openai/kimi-k2.5": {},
         "openai/nemotron-3-super": {},
@@ -98,8 +106,8 @@ data:
         "groq/llama-3.3-70b-versatile": {},
         "huggingface/Qwen/Qwen3-8B:cheapest": {},
         "huggingface/deepseek-ai/DeepSeek-R1:fastest": {},
-        "cerebras/zai-glm-4.7": {},
-        "cerebras/zai-glm-4.6": {},
+        "cerebras/gpt-oss-120b": {},
+        "cerebras/llama3.1-8b": {},
     }
 
     TOKEN_TUNED_DEFAULTS = {
@@ -360,12 +368,95 @@ data:
                 models_path.write_text(clean_models_json, encoding="utf-8")
 
 
+    def build_env_secret_ref(env_name: str) -> dict:
+        return {"source": "env", "provider": "default", "id": env_name}
+
+
+    def patch_agent_auth_profiles() -> None:
+        """Materialize bundled-provider auth profiles for every managed agent.
+
+        Some bundled providers do not consistently resolve raw process env vars in
+        every agent lane, especially when a non-main agent executes the request.
+        We write SecretRef-backed api_key profiles per agent so OpenClaw resolves
+        the provider auth through the supported auth store path instead of relying
+        on implicit env probing.
+        """
+        agents_root = ROOT / "agents"
+        for agent_id in AGENT_WORKSPACES:
+            auth_path = agents_root / agent_id / "agent" / "auth-profiles.json"
+            store = {"version": 1, "profiles": {}}
+
+            if auth_path.exists():
+                try:
+                    loaded = json.loads(auth_path.read_text(encoding="utf-8"))
+                    if isinstance(loaded, dict):
+                        store.update(loaded)
+                except (json.JSONDecodeError, OSError):
+                    store = {"version": 1, "profiles": {}}
+
+            if not isinstance(store.get("profiles"), dict):
+                store["profiles"] = {}
+
+            order = store.get("order")
+            if not isinstance(order, dict):
+                order = {}
+
+            profiles = store["profiles"]
+
+            for provider_id, env_name in BUNDLED_PROVIDER_AUTH_ENV.items():
+                profile_id = f"{provider_id}:default"
+                env_value = os.environ.get(env_name, "").strip()
+
+                if env_value:
+                    existing = profiles.get(profile_id, {})
+                    if not isinstance(existing, dict):
+                        existing = {}
+
+                    existing["type"] = "api_key"
+                    existing["provider"] = provider_id
+                    existing["keyRef"] = build_env_secret_ref(env_name)
+                    existing.pop("key", None)
+                    profiles[profile_id] = existing
+
+                    existing_order = [
+                        entry
+                        for entry in order.get(provider_id, [])
+                        if isinstance(entry, str) and entry != profile_id
+                    ]
+                    order[provider_id] = [profile_id, *existing_order]
+                else:
+                    existing = profiles.get(profile_id)
+                    if isinstance(existing, dict) and existing.get("provider") == provider_id:
+                        profiles.pop(profile_id, None)
+
+                    if provider_id in order:
+                        provider_order = [
+                            entry
+                            for entry in order.get(provider_id, [])
+                            if isinstance(entry, str) and entry != profile_id
+                        ]
+                        if provider_order:
+                            order[provider_id] = provider_order
+                        else:
+                            order.pop(provider_id, None)
+
+            store["version"] = 1
+            store["profiles"] = profiles
+            if order:
+                store["order"] = order
+            else:
+                store.pop("order", None)
+
+            auth_path.write_text(json.dumps(store, indent=2) + "\n", encoding="utf-8")
+
+
     def main() -> None:
         install_skills()
         ensure_agent_state()
         prune_workspace_noise()
         patch_config()
         patch_agent_model_overrides()
+        patch_agent_auth_profiles()
         print("OpenClaw bootstrap complete")
 
 

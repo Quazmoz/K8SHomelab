@@ -6,7 +6,7 @@ OpenClaw is an autonomous AI agent that can execute tasks, orchestrate tools, an
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `ghcr.io/openclaw/openclaw:2026.4.5-arm64` (pinned to latest verified ARM64 release) |
+| **Image** | `ghcr.io/openclaw/openclaw:2026.4.8-arm64` (pinned to latest verified ARM64 release) |
 | **Node** | `orangepi6plus` (with control-plane toleration) |
 | **Gateway Port** | `18789` (WebSocket) |
 | **Canvas Port** | `18793` (HTTP) |
@@ -152,6 +152,7 @@ Known behavior in current build:
 - The bootstrap init container now resolves env-backed provider `apiKey` values before writing runtime config on the PVC because this OpenClaw build can otherwise send the literal string `env:...` during model calls.
 - These providers are kept separate from the existing Ollama Cloud `openai/*` routing so your current defaults do not break.
 - Optional providers with blank secrets are omitted from the runtime provider map and model catalog, so they no longer appear as selectable dead backends in Control UI.
+- Bundled providers that are auth-profile-backed in OpenClaw (`openrouter`, `google`, `groq`, `huggingface`, `cerebras`) are now also written into each managed agent's `auth-profiles.json` as `keyRef` entries pointing at the pod env vars. This keeps non-main agents from losing provider auth during lane execution.
 - Seeded Mistral refs are now biased toward the cheapest still-strong hosted options instead of the premium tiers.
 - This keeps a low-cost general model, a stronger multimodal fallback, and two coding-focused options without paying for `mistral-large-*` or `magistral-medium-*` by default.
 - Seeded Mistral refs are pinned to explicit versioned IDs instead of `*-latest` aliases so provider-side rotations do not silently change behavior.
@@ -171,12 +172,14 @@ Known behavior in current build:
 	- `groq/llama-3.3-70b-versatile`
 	- `huggingface/Qwen/Qwen3-8B:cheapest`
 	- `huggingface/deepseek-ai/DeepSeek-R1:fastest`
-	- `cerebras/zai-glm-4.7`
-	- `cerebras/zai-glm-4.6`
+	- `cerebras/gpt-oss-120b`
+	- `cerebras/llama3.1-8b`
 - The premium-priced `mistral-large-*` and `magistral-medium-*` seeds were intentionally removed from the default set.
 - The older weak-budget `mistral-small-*` seeds remain intentionally excluded.
 - If your OpenAI or Mistral account only exposes different model IDs, keep the provider wiring and adjust the seeded model names in `openclaw-bootstrap-configmap.yaml`.
 - Bundled providers such as `openrouter`, `google`, `groq`, `huggingface`, and `cerebras` are activated by environment variables and curated model refs, not by persistent `models.providers.<id>` entries. If the key is blank, the provider stays hidden from the default catalog.
+- The bootstrap now also seeds SecretRef-backed auth profiles for those bundled providers into every managed agent directory so `main`, `ops`, `research`, `homelab`, and `n8n-control` all resolve the same provider auth consistently.
+- Cerebras was previously seeded with `zai-glm-4.7` / `zai-glm-4.6`, but the live pod returned `404` for `zai-glm-4.7` on April 8, 2026 and `zai-glm-4.6` already showed as missing in `openclaw models list`, so the repo now seeds the safer currently-documented `gpt-oss-120b` and `llama3.1-8b` entries instead.
 
 ## n8n Skill Notes
 

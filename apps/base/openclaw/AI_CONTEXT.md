@@ -8,7 +8,7 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 - Device identity and pairing are required by the Control UI.
 - TLS is enabled at ingress for secure-context browser requirements.
 - `HOME` is explicitly set to `/home/user` so that OpenClaw's memory workspace (`~/.openclaw/workspace/`) resolves to the PVC mount, not ephemeral storage.
-- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.4.5-arm64` (latest verified ARM64 release).
+- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.4.8-arm64` (latest verified ARM64 release).
 
 ## Memory System
 - Provider: `local` (on-device embeddings via node-llama-cpp, no external API needed)
@@ -60,6 +60,7 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - It now also materializes per-agent runtime directories (`agents/<id>/agent`, `agents/<id>/sessions`) and normalizes agent entries (`main`, `ops`, `research`, `homelab`, `n8n-control`) so selector-visible agents are fully bootstrap-backed on every restart.
 - It also seeds optional `chatgpt` and `mistral` provider definitions into `openclaw.json` so those backends survive pod restarts when API keys are present.
 - It also detects bundled env-backed providers (`openrouter`, `google`, `groq`, `huggingface`, `cerebras`) and only exposes their curated model refs when the corresponding secret-backed env vars are non-empty.
+- It also materializes SecretRef-backed `auth-profiles.json` entries for those bundled providers in every managed agent directory so bundled-provider auth resolves consistently outside the main agent lane.
 - It normalizes agent models to stable OpenAI-compatible Ollama Cloud refs:
   - `main`: `openai/kimi-k2.5`
   - `research`: `openai/kimi-k2.5`
@@ -94,6 +95,7 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - `GROQ_API_KEY` is optional and enables the bundled `groq/*` provider.
 - `HUGGINGFACE_HUB_TOKEN` is optional and is also mirrored to `HF_TOKEN` for the bundled `huggingface/*` provider.
 - `CEREBRAS_API_KEY` is optional and enables the bundled `cerebras/*` provider.
+- These bundled-provider secrets are now also referenced into each agent's `auth-profiles.json` via `keyRef` objects (`source: env`, `provider: default`) so non-main agent lanes do not depend on implicit env probing.
 - Optional providers with blank keys are omitted from the seeded runtime config and from the curated default model catalog, so Control UI should no longer advertise dead `chatgpt/*` or other env-backed backends when their secrets are empty.
 - **Important:** The `OPENAI_API_KEY` is NOT a real OpenAI key. Do not use `auto` or `openai` as the memory embedding provider — it will 401.
 
@@ -101,10 +103,11 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - OpenAI Platform is exposed in OpenClaw as `chatgpt/*` model refs to avoid colliding with the existing Ollama Cloud `openai/*` provider mapping.
 - Seeded ChatGPT model refs: `chatgpt/gpt-4.1-mini`, `chatgpt/gpt-4.1`, `chatgpt/gpt-4o-mini`.
 - Seeded Mistral model refs: `mistral/ministral-14b-2512`, `mistral/codestral-2508`, `mistral/mistral-medium-2508`, `mistral/devstral-2512`.
-- Curated bundled free/freemium refs: `openrouter/free`, `google/gemini-2.5-flash-lite`, `google/gemini-2.5-flash`, `google/gemini-2.5-pro`, `groq/llama-3.1-8b-instant`, `groq/llama-3.3-70b-versatile`, `huggingface/Qwen/Qwen3-8B:cheapest`, `huggingface/deepseek-ai/DeepSeek-R1:fastest`, `cerebras/zai-glm-4.7`, `cerebras/zai-glm-4.6`.
+- Curated bundled free/freemium refs: `openrouter/free`, `google/gemini-2.5-flash-lite`, `google/gemini-2.5-flash`, `google/gemini-2.5-pro`, `groq/llama-3.1-8b-instant`, `groq/llama-3.3-70b-versatile`, `huggingface/Qwen/Qwen3-8B:cheapest`, `huggingface/deepseek-ai/DeepSeek-R1:fastest`, `cerebras/gpt-oss-120b`, `cerebras/llama3.1-8b`.
 - The default Mistral seed set is budget-oriented: it avoids premium-priced `mistral-large-*` and `magistral-medium-*` while still keeping stronger general and coding options.
 - The older weak-budget `mistral-small-*` seeds remain intentionally excluded, and the remaining seeded Mistral refs are version-pinned instead of `*-latest` aliases to avoid provider-side rotations changing behavior under OpenClaw.
 - The repo-managed `chatgpt` and `mistral` providers are configured via OpenAI-compatible chat-completions endpoints in bootstrap so they persist after every pod restart.
+- The previous Cerebras seeds (`zai-glm-4.7`, `zai-glm-4.6`) were retired from the repo after the live pod returned `404` for `zai-glm-4.7` and marked `zai-glm-4.6` missing on April 8, 2026.
 
 ## Ollama Cloud Configuration
 Native `ollama/<model>` mode can return `401` on some newer builds even when keys are present.
