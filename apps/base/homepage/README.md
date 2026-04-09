@@ -12,7 +12,7 @@ Homepage is a modern, customizable dashboard that provides a single pane of glas
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `ghcr.io/gethomepage/homepage:v1.10.1` |
+| **Image** | `ghcr.io/gethomepage/homepage:v1.12.3` |
 | **Port** | 3000 |
 | **Node** | `quinn-hpprobook430g6` |
 | **Resources** | Requests: 64Mi/10m, Limits: 256Mi/500m |
