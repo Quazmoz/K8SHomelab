@@ -27,6 +27,16 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 |-------|-----------|------------|
 | `n8n` | `openclaw-n8n-skill` | List and inspect workflows, trigger manual runs, query executions |
 | `n8n-editor` | `openclaw-n8n-editor-skill` | Fetch editable workflow JSON, apply validated `PUT` updates, run tested workflow recipes |
+| `k8s-admin` | `openclaw-k8s-admin-skill` | Pod/deployment/service inspection, events/logs/rollout checks |
+| `postgres-admin` | `openclaw-postgres-admin-skill` | Direct SQL checks, schema inspection, pg_stat runtime diagnostics |
+| `prometheus-monitoring` | `openclaw-prometheus-monitoring-skill` | Prometheus API queries, target/rule/alert verification |
+| `helm-management` | `openclaw-helm-management-skill` | Helm list/status/history/values with safe upgrade/rollback workflow |
+| `image-management` | `openclaw-image-management-skill` | Image tag/digest validation and rollout-safe update verification |
+| `network-diagnostics` | `openclaw-network-diagnostics-skill` | DNS/port/connectivity diagnostics across services and nodes |
+| `log-analysis-alerting` | `openclaw-log-analysis-alerting-skill` | LogQL-driven issue analysis and alert design guidance |
+| `gitops-delivery` | `openclaw-gitops-delivery-skill` | Flux reconciliation/drift diagnosis (plus ArgoCD parity commands) |
+| `backup-dr` | `openclaw-backup-dr-skill` | Backup verification and disaster-recovery drill workflow |
+| `service-mesh` | `openclaw-service-mesh-skill` | Istio/Linkerd policy/traffic diagnostics when mesh is present |
 
 ### n8n Skill Details
 - **ConfigMap:** `apps/base/openclaw/n8n-skill-configmap.yaml`
@@ -54,7 +64,7 @@ keeping skill content in Git while placing it where OpenClaw expects it.
 - It seeds skill folders onto the PVC, deletes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from all workspaces, and replaces the main workspace `AGENTS.md` with a leaner version that does not auto-load `MEMORY.md` every session.
 - It now reconciles skills in strict allowlist mode on each startup (clears old skill directories, then reseeds only allowlisted skills from bootstrap sources) so removed skills stay removed.
 - The init container now also receives LLM provider secrets and resolves env-backed `apiKey` placeholders into concrete runtime-local values before writing `openclaw.json` and per-agent `models.json`; this avoids OpenClaw treating `env:...` as a literal API key during model calls.
-- Default allowlist is set via `OPENCLAW_SKILL_ALLOWLIST` and currently includes `n8n,n8n-editor,terminal,shell,filesystem,git,web-search,http,memory`.
+- Default allowlist is set via `OPENCLAW_SKILL_ALLOWLIST` and currently includes `n8n,n8n-editor,k8s-admin,postgres-admin,prometheus-monitoring,helm-management,image-management,network-diagnostics,log-analysis-alerting,gitops-delivery,backup-dr,service-mesh,terminal,shell,filesystem,git,web-search,http,memory`.
 - Any bundled skill not in the allowlist is excluded, including Apple/macOS/iOS-related skills.
 - It now also materializes per-agent runtime directories (`agents/<id>/agent`, `agents/<id>/sessions`) and normalizes agent entries (`main`, `ops`, `research`, `homelab`) so selector-visible agents are fully bootstrap-backed on every restart.
 - It now also materializes per-agent runtime directories (`agents/<id>/agent`, `agents/<id>/sessions`) and normalizes agent entries (`main`, `ops`, `research`, `homelab`, `n8n-control`) so selector-visible agents are fully bootstrap-backed on every restart.
@@ -73,7 +83,8 @@ keeping skill content in Git while placing it where OpenClaw expects it.
   - removes deprecated keys rejected by newer OpenClaw builds (`subagents.maxConcurrent`, `thinkingDefault`) from defaults and agent entries during bootstrap
 - It forces `commands.restart = false` so in-app restart requests do not cause pod flapping.
 - It forces `commands.native = false` and `commands.nativeSkills = false` so bundled native tools and skill catalogs stay disabled.
-- It hard-pins every agent's `skills` list to the core set: `n8n`, `n8n-editor`.
+- It keeps non-homelab agent lanes pinned to the low-noise core set: `n8n`, `n8n-editor`.
+- It pins the `homelab` agent lane to the extended ops set: `n8n`, `n8n-editor`, `k8s-admin`, `postgres-admin`, `prometheus-monitoring`, `helm-management`, `image-management`, `network-diagnostics`, `log-analysis-alerting`, `gitops-delivery`, `backup-dr`, `service-mesh`.
 - It removes stale top-level `plugins` config entries from older runtimes to prevent invalid plugin warnings.
 - Deployment sets `OPENCLAW_BUNDLED_PLUGINS_DIR=/home/user/.openclaw/skills`, constraining discovery to curated PVC-backed skills.
 - Deployment masks `/app/extensions` with `bundled-extensions-mask` (`emptyDir`) so built-in bundled skill catalogs are hidden in pod runtime.

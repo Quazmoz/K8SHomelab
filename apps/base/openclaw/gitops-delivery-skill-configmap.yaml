@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-gitops-delivery-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: gitops-delivery
+    description: >
+      Operate GitOps delivery workflows for Flux and Argo CD style systems.
+      Use when the user asks about sync state, reconciliation, drift detection,
+      source health, or why git changes are not reflected in cluster state.
+    ---
+
+    # GitOps Delivery Skill
+
+    ## Flux-First Workflow (this homelab)
+
+    1. Verify source and kustomization state:
+       - `flux get sources git -A`
+       - `flux get kustomizations -A`
+       - `flux get helmreleases -A`
+    2. Reconcile after push:
+       - `flux reconcile source git flux-system --with-source`
+       - `flux reconcile kustomization apps --with-source`
+    3. Investigate failures:
+       - `kubectl describe kustomization -n flux-system apps`
+       - `kubectl logs -n flux-system deploy/source-controller --tail=200`
+
+    ## Argo CD Parity Commands (if present)
+
+    - `argocd app list`
+    - `argocd app get <app>`
+    - `argocd app sync <app>`
+
+    ## Guardrails
+
+    - Treat Git as source of truth unless user explicitly asks for hotfix.
+    - If manual kubectl change is made, document drift and reconcile path.

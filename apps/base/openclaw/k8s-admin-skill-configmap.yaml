@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-k8s-admin-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: k8s-admin
+    description: >
+      Operate and troubleshoot Kubernetes resources in the homelab cluster.
+      Use when the user asks to inspect pods, deployments, services, events,
+      logs, rollout state, node health, or to run kubectl describe/get/logs/exec
+      commands. Always use this skill for hands-on Kubernetes diagnostics.
+    ---
+
+    # Kubernetes Administration Skill
+
+    This skill provides a deterministic kubectl-first workflow for cluster
+    operations in this homelab.
+
+    ## Standard Sequence
+
+    1. Confirm target namespace, default to `apps`.
+    2. Snapshot health:
+       - `kubectl get nodes -o wide`
+       - `kubectl get pods -n <ns> -o wide`
+       - `kubectl get events -n <ns> --sort-by=.metadata.creationTimestamp | tail -n 40`
+    3. Inspect failing workloads:
+       - `kubectl describe pod <pod> -n <ns>`
+       - `kubectl logs <pod> -n <ns> --tail=200`
+       - if multi-container: `kubectl logs <pod> -c <container> -n <ns> --tail=200`
+    4. Validate service routing:
+       - `kubectl get svc,ep -n <ns>`
+       - `kubectl get ingress -n <ns>`
+    5. Provide exact findings and next corrective action.
+
+    ## Common Commands
+
+    - List workload state:
+      `kubectl get deploy,sts,ds -n apps`
+    - Watch rollout:
+      `kubectl rollout status deploy/<name> -n apps --timeout=120s`
+    - Restart rollout:
+      `kubectl rollout restart deploy/<name> -n apps`
+    - Scale deployment:
+      `kubectl scale deploy/<name> -n apps --replicas=<n>`
+    - Describe node pressure:
+      `kubectl describe node <node-name>`
+
+    ## Output Requirements
+
+    - Include affected resource names and namespace.
+    - Quote the exact error reason or event message.
+    - Separate observation from recommendation.
+    - Never claim a fix worked without re-checking `kubectl get` and events.
+
+    ## Guardrails
+
+    - Prefer read-only commands unless the user asks to change state.
+    - Avoid deleting resources unless explicitly requested.
+    - If credentials or context fail, return the exact kubectl error and suggest
+      the next verification command.

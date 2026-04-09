@@ -8,5 +8,15 @@ resources:
   - openclaw-ingress.yaml
   - n8n-skill-configmap.yaml
   - n8n-editor-skill-configmap.yaml
+  - k8s-admin-skill-configmap.yaml
+  - postgres-admin-skill-configmap.yaml
+  - prometheus-monitoring-skill-configmap.yaml
+  - helm-management-skill-configmap.yaml
+  - image-management-skill-configmap.yaml
+  - network-diagnostics-skill-configmap.yaml
+  - log-analysis-alerting-skill-configmap.yaml
+  - gitops-delivery-skill-configmap.yaml
+  - backup-dr-skill-configmap.yaml
+  - service-mesh-skill-configmap.yaml
   # Uncomment after SOPS encryption:
   - openclaw-credentials.secret.enc.yaml

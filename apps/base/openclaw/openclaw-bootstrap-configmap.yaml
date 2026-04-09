@@ -23,7 +23,7 @@ data:
         name.strip().lower()
         for name in os.environ.get(
             "OPENCLAW_SKILL_ALLOWLIST",
-            "n8n,n8n-editor,terminal,shell,filesystem,git,web-search,http,memory",
+            "n8n,n8n-editor,k8s-admin,postgres-admin,prometheus-monitoring,helm-management,image-management,network-diagnostics,log-analysis-alerting,gitops-delivery,backup-dr,service-mesh,terminal,shell,filesystem,git,web-search,http,memory",
         ).split(",")
         if name.strip()
     }
@@ -114,6 +114,20 @@ data:
     }
 
     CORE_AGENT_SKILLS = ["n8n", "n8n-editor"]
+    HOMELAB_AGENT_SKILLS = [
+        "n8n",
+        "n8n-editor",
+        "k8s-admin",
+        "postgres-admin",
+        "prometheus-monitoring",
+        "helm-management",
+        "image-management",
+        "network-diagnostics",
+        "log-analysis-alerting",
+        "gitops-delivery",
+        "backup-dr",
+        "service-mesh",
+    ]
 
     N8N_CONTROL_TUNING = {}
 
@@ -309,8 +323,11 @@ data:
             agent["workspace"] = f"/home/user/.openclaw/{workspace_name}"
             agent["agentDir"] = f"/home/user/.openclaw/agents/{agent_id}/agent"
             agent["model"] = AGENT_MODELS[agent_id]
-            # Hard-pin agents to core homelab skills only.
-            agent["skills"] = CORE_AGENT_SKILLS.copy()
+            if agent_id == "homelab":
+                agent["skills"] = HOMELAB_AGENT_SKILLS.copy()
+            else:
+                # Keep non-homelab lanes focused and low-noise.
+                agent["skills"] = CORE_AGENT_SKILLS.copy()
 
             if agent_id != "main":
                 agent.setdefault("name", agent_id)

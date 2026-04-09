@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-network-diagnostics-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: network-diagnostics
+    description: >
+      Diagnose connectivity and service routing issues across homelab nodes and
+      Kubernetes services. Use when the user reports timeout, refused
+      connections, DNS failures, packet loss, or intermittent network behavior.
+    ---
+
+    # Network Diagnostics Skill
+
+    ## Layered Workflow
+
+    1. DNS resolution:
+       - `nslookup <service>.apps.svc.cluster.local`
+       - `kubectl run -it --rm dns-test --image=busybox --restart=Never -- nslookup kubernetes.default`
+    2. Port reachability:
+       - `nc -vz <host> <port>`
+       - `curl -sv http://<host>:<port>/health`
+    3. Socket/listener state:
+       - `ss -tulpen`
+       - `netstat -tulpn`
+    4. Kubernetes network view:
+       - `kubectl get svc,ep -n <ns>`
+       - `kubectl get networkpolicy -n <ns>`
+    5. Packet capture if needed:
+       - `tcpdump -ni any host <ip> and port <port>`
+
+    ## Reporting Format
+
+    - Name source and destination for each test.
+    - Include command used and exact success/failure signal.
+    - Distinguish DNS issue vs routing issue vs app listener issue.
+
+    ## Guardrails
+
+    - Prefer low-impact diagnostics first.
+    - Keep packet capture scoped to specific host/port and short duration.

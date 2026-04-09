@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-image-management-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: image-management
+    description: >
+      Inspect and manage container images, tags, and rollout safety in the
+      homelab. Use when the user asks about image versions, registry tags,
+      digest pinning, update validation, or rollback planning.
+    ---
+
+    # Container Image Management Skill
+
+    ## Version Verification
+
+    1. Current runtime image:
+       `kubectl get deploy <name> -n <ns> -o jsonpath='{.spec.template.spec.containers[*].image}'`
+    2. Current pod image IDs:
+       `kubectl get pods -n <ns> -l app=<name> -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.containerStatuses[*].imageID}{"\n"}{end}'`
+    3. Desired tag in git manifests and Helm values.
+
+    ## Registry Inspection
+
+    - If `crane` is available:
+      - `crane ls <registry/repo>`
+      - `crane digest <registry/repo>:<tag>`
+    - If only Docker is available:
+      - `docker manifest inspect <registry/repo>:<tag>`
+
+    ## Safe Update Pattern
+
+    - Prefer digest pinning for deterministic deployments.
+    - Document old and new tag/digest in change summary.
+    - Verify post-change with rollout status and pod imageID.
+
+    ## Guardrails
+
+    - Never assume latest tag stability.
+    - Do not remove old tags as part of routine upgrades.
+    - Keep rollback image reference ready before applying updates.

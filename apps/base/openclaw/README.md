@@ -232,7 +232,7 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 - This prunes stale `BOOTSTRAP.md` and `HEARTBEAT.md` files from the PVC workspaces.
 - The main workspace `AGENTS.md` is replaced with a lighter version that avoids auto-loading the large `MEMORY.md` on every chat.
 - Skills are now reconciled in strict allowlist mode on every startup: old skill directories are removed and only allowlisted skills are reseeded from `/opt/bootstrap/skills`.
-- Default allowlist is tuned for deterministic low-noise behavior: `n8n, n8n-editor, terminal, shell, filesystem, git, web-search, http, memory`.
+- Default allowlist is tuned for deterministic low-noise behavior while enabling homelab operations: `n8n, n8n-editor, k8s-admin, postgres-admin, prometheus-monitoring, helm-management, image-management, network-diagnostics, log-analysis-alerting, gitops-delivery, backup-dr, service-mesh, terminal, shell, filesystem, git, web-search, http, memory`.
 - Any bundled skill not in `OPENCLAW_SKILL_ALLOWLIST` is excluded, including Apple/macOS/iOS-related skills.
 - Per-agent runtime directories are now materialized at startup (`agents/<id>/agent` and `agents/<id>/sessions`) and all configured agents are normalized in config so selector-visible agents stay usable after restart.
 - Agent models are normalized to stable provider refs:
@@ -247,7 +247,8 @@ python3 /home/user/.openclaw/skills/n8n-editor/n8n_workflow_helper.py apply-reci
 	- deprecated keys rejected by newer OpenClaw builds are removed during bootstrap (`subagents.maxConcurrent`, `thinkingDefault`)
 - Bootstrap now forces `commands.restart = false` so in-app restart requests do not flap the Kubernetes pod lifecycle.
 - Bootstrap now forces `commands.native = false` and `commands.nativeSkills = false` so bundled native tools/skill catalogs are disabled.
-- Bootstrap now hard-pins every agent's `skills` list to core homelab skills only: `n8n`, `n8n-editor`.
+- Bootstrap keeps non-homelab lanes pinned to the core low-noise set: `n8n`, `n8n-editor`.
+- Bootstrap pins the `homelab` lane to an extended operations set: `n8n`, `n8n-editor`, `k8s-admin`, `postgres-admin`, `prometheus-monitoring`, `helm-management`, `image-management`, `network-diagnostics`, `log-analysis-alerting`, `gitops-delivery`, `backup-dr`, `service-mesh`.
 - Bootstrap removes stale `plugins` config entries from older runtimes to prevent plugin warning churn.
 - Deployment sets `OPENCLAW_BUNDLED_PLUGINS_DIR=/home/user/.openclaw/skills` so discovery is limited to curated PVC-backed skills.
 - Deployment also masks `/app/extensions` with an `emptyDir` volume (`bundled-extensions-mask`) to hide bundled built-in skill catalogs in pod runtime.

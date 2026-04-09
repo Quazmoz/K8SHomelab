@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-prometheus-monitoring-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: prometheus-monitoring
+    description: >
+      Query and validate Prometheus metrics collection, scrape health, and
+      alerting state in the homelab. Use when the user asks to verify exporter
+      metrics, run PromQL, inspect active alerts, or confirm target scraping.
+    ---
+
+    # Prometheus Monitoring Skill
+
+    ## API-First Flow
+
+    1. Determine endpoint (in-cluster service or port-forward).
+    2. Validate targets:
+       - `curl -s <prom>/api/v1/targets | jq '.data.activeTargets[] | {job: .labels.job, health: .health, scrapeUrl: .scrapeUrl}'`
+    3. Run instant query:
+       - `curl -sG <prom>/api/v1/query --data-urlencode 'query=up'`
+    4. Run range query when trend matters:
+       - `curl -sG <prom>/api/v1/query_range --data-urlencode 'query=rate(http_requests_total[5m])' --data-urlencode 'start=<unix>' --data-urlencode 'end=<unix>' --data-urlencode 'step=30s'`
+    5. Check alerting:
+       - `curl -s <prom>/api/v1/rules`
+       - `curl -s <prom>/api/v1/alerts`
+
+    ## Homelab Metric Checks
+
+    - PostgreSQL exporter:
+      `pg_up`, `pg_stat_database_numbackends`, `pg_stat_bgwriter_buffers_alloc`
+    - Node exporter:
+      `node_cpu_seconds_total`, `node_memory_MemAvailable_bytes`, `node_filesystem_avail_bytes`
+    - Kubernetes:
+      `kube_pod_status_phase`, `kube_deployment_status_replicas_unavailable`
+
+    ## Guardrails
+
+    - Prefer objective metric evidence over log inference.
+    - If query returns no series, verify job label and scrape target first.
+    - Include exact PromQL used in findings.

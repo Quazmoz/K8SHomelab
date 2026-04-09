@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-backup-dr-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: backup-dr
+    description: >
+      Verify backups and run disaster recovery procedures for homelab stateful
+      services. Use when the user asks to confirm backup health, test restores,
+      check retention windows, or recover PostgreSQL/MongoDB data.
+    ---
+
+    # Backup and Disaster Recovery Skill
+
+    ## Backup Verification
+
+    1. Check CronJob and Job status:
+       - `kubectl get cronjobs,jobs -n apps | grep -E 'backup|postgres|mongo'`
+    2. Inspect last run logs:
+       - `kubectl logs job/<backup-job> -n apps --tail=200`
+    3. Verify artifact existence and size at storage destination.
+    4. Confirm retention policy behavior.
+
+    ## Restore Drill Pattern
+
+    1. Restore into isolated target (new DB/schema/namespace).
+    2. Run integrity checks (row counts, key tables, app smoke checks).
+    3. Record restore duration and data loss window.
+
+    ## Guardrails
+
+    - Never restore over production data without explicit approval.
+    - Prefer periodic restore drills over backup-only confidence.
+    - Surface RPO/RTO estimate in every DR report.

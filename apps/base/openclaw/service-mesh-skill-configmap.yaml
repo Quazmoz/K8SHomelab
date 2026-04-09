@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-service-mesh-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: service-mesh
+    description: >
+      Diagnose and operate service-mesh style traffic controls in the homelab.
+      Use when the user asks about mTLS, traffic splitting, policy enforcement,
+      sidecar injection, or service-to-service reliability patterns.
+    ---
+
+    # Service Mesh Skill
+
+    Use this skill only when a mesh exists or the user is explicitly planning one.
+
+    ## Discovery
+
+    - Detect Istio:
+      `kubectl get ns istio-system`
+      `kubectl get crd | grep -E 'virtualservices|destinationrules|peerauthentications'`
+    - Detect Linkerd:
+      `kubectl get ns linkerd`
+      `kubectl get crd | grep -i linkerd`
+
+    ## Istio Checks
+
+    - Proxy sync:
+      `istioctl proxy-status`
+    - mTLS policy:
+      `kubectl get peerauthentication -A`
+    - Routing rules:
+      `kubectl get virtualservice,destinationrule -A`
+
+    ## Linkerd Checks
+
+    - Control plane:
+      `linkerd check`
+    - Workload policy and routes:
+      `kubectl get server,httproute -A`
+
+    ## Guardrails
+
+    - If no mesh is installed, state that clearly and pivot to Kubernetes
+      NetworkPolicy and Ingress diagnostics instead.
+    - Do not claim mTLS is active without policy and data-plane evidence.

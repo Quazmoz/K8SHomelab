@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-log-analysis-alerting-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: log-analysis-alerting
+    description: >
+      Analyze Loki logs with LogQL and connect findings to actionable alerting.
+      Use when the user asks for error pattern analysis, service correlation,
+      dashboard-to-log investigation, or persistent alert recommendations.
+    ---
+
+    # Log Analysis and Alerting Skill
+
+    ## Investigation Workflow
+
+    1. Define scope: service, namespace, time window.
+    2. Run broad LogQL query, then narrow with labels and parser stages.
+    3. Extract top error signatures and frequency.
+    4. Correlate with deploy events and Prometheus metrics.
+
+    ## LogQL Patterns
+
+    - Recent errors by app:
+      `{namespace="apps", app="<app>"} |= "error"`
+    - Rate spike:
+      `sum by (app) (count_over_time({namespace="apps"} |= "error" [5m]))`
+    - Parse JSON logs:
+      `{app="<app>"} | json | level="error"`
+
+    ## Alert Design Guidance
+
+    - Prefer low-noise rules:
+      - sustained error rate for N minutes
+      - restart loop count over threshold
+      - missing heartbeat logs for critical jobs
+    - Pair each alert with runbook text and owner.
+
+    ## Guardrails
+
+    - Do not treat one-off exceptions as alert-worthy without recurrence.
+    - Include proposed threshold and rationale when suggesting new alerts.

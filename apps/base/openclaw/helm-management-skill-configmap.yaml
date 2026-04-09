@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-helm-management-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: helm-management
+    description: >
+      Manage Helm releases in the homelab cluster. Use when the user asks for
+      helm list/status/history/get-values, release troubleshooting, safe
+      upgrades, rollbacks, or chart value verification.
+    ---
+
+    # Helm Package Management Skill
+
+    ## Read-Only Diagnostic Path
+
+    1. Enumerate releases:
+       `helm list -A`
+    2. Inspect one release:
+       `helm status <release> -n <namespace>`
+    3. Review values and rendered manifests:
+       - `helm get values <release> -n <namespace> -a`
+       - `helm get manifest <release> -n <namespace>`
+    4. Check history:
+       `helm history <release> -n <namespace>`
+
+    ## Change Path
+
+    - Upgrade with explicit values file and wait:
+      `helm upgrade <release> <chart> -n <namespace> -f <values.yaml> --install --wait --timeout 5m`
+    - Rollback to known revision:
+      `helm rollback <release> <revision> -n <namespace> --wait --timeout 5m`
+
+    ## Guardrails
+
+    - Do not run upgrade/rollback without explicit user approval.
+    - Always capture `helm history` before modification.
+    - After change, verify rollout with kubectl and Helm status.

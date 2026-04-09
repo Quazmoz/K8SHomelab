@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openclaw-postgres-admin-skill
+  namespace: apps
+  labels:
+    app: openclaw
+data:
+  SKILL.md: |
+    ---
+    name: postgres-admin
+    description: >
+      Administer PostgreSQL in the homelab with direct SQL verification.
+      Use when the user asks for schema inspection, query validation, pg_stat
+      views, connection checks, index bloat clues, or database performance
+      triage. Always use this skill for PostgreSQL operational questions.
+    ---
+
+    # PostgreSQL Administration Skill
+
+    Use this flow for deterministic database checks.
+
+    ## Preflight
+
+    - Confirm connection info source (service DNS, user, db).
+    - Prefer in-cluster execution via pod exec when possible.
+    - Export `PGPASSWORD` instead of putting credentials in command history.
+
+    ## Canonical Checks
+
+    1. Connectivity and version:
+       `psql -h <host> -U <user> -d <db> -c "SELECT version();"`
+    2. Session pressure:
+       `psql ... -c "SELECT count(*) AS active_sessions FROM pg_stat_activity;"`
+    3. Background writer:
+       `psql ... -c "SELECT * FROM pg_stat_bgwriter;"`
+    4. Database sizes:
+       `psql ... -c "SELECT datname, pg_size_pretty(pg_database_size(datname)) FROM pg_database ORDER BY pg_database_size(datname) DESC;"`
+    5. Top table sizes:
+       `psql ... -c "SELECT schemaname, relname, pg_size_pretty(pg_total_relation_size(relid)) AS total_size FROM pg_catalog.pg_statio_user_tables ORDER BY pg_total_relation_size(relid) DESC LIMIT 20;"`
+
+    ## Schema Inspection
+
+    - List schemas:
+      `psql ... -c "SELECT schema_name FROM information_schema.schemata ORDER BY 1;"`
+    - List tables in schema:
+      `psql ... -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;"`
+    - Describe columns:
+      `psql ... -c "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name='<table>' ORDER BY ordinal_position;"`
+
+    ## Guardrails
+
+    - Use read-only SQL by default.
+    - Do not run `DELETE`, `UPDATE`, or DDL unless explicitly requested.
+    - Redact secrets and connection strings in output.

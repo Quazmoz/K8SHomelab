@@ -52,7 +52,7 @@ spec:
           runAsGroup: 1000
         env:
         - name: OPENCLAW_SKILL_ALLOWLIST
-          value: "n8n,n8n-editor,terminal,shell,filesystem,git,web-search,http,memory"
+          value: "n8n,n8n-editor,k8s-admin,postgres-admin,prometheus-monitoring,helm-management,image-management,network-diagnostics,log-analysis-alerting,gitops-delivery,backup-dr,service-mesh,terminal,shell,filesystem,git,web-search,http,memory"
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
@@ -127,6 +127,36 @@ spec:
           readOnly: true
         - name: n8n-editor-skill
           mountPath: /opt/bootstrap/skills/n8n-editor
+          readOnly: true
+        - name: k8s-admin-skill
+          mountPath: /opt/bootstrap/skills/k8s-admin
+          readOnly: true
+        - name: postgres-admin-skill
+          mountPath: /opt/bootstrap/skills/postgres-admin
+          readOnly: true
+        - name: prometheus-monitoring-skill
+          mountPath: /opt/bootstrap/skills/prometheus-monitoring
+          readOnly: true
+        - name: helm-management-skill
+          mountPath: /opt/bootstrap/skills/helm-management
+          readOnly: true
+        - name: image-management-skill
+          mountPath: /opt/bootstrap/skills/image-management
+          readOnly: true
+        - name: network-diagnostics-skill
+          mountPath: /opt/bootstrap/skills/network-diagnostics
+          readOnly: true
+        - name: log-analysis-alerting-skill
+          mountPath: /opt/bootstrap/skills/log-analysis-alerting
+          readOnly: true
+        - name: gitops-delivery-skill
+          mountPath: /opt/bootstrap/skills/gitops-delivery
+          readOnly: true
+        - name: backup-dr-skill
+          mountPath: /opt/bootstrap/skills/backup-dr
+          readOnly: true
+        - name: service-mesh-skill
+          mountPath: /opt/bootstrap/skills/service-mesh
           readOnly: true
         resources:
           requests:
@@ -320,6 +350,36 @@ spec:
       - name: n8n-editor-skill
         configMap:
           name: openclaw-n8n-editor-skill
+      - name: k8s-admin-skill
+        configMap:
+          name: openclaw-k8s-admin-skill
+      - name: postgres-admin-skill
+        configMap:
+          name: openclaw-postgres-admin-skill
+      - name: prometheus-monitoring-skill
+        configMap:
+          name: openclaw-prometheus-monitoring-skill
+      - name: helm-management-skill
+        configMap:
+          name: openclaw-helm-management-skill
+      - name: image-management-skill
+        configMap:
+          name: openclaw-image-management-skill
+      - name: network-diagnostics-skill
+        configMap:
+          name: openclaw-network-diagnostics-skill
+      - name: log-analysis-alerting-skill
+        configMap:
+          name: openclaw-log-analysis-alerting-skill
+      - name: gitops-delivery-skill
+        configMap:
+          name: openclaw-gitops-delivery-skill
+      - name: backup-dr-skill
+        configMap:
+          name: openclaw-backup-dr-skill
+      - name: service-mesh-skill
+        configMap:
+          name: openclaw-service-mesh-skill
       - name: openclaw-bootstrap
         configMap:
           name: openclaw-bootstrap
