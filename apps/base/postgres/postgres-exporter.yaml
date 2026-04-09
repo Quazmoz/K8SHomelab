@@ -51,13 +51,14 @@ spec:
             cpu: "200m"
         livenessProbe:
           httpGet:
-            path: /healthz
+            # v0.19.x exposes metrics on /metrics but does not serve /healthz.
+            path: /metrics
             port: 9187
           initialDelaySeconds: 10
           periodSeconds: 30
         readinessProbe:
           httpGet:
-            path: /healthz
+            path: /metrics
             port: 9187
           initialDelaySeconds: 5
           periodSeconds: 10

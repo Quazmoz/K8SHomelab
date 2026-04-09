@@ -216,6 +216,12 @@ data:
             description: DevOps Resources
             siteMonitor: https://devopstoolkit.quinnfavo.com
             statusStyle: dot
+        - Consultant:
+            href: https://consultant.quinnfavo.com
+            icon: mdi-briefcase-account
+            description: Professional Services
+            siteMonitor: https://consultant.quinnfavo.com
+            statusStyle: dot
         - GitHub:
             href: https://github.com/quazmoz
             icon: si-github

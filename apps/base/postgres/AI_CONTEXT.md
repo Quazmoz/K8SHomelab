@@ -9,7 +9,7 @@ Primary relational database. Shared single-instance PostgreSQL serving multiple 
 ## Architecture
 
 - **Type:** StatefulSet
-- **Image:** `postgres:15`
+- **Image:** `postgres:18`
 - **Namespace:** `apps`
 - **Port:** 5432
 - **Node:** `quinn-hpprobook430g6`
@@ -32,7 +32,8 @@ Primary relational database. Shared single-instance PostgreSQL serving multiple 
 ## Key Configuration
 
 - Init scripts run on first startup to create all databases and users
-- Exporter (`prometheuscommunity/postgres-exporter:v0.15.0`) provides Prometheus scrape endpoint
+- Exporter (`prometheuscommunity/postgres-exporter:v0.19.1`) provides Prometheus scrape endpoint
+- PostgreSQL 18 exposes checkpoint metrics in `pg_stat_checkpointer`; `pg_stat_bgwriter` now only exposes background writer counters
 - Health checks use `pg_isready`
 - Dual service names (`postgres-service` and `postgres`) for compatibility
 
@@ -47,4 +48,5 @@ Primary relational database. Shared single-instance PostgreSQL serving multiple 
 - For existing instances, manually run SQL: `kubectl exec -it -n apps statefulset/postgres -- psql -U postgres`
 - Secret is SOPS-encrypted (`postgres-secret.enc.yaml`) — use `sops` to edit
 - The exporter is a separate Deployment, not a sidecar
+- For `postgres-exporter` v0.19.x, probes must target `/metrics`; `/healthz` returns `404` and will cause CrashLoopBackOff
 - This is a **critical service** — most of the cluster depends on it

@@ -29,12 +29,12 @@ PostgreSQL is the primary relational database for the cluster. Multiple services
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `postgres:15` |
+| **Image** | `postgres:18` |
 | **Port** | 5432 |
 | **Storage** | 10Gi PVC (`local-storage`) |
 | **Node** | `quinn-hpprobook430g6` |
 | **Resources** | Requests: 512Mi/200m, Limits: 4Gi/2000m |
-| **Exporter** | `postgres-exporter:v0.15.0` on port 9187 |
+| **Exporter** | `postgres-exporter:v0.19.1` on port 9187 |
 
 ## Files
 
@@ -63,4 +63,16 @@ kubectl exec -it -n apps statefulset/postgres -- psql -U postgres -c "\l"
 
 # Check exporter
 kubectl get pods -n apps -l app=postgres-exporter
+
+# Verify PostgreSQL version
+kubectl exec -n apps postgres-0 -- psql -U postgres -d postgres -Atc "SELECT version();"
+
+# Inspect PostgreSQL 18 checkpoint/bgwriter stats split
+kubectl exec -n apps postgres-0 -- psql -U postgres -d postgres -Atc "SELECT column_name FROM information_schema.columns WHERE table_schema = 'pg_catalog' AND table_name = 'pg_stat_bgwriter' ORDER BY ordinal_position;"
+kubectl exec -n apps postgres-0 -- psql -U postgres -d postgres -Atc "SELECT column_name FROM information_schema.columns WHERE table_schema = 'pg_catalog' AND table_name = 'pg_stat_checkpointer' ORDER BY ordinal_position;"
 ```
+
+## PostgreSQL 18 Exporter Note
+
+PostgreSQL 18 no longer exposes checkpoint counters like `checkpoints_timed` in `pg_stat_bgwriter`; those counters live in `pg_stat_checkpointer`.
+Use `prometheuscommunity/postgres-exporter:v0.19.1` or another release that includes the PostgreSQL 17+ stats-view update, and keep the exporter probes on `/metrics` rather than `/healthz`.
