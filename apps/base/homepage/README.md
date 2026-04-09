@@ -24,7 +24,7 @@ Homepage is a modern, customizable dashboard that provides a single pane of glas
 | AI & LLM | OpenWebUI, Qdrant, Jupyter, Phoenix, LlamaCpp, Ollama API, n8n |
 | MCP Tools | Context Forge, GroupMe, Azure MCP, ClickUp MCP, MCPO |
 | DevOps | AWX, Grafana, Prometheus, Loki, Alloy |
-| Operations | pgAdmin, Mongo Express, RedisInsight, AdGuard Home |
+| Operations | pgAdmin, Mongo Express, RedisInsight |
 
 ## Files
 

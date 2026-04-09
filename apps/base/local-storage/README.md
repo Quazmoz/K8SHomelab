@@ -37,7 +37,6 @@ Defines `StorageClass` and `PersistentVolume` resources for all stateful workloa
 | `postgres-backup-pv` | 20Gi | slow-storage | orangepi6plus | PG Backups |
 | `mongodb-backup-pv` | 20Gi | slow-storage | orangepi6plus | MongoDB Backups |
 | `llama-cpp-models-pv` | 50Gi | local-storage | orangepi6plus | LlamaCpp/Ollama |
-| `adguard-home-pv` | 1Gi | local-storage | orangepi6plus | AdGuard Home |
 
 ## Files
 

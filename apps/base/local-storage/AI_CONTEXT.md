@@ -23,12 +23,12 @@ Defines all `StorageClass` and `PersistentVolume` resources for the cluster. Eve
 ## Node Distribution
 
 - **quinn-hpprobook430g6** — Most PVs (SSD-backed, `/home/quinn/k8s-data/`)
-- **orangepi6plus** — Backups (SD card), LlamaCpp models, AdGuard, FreshRSS
+- **orangepi6plus** — Backups (SD card), LlamaCpp models, FreshRSS
 
 ## Dependencies
 
 - **Depends on:** Nothing
-- **Depended on by:** Every deployment using a PVC (Prometheus, Grafana, PostgreSQL, Loki, n8n, OpenWebUI, Qdrant, MongoDB, Jupyter, Phoenix, Authentik, AWX, Context Forge, Backups, LlamaCpp, AdGuard Home, etc.)
+- **Depended on by:** Every deployment using a PVC (Prometheus, Grafana, PostgreSQL, Loki, n8n, OpenWebUI, Qdrant, MongoDB, Jupyter, Phoenix, Authentik, AWX, Context Forge, Backups, LlamaCpp, etc.)
 
 ## Modification Notes
 

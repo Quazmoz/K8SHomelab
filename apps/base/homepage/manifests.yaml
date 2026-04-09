@@ -178,12 +178,6 @@ data:
             description: Redis Admin
             siteMonitor: http://redis-insight.apps.svc.cluster.local:5540
             statusStyle: dot
-        - AdGuard Home:
-            href: http://192.168.1.222
-            icon: si-adguard
-            description: DNS Sinkhole
-            siteMonitor: http://adguard-home.apps.svc.cluster.local:80
-            statusStyle: dot
         - Mongo Express:
             href: http://mongo-express.k8s.local
             icon: si-mongodb

@@ -20,7 +20,6 @@ Services of type `LoadBalancer` are automatically assigned IPs from the pool. Ke
 | IP | Service |
 |----|---------|
 | `192.168.1.221` | NGINX Ingress Controller |
-| `192.168.1.222` | AdGuard Home (DNS) |
 
 ## Files
 

@@ -29,7 +29,7 @@ Provides bare-metal LoadBalancer IP allocation using Layer 2 ARP advertisement. 
 ## Dependencies
 
 - **Depends on:** Nothing
-- **Depended on by:** ingress-nginx (LoadBalancer IP), AdGuard Home (LoadBalancer IP), any future LoadBalancer services
+- **Depended on by:** ingress-nginx (LoadBalancer IP), any future LoadBalancer services
 
 ## Modification Notes
 
