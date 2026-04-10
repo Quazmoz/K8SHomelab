@@ -8,7 +8,7 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 - Device identity and pairing are required by the Control UI.
 - TLS is enabled at ingress for secure-context browser requirements.
 - `HOME` is explicitly set to `/home/user` so that OpenClaw's memory workspace (`~/.openclaw/workspace/`) resolves to the PVC mount, not ephemeral storage.
-- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.4.8-arm64` (latest verified ARM64 release).
+- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.4.9-arm64` (latest verified ARM64 release).
 
 ## Memory System
 - Provider: `local` (on-device embeddings via node-llama-cpp, no external API needed)
