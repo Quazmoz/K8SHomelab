@@ -46,7 +46,7 @@ spec:
       # normalize agent models from repo-managed templates.
       initContainers:
       - name: bootstrap-openclaw
-        image: ghcr.io/openclaw/openclaw:2026.4.9-arm64
+        image: ghcr.io/openclaw/openclaw:2026.4.26-arm64
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
@@ -167,7 +167,7 @@ spec:
             memory: 128Mi
       containers:
       - name: openclaw
-        image: ghcr.io/openclaw/openclaw:2026.4.9-arm64
+        image: ghcr.io/openclaw/openclaw:2026.4.26-arm64
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 18789
