@@ -35,6 +35,8 @@ resources:
   - ./backups  # Daily database backups to SD card
 #  - ./llama-cpp  # Disabled — using Ollama Cloud instead
   - ./openclaw  # OpenClaw autonomous AI agent
+  - ./hermes-agent # Hermes Agent AI autonomous agent
+
 
 
 

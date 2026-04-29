@@ -1,0 +1,69 @@
+---
+# Hermes Agent ConfigMap
+# Contains the non-secret config.yaml that controls Hermes runtime behaviour.
+#
+# Provider / model mapping vs OpenClaw:
+#   OpenClaw provider  | Hermes provider   | Notes
+#   -------------------|-------------------|-----------------------------------
+#   openai (Ollama Cl) | openai            | Same OPENAI_BASE_URL / OPENAI_API_KEY
+#   chatgpt            | openai            | Hermes has one openai provider;
+#                      |                   | model names route it (gpt-4.1, etc.)
+#   openrouter         | openrouter        | OPENROUTER_API_KEY
+#   google             | google            | GEMINI_API_KEY (Hermes reads GEMINI_API_KEY)
+#   groq               | groq              | GROQ_API_KEY
+#   huggingface        | huggingface       | HUGGINGFACE_HUB_TOKEN
+#   mistral            | mistral           | MISTRAL_API_KEY
+#   cerebras           | cerebras          | CEREBRAS_API_KEY
+#
+# Primary model: openai/kimi-k2.5  (Ollama Cloud, mirrors OpenClaw default)
+# Fallback:      openrouter/auto   (mirrors OpenClaw's OPENROUTER fallback intent)
+#
+# terminal.backend is set to "none" — Hermes runs read-only in the K8s pod.
+# API server is enabled so Open WebUI / other tools can connect.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hermes-agent-config
+  namespace: apps
+  labels:
+    app: hermes-agent
+    app.kubernetes.io/name: hermes-agent
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: ai-stack
+data:
+  config.yaml: |
+    # ─── LLM Provider ────────────────────────────────────────────────────────────
+    # Primary: Ollama Cloud via OpenAI-compatible endpoint.
+    # This mirrors OpenClaw's `openai` provider block
+    # (baseUrl: https://ollama.com/v1, apiKey: env:OPENAI_API_KEY).
+    provider: openai
+    model: kimi-k2.5
+
+    # ─── API Server ───────────────────────────────────────────────────────────────
+    # Exposes an OpenAI-compatible REST endpoint on :8642.
+    # API_SERVER_KEY is sourced from the hermes-agent-credentials Secret.
+    api_server:
+      enabled: true
+      port: 8642
+      host: "0.0.0.0"
+
+    # ─── Terminal backend ─────────────────────────────────────────────────────────
+    # "none" — agent receives tasks via API only; no local shell sandbox.
+    # Switch to "docker" later if you want tool execution in a sidecar container.
+    terminal:
+      backend: none
+
+    # ─── Memory ───────────────────────────────────────────────────────────────────
+    # SQLite-backed persistent memory stored on the PVC.
+    memory:
+      enabled: true
+      db_path: /opt/data/memory.db
+
+    # ─── Skill / tool configuration ───────────────────────────────────────────────
+    skills:
+      # Hermes loads skill markdown files from this directory.
+      # Seed via initContainer (same pattern as OpenClaw bootstrap).
+      skill_dir: /opt/data/skills
+
+    # ─── Logging ──────────────────────────────────────────────────────────────────
+    log_level: info

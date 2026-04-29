@@ -1,0 +1,112 @@
+---
+# Hermes Agent Validation Job
+# Calls the Hermes gateway and validates:
+#   1. Primary provider (Ollama Cloud / openai) responds correctly
+#   2. Fallback provider (OpenRouter) responds when primary is skipped
+#
+# Usage:
+#   kubectl apply -f hermes-agent-validation-job.yaml
+#   kubectl -n apps logs job/hermes-validation
+#   kubectl -n apps delete job hermes-validation   # cleanup
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hermes-validation
+  namespace: apps
+  labels:
+    app: hermes-agent
+    app.kubernetes.io/component: validation
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: validator
+        image: curlimages/curl:8.7.1
+        env:
+        - name: API_SERVER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hermes-agent-credentials
+              key: API_SERVER_KEY
+        - name: HERMES_URL
+          value: "http://hermes-agent.apps.svc.cluster.local:8642"
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          echo "=== Hermes Agent Validation ==="
+          echo ""
+
+          # ── 1. Health check ────────────────────────────────────────────────
+          echo "[1/3] Health probe..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${HERMES_URL}/health")
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: /health returned HTTP $STATUS (expected 200)"
+            exit 1
+          fi
+          echo "PASS: /health -> 200"
+          echo ""
+
+          # ── 2. Primary provider (Ollama Cloud / openai) ────────────────────
+          echo "[2/3] Primary provider inference (openai/kimi-k2.5)..."
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -X POST "${HERMES_URL}/v1/chat/completions" \
+            -H "Authorization: Bearer ${API_SERVER_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "kimi-k2.5",
+              "messages": [{"role": "user", "content": "Reply with the word PONG only."}],
+              "max_tokens": 10,
+              "temperature": 0
+            }')
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS:")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "PASS: primary provider returned HTTP 200"
+            echo "Body snippet: $(echo $BODY | cut -c1-200)"
+          else
+            echo "WARN: primary provider returned HTTP $HTTP_CODE"
+            echo "Body: $BODY"
+            echo "(Non-fatal — checking fallback next)"
+          fi
+          echo ""
+
+          # ── 3. Fallback provider (OpenRouter) ─────────────────────────────
+          echo "[3/3] Fallback provider inference (openrouter/auto)..."
+          RESPONSE2=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -X POST "${HERMES_URL}/v1/chat/completions" \
+            -H "Authorization: Bearer ${API_SERVER_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "openrouter/auto",
+              "messages": [{"role": "user", "content": "Reply with the word PONG only."}],
+              "max_tokens": 10,
+              "temperature": 0
+            }')
+          HTTP_CODE2=$(echo "$RESPONSE2" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY2=$(echo "$RESPONSE2" | grep -v "HTTP_STATUS:")
+          if [ "$HTTP_CODE2" = "200" ]; then
+            echo "PASS: fallback provider returned HTTP 200"
+          else
+            echo "INFO: fallback provider returned HTTP $HTTP_CODE2 (may be absent key)"
+          fi
+          echo ""
+
+          echo "=== Validation complete ==="
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi

@@ -1,0 +1,20 @@
+---
+# Hermes Agent PersistentVolumeClaim
+# Stores agent config (.env + config.yaml), memory SQLite DBs, and skill files.
+# Mirrors openclaw-data-pvc: same storageClassName, same namespace.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hermes-agent-data-pvc
+  namespace: apps
+  labels:
+    app: hermes-agent
+    app.kubernetes.io/name: hermes-agent
+    app.kubernetes.io/part-of: ai-stack
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

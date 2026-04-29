@@ -1,0 +1,253 @@
+---
+# Hermes Agent Deployment
+# Runs Nous Research Hermes Agent (nousresearch/hermes-agent) on ARM64.
+#
+# Architecture mirrors OpenClaw:
+#   - pinned to orangepi6plus (ARM64 control plane), same node/toleration
+#   - same namespace: apps
+#   - same secret: openclaw-credentials (reusing all existing keys)
+#   - same env var names where Hermes supports them (OPENAI_API_KEY, OPENAI_BASE_URL, etc.)
+#   - PVC for persistent state (config, memory, skills)
+#   - initContainer seeds config.yaml from ConfigMap before the main process starts
+#
+# Provider priority (mirrors OpenClaw logic):
+#   1. OPENAI_API_KEY  → Ollama Cloud (https://ollama.com/v1) — primary
+#   2. OPENROUTER_API_KEY → OpenRouter — fallback when Ollama Cloud limits hit
+#   3. GEMINI_API_KEY  → Google Gemini (optional, free-tier)
+#   4. GROQ_API_KEY    → Groq (optional, fast inference)
+#   5. MISTRAL_API_KEY → Mistral AI (optional)
+#   6. CEREBRAS_API_KEY → Cerebras (optional)
+#   7. CHATGPT_API_KEY → OpenAI Platform (optional, real OpenAI credits)
+#   8. HUGGINGFACE_HUB_TOKEN → HuggingFace (optional)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes-agent
+  namespace: apps
+  labels:
+    app: hermes-agent
+    app.kubernetes.io/name: hermes-agent
+    app.kubernetes.io/component: ai-agent
+    app.kubernetes.io/part-of: ai-stack
+  annotations:
+    description: "Hermes Agent (Nous Research) — autonomous AI agent with OpenAI-compatible gateway"
+    docs: "https://github.com/NousResearch/hermes-agent"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hermes-agent
+  strategy:
+    type: Recreate  # Single replica, preserve PVC state
+  template:
+    metadata:
+      labels:
+        app: hermes-agent
+        app.kubernetes.io/name: hermes-agent
+        app.kubernetes.io/component: ai-agent
+    spec:
+      # Co-locate with OpenClaw on the ARM64 control plane node.
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+
+      # ── Init: seed config.yaml from ConfigMap onto PVC ─────────────────────────
+      # Hermes reads /opt/data/config.yaml at startup.  We inject it here so the
+      # non-secret config stays Git-managed while the live file lives on the PVC.
+      initContainers:
+      - name: seed-config
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          echo "Seeding Hermes config from ConfigMap..."
+          cp /config-src/config.yaml /opt/data/config.yaml
+          mkdir -p /opt/data/skills
+          echo "Done."
+        volumeMounts:
+        - name: hermes-data
+          mountPath: /opt/data
+        - name: hermes-config-src
+          mountPath: /config-src
+          readOnly: true
+        resources:
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 32Mi
+
+      containers:
+      - name: hermes-agent
+        # Pin to v2026.4.23 — latest confirmed ARM64 tag as of 2026-04-29.
+        # Upgrade by bumping this tag and rolling the deployment.
+        image: nousresearch/hermes-agent:v2026.4.23
+        imagePullPolicy: IfNotPresent
+        command:
+        - hermes
+        - gateway
+        - run
+        ports:
+        - containerPort: 8642
+          name: gateway
+
+        env:
+        # ── Primary provider: Ollama Cloud via OpenAI-compatible endpoint ──────
+        # OPENAI_BASE_URL overrides the default api.openai.com so that the
+        # `openai` provider points at Ollama Cloud, identical to OpenClaw's
+        # models.providers.openai.baseUrl = "https://ollama.com/v1".
+        - name: OPENAI_BASE_URL
+          value: "https://ollama.com/v1"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: OPENAI_API_KEY
+              optional: false
+
+        # ── Fallback: OpenRouter ───────────────────────────────────────────────
+        # Mirrors OpenClaw OPENROUTER_API_KEY usage.
+        - name: OPENROUTER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: OPENROUTER_API_KEY
+              optional: true
+
+        # ── Google / Gemini ────────────────────────────────────────────────────
+        # OpenClaw mirrors GEMINI_API_KEY → GOOGLE_API_KEY; we do the same.
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GEMINI_API_KEY
+              optional: true
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GEMINI_API_KEY
+              optional: true
+
+        # ── Groq ──────────────────────────────────────────────────────────────
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: GROQ_API_KEY
+              optional: true
+
+        # ── HuggingFace ────────────────────────────────────────────────────────
+        # Both canonical names, same as OpenClaw.
+        - name: HUGGINGFACE_HUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: HUGGINGFACE_HUB_TOKEN
+              optional: true
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: HUGGINGFACE_HUB_TOKEN
+              optional: true
+
+        # ── Mistral ────────────────────────────────────────────────────────────
+        - name: MISTRAL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: MISTRAL_API_KEY
+              optional: true
+
+        # ── Cerebras ──────────────────────────────────────────────────────────
+        - name: CEREBRAS_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: CEREBRAS_API_KEY
+              optional: true
+
+        # ── OpenAI Platform (real credits, separate from Ollama Cloud) ─────────
+        # OpenClaw calls this provider "chatgpt/*"; Hermes uses a model-name
+        # prefix to differentiate (e.g. model: gpt-4.1 with base url override).
+        # The key is optional — agent degrades gracefully when absent.
+        - name: CHATGPT_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openclaw-credentials
+              key: CHATGPT_API_KEY
+              optional: true
+
+        # ── Hermes API server key ──────────────────────────────────────────────
+        # Enables bearer-token auth on the :8642 gateway.
+        # Stored in a dedicated key in the same secret for simplicity.
+        - name: API_SERVER_ENABLED
+          value: "true"
+        - name: API_SERVER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hermes-agent-credentials
+              key: API_SERVER_KEY
+              optional: false
+
+        # ── Data directory ────────────────────────────────────────────────────
+        - name: HERMES_DATA_DIR
+          value: "/opt/data"
+
+        volumeMounts:
+        - name: hermes-data
+          mountPath: /opt/data
+
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "200m"
+          limits:
+            memory: "6Gi"
+            cpu: "2000m"
+
+        # Hermes gateway can take time to start.  startupProbe gates the others.
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8642
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 120
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8642
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8642
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+      volumes:
+      - name: hermes-data
+        persistentVolumeClaim:
+          claimName: hermes-agent-data-pvc
+      - name: hermes-config-src
+        configMap:
+          name: hermes-agent-config

@@ -1,0 +1,22 @@
+---
+# Hermes Agent Service
+# Exposes the gateway API on port 8642 (OpenAI-compatible endpoint).
+# Hermes binds to 0.0.0.0:8642 natively — no socat sidecar needed.
+apiVersion: v1
+kind: Service
+metadata:
+  name: hermes-agent
+  namespace: apps
+  labels:
+    app: hermes-agent
+    app.kubernetes.io/name: hermes-agent
+    app.kubernetes.io/component: ai-agent
+spec:
+  type: ClusterIP
+  selector:
+    app: hermes-agent
+  ports:
+  - name: gateway
+    port: 8642
+    targetPort: 8642
+    protocol: TCP

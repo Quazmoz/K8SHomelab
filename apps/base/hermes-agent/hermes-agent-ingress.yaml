@@ -1,0 +1,27 @@
+---
+# Hermes Agent Ingress
+# Mirrors openclaw-ingress timeout/body-size annotations.
+# TLS terminated at ingress using the same cert-manager / self-signed pattern.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hermes-agent-ingress
+  namespace: apps
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: hermes.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hermes-agent
+            port:
+              number: 8642

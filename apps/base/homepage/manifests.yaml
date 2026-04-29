@@ -97,6 +97,12 @@ data:
             description: Autonomous AI Agent
             siteMonitor: http://openclaw.apps.svc.cluster.local:18789/
             statusStyle: dot
+        - Hermes:
+            href: http://hermes.k8s.local
+            icon: mdi-head-snowflake-outline
+            description: Hermes AI Agent
+            siteMonitor: http://hermes-agent.apps.svc.cluster.local:8642/health
+            statusStyle: dot
 
     - MCP Tools:
         - Context Forge:
