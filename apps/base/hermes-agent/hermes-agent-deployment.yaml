@@ -171,6 +171,10 @@ spec:
               name: hermes-agent-credentials
               key: API_SERVER_KEY
               optional: false
+        - name: API_SERVER_HOST
+          value: "0.0.0.0"
+        - name: API_SERVER_PORT
+          value: "8642"
         - name: HERMES_DATA_DIR
           value: "/opt/data"
 
@@ -218,6 +222,9 @@ spec:
         command:
         - /opt/hermes/.venv/bin/hermes
         - dashboard
+        - --host
+        - 0.0.0.0
+        - --insecure
         ports:
         - containerPort: 9119
           name: dashboard
