@@ -416,7 +416,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v33-openclaw-tls"
+        checksum/config: "v34-hermes-added"
     spec:
       serviceAccountName: homepage
       nodeSelector:
