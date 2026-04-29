@@ -285,9 +285,6 @@ spec:
         volumeMounts:
         - name: openclaw-data
           mountPath: /home/user/.openclaw
-        # Mask bundled extensions; only curated PVC skills remain discoverable.
-        - name: bundled-extensions-mask
-          mountPath: /app/extensions
         resources:
           requests:
             memory: "1Gi"
@@ -383,5 +380,4 @@ spec:
       - name: openclaw-bootstrap
         configMap:
           name: openclaw-bootstrap
-      - name: bundled-extensions-mask
-        emptyDir: {}
+
