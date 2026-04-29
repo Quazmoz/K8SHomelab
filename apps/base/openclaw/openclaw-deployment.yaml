@@ -46,7 +46,7 @@ spec:
       # normalize agent models from repo-managed templates.
       initContainers:
       - name: bootstrap-openclaw
-        image: ghcr.io/openclaw/openclaw:2026.4.26-arm64
+        image: python:3.11-alpine
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
