@@ -6,5 +6,4 @@ resources:
   - hermes-agent-ingress.yaml
   - hermes-agent-configmap.yaml
   - hermes-agent-deployment.yaml
-  # Uncomment after SOPS encryption:
-  # - hermes-agent-credentials.secret.enc.yaml
+  - hermes-agent-credentials.secret.enc.yaml
