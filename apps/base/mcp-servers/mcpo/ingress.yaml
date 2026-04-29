@@ -19,13 +19,6 @@ metadata:
     nginx.ingress.kubernetes.io/auth-response-headers: "Set-Cookie,X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid"
     nginx.ingress.kubernetes.io/auth-snippet: |
       proxy_set_header Host $http_host;
-    # Homepage annotations
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/group: "AI & Automation"
-    gethomepage.dev/name: "MCP Servers"
-    gethomepage.dev/icon: "openai"
-    gethomepage.dev/description: "MCP Tools via OpenAPI"
-    gethomepage.dev/href: "http://mcpo.k8s.local/docs"
 spec:
   ingressClassName: nginx
   rules:
