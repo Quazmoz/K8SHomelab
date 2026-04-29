@@ -89,8 +89,6 @@ spec:
 
       containers:
       - name: hermes-agent
-        # Pin to v2026.4.23 — latest confirmed ARM64 tag as of 2026-04-29.
-        # Upgrade by bumping this tag and rolling the deployment.
         image: nousresearch/hermes-agent:v2026.4.23
         imagePullPolicy: IfNotPresent
         command:
@@ -103,9 +101,6 @@ spec:
 
         env:
         # ── Primary provider: Ollama Cloud via OpenAI-compatible endpoint ──────
-        # OPENAI_BASE_URL overrides the default api.openai.com so that the
-        # `openai` provider points at Ollama Cloud, identical to OpenClaw's
-        # models.providers.openai.baseUrl = "https://ollama.com/v1".
         - name: OPENAI_BASE_URL
           value: "https://ollama.com/v1"
         - name: OPENAI_API_KEY
@@ -114,18 +109,12 @@ spec:
               name: openclaw-credentials
               key: OPENAI_API_KEY
               optional: false
-
-        # ── Fallback: OpenRouter ───────────────────────────────────────────────
-        # Mirrors OpenClaw OPENROUTER_API_KEY usage.
         - name: OPENROUTER_API_KEY
           valueFrom:
             secretKeyRef:
               name: openclaw-credentials
               key: OPENROUTER_API_KEY
               optional: true
-
-        # ── Google / Gemini ────────────────────────────────────────────────────
-        # OpenClaw mirrors GEMINI_API_KEY → GOOGLE_API_KEY; we do the same.
         - name: GEMINI_API_KEY
           valueFrom:
             secretKeyRef:
@@ -138,17 +127,12 @@ spec:
               name: openclaw-credentials
               key: GEMINI_API_KEY
               optional: true
-
-        # ── Groq ──────────────────────────────────────────────────────────────
         - name: GROQ_API_KEY
           valueFrom:
             secretKeyRef:
               name: openclaw-credentials
               key: GROQ_API_KEY
               optional: true
-
-        # ── HuggingFace ────────────────────────────────────────────────────────
-        # Both canonical names, same as OpenClaw.
         - name: HUGGINGFACE_HUB_TOKEN
           valueFrom:
             secretKeyRef:
@@ -161,37 +145,24 @@ spec:
               name: openclaw-credentials
               key: HUGGINGFACE_HUB_TOKEN
               optional: true
-
-        # ── Mistral ────────────────────────────────────────────────────────────
         - name: MISTRAL_API_KEY
           valueFrom:
             secretKeyRef:
               name: openclaw-credentials
               key: MISTRAL_API_KEY
               optional: true
-
-        # ── Cerebras ──────────────────────────────────────────────────────────
         - name: CEREBRAS_API_KEY
           valueFrom:
             secretKeyRef:
               name: openclaw-credentials
               key: CEREBRAS_API_KEY
               optional: true
-
-        # ── OpenAI Platform (real credits, separate from Ollama Cloud) ─────────
-        # OpenClaw calls this provider "chatgpt/*"; Hermes uses a model-name
-        # prefix to differentiate (e.g. model: gpt-4.1 with base url override).
-        # The key is optional — agent degrades gracefully when absent.
         - name: CHATGPT_API_KEY
           valueFrom:
             secretKeyRef:
               name: openclaw-credentials
               key: CHATGPT_API_KEY
               optional: true
-
-        # ── Hermes API server key ──────────────────────────────────────────────
-        # Enables bearer-token auth on the :8642 gateway.
-        # Stored in a dedicated key in the same secret for simplicity.
         - name: API_SERVER_ENABLED
           value: "true"
         - name: API_SERVER_KEY
@@ -200,8 +171,6 @@ spec:
               name: hermes-agent-credentials
               key: API_SERVER_KEY
               optional: false
-
-        # ── Data directory ────────────────────────────────────────────────────
         - name: HERMES_DATA_DIR
           value: "/opt/data"
 
@@ -217,7 +186,6 @@ spec:
             memory: "6Gi"
             cpu: "2000m"
 
-        # Hermes gateway can take time to start.  startupProbe gates the others.
         startupProbe:
           httpGet:
             path: /health
@@ -243,6 +211,34 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 3
+
+      - name: hermes-dashboard
+        image: nousresearch/hermes-agent:v2026.4.23
+        imagePullPolicy: IfNotPresent
+        command:
+        - hermes
+        - dashboard
+        ports:
+        - containerPort: 9119
+          name: dashboard
+        env:
+        - name: HERMES_DATA_DIR
+          value: "/opt/data"
+        volumeMounts:
+        - name: hermes-data
+          mountPath: /opt/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "10m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 9119
+          initialDelaySeconds: 30
+          periodSeconds: 30
 
       volumes:
       - name: hermes-data

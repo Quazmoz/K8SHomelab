@@ -101,7 +101,7 @@ data:
             href: http://hermes.k8s.local
             icon: mdi-head-snowflake-outline
             description: Hermes AI Agent
-            siteMonitor: http://hermes-agent.apps.svc.cluster.local:8642/health
+            siteMonitor: http://hermes-agent.apps.svc.cluster.local:9119/
             statusStyle: dot
 
     - MCP Tools:

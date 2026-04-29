@@ -24,4 +24,4 @@ spec:
           service:
             name: hermes-agent
             port:
-              number: 8642
+              number: 9119
