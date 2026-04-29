@@ -14,6 +14,10 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - hermes.k8s.local
+    secretName: hermes-agent-tls
   rules:
   - host: hermes.k8s.local
     http:
