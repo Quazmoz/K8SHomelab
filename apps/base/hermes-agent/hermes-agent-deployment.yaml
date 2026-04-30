@@ -96,15 +96,17 @@ spec:
       - name: hermes-agent
         image: nousresearch/hermes-agent:v2026.4.23
         imagePullPolicy: IfNotPresent
-        # Run the dashboard which manages the gateway as an internal subprocess.
-        # Do NOT run `hermes gateway run` as a separate container — it steals port
-        # 8642 and prevents the dashboard's internal gateway from binding.
+        # Start gateway in the background, then dashboard in the foreground.
+        # The gateway writes its PID + state to /opt/data/gateway_state.json,
+        # which the dashboard reads for status display and restart control.
+        # Running them as separate containers broke sessions because the gateway
+        # container stole port 8642 before the dashboard's subprocess could bind.
         command:
-        - /opt/hermes/.venv/bin/hermes
-        - dashboard
-        - --host
-        - 0.0.0.0
-        - --insecure
+        - bash
+        - -c
+        - |
+          /opt/hermes/.venv/bin/hermes gateway run &
+          exec /opt/hermes/.venv/bin/hermes dashboard --host 0.0.0.0 --insecure
         ports:
         - containerPort: 9119
           name: dashboard
