@@ -231,6 +231,14 @@ spec:
         env:
         - name: HERMES_DATA_DIR
           value: "/opt/data"
+        - name: API_SERVER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hermes-agent-credentials
+              key: API_SERVER_KEY
+              optional: false
+        - name: API_SERVER_URL
+          value: "http://localhost:8642"
         volumeMounts:
         - name: hermes-data
           mountPath: /opt/data
