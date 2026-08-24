@@ -31,7 +31,7 @@ spec:
         effect: "NoSchedule"
       containers:
       - name: freshrss
-        image: freshrss/freshrss@sha256:5664f42e37e7101c824806d8f73cbc97c8f406ce043bbdb8d39d4ff1e7f2ad11
+        image: freshrss/freshrss@sha256:ab6b363102ccdbc39f6a62db926f567c61a5289bf25ba460f1c34423d8cc1a4d
         ports:
         - containerPort: 80
         env:

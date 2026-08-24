@@ -38,7 +38,7 @@ spec:
         kubernetes.io/hostname: quinn-hpprobook430g6
       containers:
       - name: authentik
-        image: ghcr.io/goauthentik/server:2025.12.0
+        image: ghcr.io/goauthentik/server:2026.8.0
         args: ["server"]
         ports:
         - containerPort: 9000
@@ -114,14 +114,14 @@ spec:
         kubernetes.io/hostname: quinn-hpprobook430g6
       initContainers:
       - name: setup-storage
-        image: busybox:latest
+        image: busybox:1.38
         command: ['sh', '-c', 'mkdir -p /media && chmod 777 /media']
         volumeMounts:
         - name: media
           mountPath: /media
       containers:
       - name: authentik
-        image: ghcr.io/goauthentik/server:2025.12.0
+        image: ghcr.io/goauthentik/server:2026.8.0
         args: ["worker"]
         envFrom:
         - secretRef:
