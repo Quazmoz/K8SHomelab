@@ -49,4 +49,6 @@ kubectl logs -n apps statefulset/n8n-sandbox-sysbox-runner --tail=100
 
 The Sysbox manifest is vendored under `apps/base/sysbox/`. Its installer uses
 the digest-pinned v0.7.1 amd64 image, which supports Ubuntu 24.04, kernel 6.8+,
-and containerd 2.x.
+and containerd 2.x. The worker runs Ubuntu-based KDE Neon, so the installer pod
+receives an Ubuntu 24.04 `os-release` compatibility view; the host file is not
+modified.

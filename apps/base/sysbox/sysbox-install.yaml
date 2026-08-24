@@ -43,6 +43,11 @@ metadata:
 data:
   SYSBOX_MGR_CONFIG: ""
   SYSBOX_FS_CONFIG: ""
+  # KDE Neon 24.04 is Ubuntu 24.04 based, but Sysbox only recognizes ID=ubuntu.
+  # Present the supported base distro to the installer without changing the host.
+  host-os-release: |
+    ID=ubuntu
+    VERSION_ID="24.04"
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -93,6 +98,8 @@ spec:
               mountPath: /mnt/host/etc
             - name: host-osrelease
               mountPath: /mnt/host/os-release
+              subPath: os-release
+              readOnly: true
             - name: host-dbus
               mountPath: /var/run/dbus
             - name: host-run-systemd
@@ -126,8 +133,11 @@ spec:
           hostPath:
             path: /etc
         - name: host-osrelease
-          hostPath:
-            path: /etc/os-release
+          configMap:
+            name: sysbox-operational-attributes
+            items:
+              - key: host-os-release
+                path: os-release
         - name: host-dbus
           hostPath:
             path: /var/run/dbus
