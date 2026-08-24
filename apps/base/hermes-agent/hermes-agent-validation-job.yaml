@@ -30,7 +30,7 @@ spec:
         effect: "NoSchedule"
       containers:
       - name: validator
-        image: curlimages/curl:8.7.1
+        image: curlimages/curl:8.21.0
         env:
         - name: API_SERVER_KEY
           valueFrom:

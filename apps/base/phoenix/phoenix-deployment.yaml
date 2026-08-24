@@ -39,7 +39,7 @@ spec:
                 - arm64
       containers:
       - name: phoenix
-        image: arizephoenix/phoenix:latest
+        image: arizephoenix/phoenix:version-20.3.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6006

@@ -69,7 +69,7 @@ spec:
       # non-secret config stays Git-managed while the live file lives on the PVC.
       initContainers:
       - name: seed-config
-        image: busybox:1.36
+        image: busybox:1.38
         command:
         - sh
         - -c
@@ -94,7 +94,7 @@ spec:
 
       containers:
       - name: hermes-agent
-        image: nousresearch/hermes-agent:v2026.4.23
+        image: nousresearch/hermes-agent:v2026.8.19
         imagePullPolicy: IfNotPresent
         # Start gateway in the background, then dashboard in the foreground.
         # The gateway writes its PID + state to /opt/data/gateway_state.json,

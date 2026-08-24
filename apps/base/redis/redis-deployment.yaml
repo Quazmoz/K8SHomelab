@@ -32,7 +32,7 @@ spec:
         kubernetes.io/hostname: quinn-hpprobook430g6
       containers:
       - name: redis
-        image: redis:8.4-alpine
+        image: redis:8.10.1-alpine
         ports:
         - containerPort: 6379
           name: redis

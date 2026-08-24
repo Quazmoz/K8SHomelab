@@ -15,6 +15,12 @@ spec:
         namespace: flux-system
       interval: 1m
   values:
+    # --- Grafana image ---
+    # The grafana Helm chart is pinned at its latest release (10.5.15, appVersion
+    # 12.3.1) but upstream Grafana has since shipped 13.x, so override the tag.
+    image:
+      tag: "13.2.0"
+
     # --- Sidecar for Dashboard Discovery ---
     sidecar:
       dashboards:
