@@ -251,7 +251,7 @@ Create both `README.md` (human) and `AI_CONTEXT.md` (AI) in the app directory. T
 
 ### Step 10: Add to hosts file
 
-Add `<app>.k8s.local` to the hosts file entry pointing to `192.168.1.221`.
+Add `<app>.k8s.local` to the hosts file entry pointing to `192.168.8.40`.
 
 ### Step 11: Deploy
 

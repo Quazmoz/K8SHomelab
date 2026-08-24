@@ -15,8 +15,8 @@ The NGINX Ingress Controller handles all HTTP/HTTPS routing for `*.k8s.local` se
 
 ## How It Works
 
-1. MetalLB assigns a LoadBalancer IP (192.168.1.221)
-2. DNS entries in hosts file point `*.k8s.local` → 192.168.1.221
+1. MetalLB assigns a LoadBalancer IP (192.168.8.40)
+2. DNS entries in hosts file point `*.k8s.local` → 192.168.8.40
 3. NGINX routes based on `Host` header to appropriate backend services
 
 ## Files
@@ -43,5 +43,5 @@ kubectl get ingress -A
 kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx --tail=50
 
 # Test routing
-curl -H "Host: homepage.k8s.local" http://192.168.1.221
+curl -H "Host: homepage.k8s.local" http://192.168.8.40
 ```

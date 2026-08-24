@@ -366,7 +366,7 @@ data:
           "title": "",
           "options": {
             "mode": "html",
-            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #73bf69;'>🏠 Quinn's Homelab Architecture</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>Network: 192.168.1.0/24 | Router: 192.168.1.1 | K8s Cluster: 192.168.1.21</p></div>"
+            "content": "<div style='text-align: center; padding: 10px;'><h1 style='margin: 0; color: #73bf69;'>🏠 Quinn's Homelab Architecture</h1><p style='margin: 5px 0 0 0; color: #8e8e8e;'>Network: 192.168.8.0/24 | Router: 192.168.8.1 | K8s Cluster: 192.168.8.236</p></div>"
           }
         },
         {
@@ -380,7 +380,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "up{instance=~\".*192.168.1.15.*\"}",
+              "expr": "up{instance=~\".*192.168.8.162.*\"}",
               "instant": true
             }
           ],
@@ -416,7 +416,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "up{instance=~\".*orangepi6plus.*|.*192.168.1.21.*\"}",
+              "expr": "up{instance=~\".*orangepi6plus.*|.*192.168.8.236.*\"}",
               "instant": true
             }
           ],
@@ -499,7 +499,7 @@ data:
           "title": "Network Topology",
           "options": {
             "mode": "html",
-            "content": "<div style='font-family: monospace; padding: 20px; background: #1a1a1a; border-radius: 8px; text-align: center;'><pre style='color: #73bf69; font-size: 12px; margin: 0;'>                              ┌─────────────────────────────────────────────────────────────────┐\n                              │                      🌐 INTERNET                                │\n                              └────────────────────────────┬────────────────────────────────────┘\n                                                           │\n                 ┌─────────────────────────────────────────┼─────────────────────────────────────────┐\n                 │                                         │                                         │\n     ┌───────────┴───────────┐               ┌─────────────┴─────────────┐               ┌──────────┴──────────┐\n     │   🔒 Router/Firewall  │               │  ☁️ Oracle Wireguard VPS │               │  ☁️ Oracle Bot VPS  │\n     │     192.168.1.1       │◄══WireGuard═══│     10.49.104.1           │               │     10.49.104.4     │\n     └───────────┬───────────┘               └───────────────────────────┘               └─────────────────────┘\n                 │ LAN 192.168.1.0/24\n     ┌───────────┼───────────────────────────┐\n     │                                       │\n┌────┴────┐                             ┌────┴────┐\n│ 💻 HP   │                             │ 🍓 Pi   │\n│ProBook  │                             │ Control │\n│.1.15    │                             │ .1.21   │\n└─────────┘                             └─────────┘</pre></div>"
+            "content": "<div style='font-family: monospace; padding: 20px; background: #1a1a1a; border-radius: 8px; text-align: center;'><pre style='color: #73bf69; font-size: 12px; margin: 0;'>                              ┌─────────────────────────────────────────────────────────────────┐\n                              │                      🌐 INTERNET                                │\n                              └────────────────────────────┬────────────────────────────────────┘\n                                                           │\n                 ┌─────────────────────────────────────────┼─────────────────────────────────────────┐\n                 │                                         │                                         │\n     ┌───────────┴───────────┐               ┌─────────────┴─────────────┐               ┌──────────┴──────────┐\n     │   🔒 Router/Firewall  │               │  ☁️ Oracle Wireguard VPS │               │  ☁️ Oracle Bot VPS  │\n     │     192.168.8.1       │◄══WireGuard═══│     10.49.104.1           │               │     10.49.104.4     │\n     └───────────┬───────────┘               └───────────────────────────┘               └─────────────────────┘\n                 │ LAN 192.168.8.0/24\n     ┌───────────┼───────────────────────────┐\n     │                                       │\n┌────┴────┐                             ┌────┴────┐\n│ 💻 HP   │                             │ 🍓 Pi   │\n│ProBook  │                             │ Control │\n│.1.15    │                             │ .1.21   │\n└─────────┘                             └─────────┘</pre></div>"
           }
         },
         {
@@ -512,7 +512,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\".*192.168.1.15.*\"}[5m])) * 100)",
+              "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\".*192.168.8.162.*\"}[5m])) * 100)",
               "instant": true
             }
           ],
@@ -538,7 +538,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "(1 - (node_memory_MemAvailable_bytes{instance=~\".*192.168.1.15.*\"} / node_memory_MemTotal_bytes{instance=~\".*192.168.1.15.*\"})) * 100",
+              "expr": "(1 - (node_memory_MemAvailable_bytes{instance=~\".*192.168.8.162.*\"} / node_memory_MemTotal_bytes{instance=~\".*192.168.8.162.*\"})) * 100",
               "instant": true
             }
           ],
@@ -564,7 +564,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\".*orangepi6plus.*|.*192.168.1.21.*\"}[5m])) * 100)",
+              "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\", instance=~\".*orangepi6plus.*|.*192.168.8.236.*\"}[5m])) * 100)",
               "instant": true
             }
           ],
@@ -590,7 +590,7 @@ data:
             {
               "refId": "A",
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "expr": "(1 - (avg(node_memory_MemAvailable_bytes{instance=~\".*orangepi6plus.*|.*192.168.1.21.*\"}) / avg(node_memory_MemTotal_bytes{instance=~\".*orangepi6plus.*|.*192.168.1.21.*\"}))) * 100",
+              "expr": "(1 - (avg(node_memory_MemAvailable_bytes{instance=~\".*orangepi6plus.*|.*192.168.8.236.*\"}) / avg(node_memory_MemTotal_bytes{instance=~\".*orangepi6plus.*|.*192.168.8.236.*\"}))) * 100",
               "instant": true
             }
           ],

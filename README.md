@@ -21,14 +21,14 @@ A production-grade **GitOps-managed Kubernetes homelab** running on hybrid infra
 ┌─────────────────────────────────────────────────────────────────┐
 │                      KUBERNETES CLUSTER                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  Control Plane:  orangepi6plus (192.168.1.21)                   │
+│  Control Plane:  orangepi6plus (192.168.8.236)                   │
 │                                                                 │
 │  Workers:                                                       │
-│    • quinn-hpprobook430g6 (192.168.1.15) - Main workloads       │
+│    • quinn-hpprobook430g6 (192.168.8.162) - Main workloads       │
 ├─────────────────────────────────────────────────────────────────┤
 │  Networking: Calico (VXLAN)                                     │
 │  GitOps: Flux CD                                                │
-│  Ingress: NGINX + MetalLB (192.168.1.220-250)                   │
+│  Ingress: NGINX + MetalLB (192.168.8.40-192.168.8.99)                   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -104,7 +104,7 @@ flux get all -A
 
 ### Local DNS (add to `/etc/hosts` or Pi-hole)
 ```
-192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local awx.k8s.local jupyter.k8s.local phoenix.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local
+192.168.8.40 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local awx.k8s.local jupyter.k8s.local phoenix.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local
 ```
 
 ---

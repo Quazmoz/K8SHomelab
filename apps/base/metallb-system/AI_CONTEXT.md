@@ -11,7 +11,7 @@ Provides bare-metal LoadBalancer IP allocation using Layer 2 ARP advertisement. 
 - **Type:** Remote manifest install (MetalLB v0.14.5 native manifests)
 - **Namespace:** `metallb-system`
 - **Mode:** L2 Advertisement (ARP-based)
-- **IP Pool:** `192.168.1.221–192.168.1.250`
+- **IP Pool:** `192.168.8.40-192.168.8.99`
 
 ## Files
 

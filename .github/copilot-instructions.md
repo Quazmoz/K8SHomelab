@@ -38,14 +38,14 @@ Each app directory also contains `AI_CONTEXT.md` with deployment-specific contex
 ┌─────────────────────────────────────────────────────────────────┐
 │                      KUBERNETES CLUSTER                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  Control Plane:  orangepi6plus (192.168.1.21)                   │
+│  Control Plane:  orangepi6plus (192.168.8.236)                   │
 │                                                                 │
 │  Workers:                                                       │
-│    • quinn-hpprobook430g6 (192.168.1.15)                        │
+│    • quinn-hpprobook430g6 (192.168.8.162)                        │
 ├─────────────────────────────────────────────────────────────────┤
 │  CNI: Calico (VXLAN)                                            │
 │  GitOps: Flux CD v2                                             │
-│  Ingress: NGINX + MetalLB (192.168.1.220-250)                   │
+│  Ingress: NGINX + MetalLB (192.168.8.40-192.168.8.99)                   │
 │  DNS: *.k8s.local resolves to ingress                           │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -87,7 +87,7 @@ Each app directory also contains `AI_CONTEXT.md` with deployment-specific contex
 | | Mongo Express | `http://mongo-express.k8s.local` | `apps/base/mongo-express/` |
 | **Other** | Homepage | `http://homepage.k8s.local` | `apps/base/homepage/` |
 | | Authentik | `http://authentik.k8s.local` | `apps/base/authentik/` |
-| | AdGuard Home | `http://192.168.1.222` | `apps/base/dns/` |
+| | AdGuard Home | `http://192.168.8.41` | `apps/base/dns/` |
 | | Backups | internal (CronJobs) | `apps/base/backups/` |
 
 ---
@@ -268,7 +268,7 @@ K8SHomelab/
 ### Ingress Routing
 - All services use `*.k8s.local` subdomains
 - NGINX Ingress controller handles routing
-- MetalLB provides LoadBalancer IPs (192.168.1.220-250)
+- MetalLB provides LoadBalancer IPs (192.168.8.40-192.168.8.99)
 
 ### Node Scheduling Constraints
 
@@ -352,7 +352,7 @@ flux reconcile helmrelease <name> -n apps --with-source
 Add to your local machine's hosts file:
 
 ```
-192.168.1.221 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local openclaw.k8s.local
+192.168.8.40 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local jupyter.k8s.local phoenix.k8s.local awx.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local openclaw.k8s.local
 ```
 
 ---

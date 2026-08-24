@@ -13,6 +13,9 @@ patches:
       metadata:
         name: ingress-nginx-controller
         namespace: ingress-nginx
+        annotations:
+          # Pin the MetalLB LoadBalancer IP (first address of first-pool on 192.168.8.0/24)
+          metallb.io/loadBalancerIPs: 192.168.8.40
       spec:
         externalTrafficPolicy: Cluster
   # Enable snippet annotations for Authentik auth integration

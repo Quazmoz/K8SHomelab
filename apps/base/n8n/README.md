@@ -63,7 +63,7 @@ When setting up external OAuth integrations (such as the Gmail OAuth2 API), you 
 
 1. **HTTPS and Domain Requirements:** Google strictly requires `https://` callbacks and will completely block local domains (like `.local`) or private IPs in their "Authorized redirect URIs" settings.
 2. **The `nip.io` Workaround:** To satisfy Google's public TLD requirement within a homelab environment without a real domain, we use `nip.io` (a wildcard DNS service that resolves to the IP inside it).
-    - Example: Instead of `n8n.k8s.local`, we use `n8n.<CLUSTER_IP>.nip.io` (e.g., `n8n.192.168.1.221.nip.io`).
+    - Example: Instead of `n8n.k8s.local`, we use `n8n.<CLUSTER_IP>.nip.io` (e.g., `n8n.192.168.8.40.nip.io`).
     - The `n8n-ingress.yaml` has been configured with this `nip.io` hostname under both the `rules` and the `tls` block so it is served via HTTPS.
     - The `n8n-configmap.yaml` has its `N8N_HOST`, `N8N_EDITOR_BASE_URL`, and `WEBHOOK_URL` updated to `https://n8n.<CLUSTER_IP>.nip.io` so n8n internally generates the matching callback URLs for OAuth.
 3. **The "Unauthorized" Callback Error:** n8n v2+ introduced a very strict security policy that verifies your browser's session cookie during the precise moment of the OAuth callback. Often, your browser will drop the session cookie during the redirect from Google, resulting in a blank page with `{"status":"error","message":"Unauthorized"}`.

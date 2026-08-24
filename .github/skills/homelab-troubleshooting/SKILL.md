@@ -19,16 +19,16 @@ description: "Diagnose and fix issues in the K8S homelab cluster. USE FOR: pod c
 ## Cluster Architecture Quick Reference
 
 ```
-Control Plane: orangepi6plus (192.168.1.21, wg: 10.49.104.3)
-Worker:        quinn-hpprobook430g6 (192.168.1.15, wg: 10.49.104.6)
+Control Plane: orangepi6plus (192.168.8.236, wg: 10.49.104.3)
+Worker:        quinn-hpprobook430g6 (192.168.8.162, wg: 10.49.104.6)
 Oracle VM 1:   oracle-wireguard (wg: 10.49.104.1) — VPN hub
 Oracle VM 2:   oracle-groupmebot (wg: 10.49.104.4)
 
 CNI: Calico (VXLAN mode)
 Pod CIDR: 10.244.0.0/16
 Service CIDR: 10.96.0.0/12
-MetalLB Pool: 192.168.1.221-250
-Ingress IP: 192.168.1.221
+MetalLB Pool: 192.168.8.40-192.168.8.99
+Ingress IP: 192.168.8.40
 ```
 
 **Key apps on orangepi6plus (control plane):** AdGuard Home, llama-cpp, freshrss, backup jobs  
@@ -206,12 +206,12 @@ kubectl get pods -n ingress-nginx
 kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx --tail=50
 
 # Test from host
-curl -v -H "Host: <app>.k8s.local" http://192.168.1.221
+curl -v -H "Host: <app>.k8s.local" http://192.168.8.40
 ```
 
 | Cause | Fix |
 |-------|-----|
-| Hosts file missing entry | Add `<app>.k8s.local` to hosts pointing to `192.168.1.221` |
+| Hosts file missing entry | Add `<app>.k8s.local` to hosts pointing to `192.168.8.40` |
 | Wrong backend service/port | Check Ingress spec matches Service name and port |
 | NGINX controller down | `kubectl rollout restart deployment -n ingress-nginx ingress-nginx-controller` |
 | SSL redirect loop | Remove tls section or add `ssl-redirect: "false"` annotation |

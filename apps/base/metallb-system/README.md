@@ -10,7 +10,7 @@ MetalLB provides bare-metal LoadBalancer IP address allocation for services in t
 |---------|-------|
 | **Version** | v0.14.5 |
 | **Mode** | L2 Advertisement |
-| **IP Pool** | `192.168.1.221–192.168.1.250` |
+| **IP Pool** | `192.168.8.40-192.168.8.99` |
 | **Namespace** | `metallb-system` |
 
 ## IP Allocation
@@ -19,7 +19,7 @@ Services of type `LoadBalancer` are automatically assigned IPs from the pool. Ke
 
 | IP | Service |
 |----|---------|
-| `192.168.1.221` | NGINX Ingress Controller |
+| `192.168.8.40` | NGINX Ingress Controller |
 
 ## Files
 
