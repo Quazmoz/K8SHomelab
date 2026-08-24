@@ -1,5 +1,5 @@
-# Vendored from nestybox/sysbox at commit
-# e5441c6e8c50fe4e737af1d143afb2cd140ade16.
+# Vendored from nestybox/sysbox, with the installer image updated to v0.7.1.
+# v0.7.1 is required for Ubuntu 24.04, kernel 6.8+, and containerd 2.x.
 #
 # Only nodes explicitly labeled sysbox-install=yes are modified. The installer
 # adds the sysbox-runc runtime to containerd and marks the node
@@ -68,7 +68,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: sysbox-deploy-k8s
-          image: registry.nestybox.com/nestybox/sysbox-deploy-k8s:v0.7.0-0
+          image: ghcr.io/nestybox/sysbox-deploy-k8s:v0.7.1-0_amd64@sha256:be04303077be1663f7b66cbdec8e09fd137473a21cdef26fab9113a5fb1aa5be
           imagePullPolicy: IfNotPresent
           command: ["bash", "-c", "/opt/sysbox/scripts/sysbox-deploy-k8s.sh ce install"]
           env:

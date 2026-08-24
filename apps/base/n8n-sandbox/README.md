@@ -47,5 +47,6 @@ kubectl logs -n apps deploy/n8n-sandbox-api --tail=100
 kubectl logs -n apps statefulset/n8n-sandbox-sysbox-runner --tail=100
 ```
 
-The Sysbox installer is vendored from `nestybox/sysbox` commit
-`e5441c6e8c50fe4e737af1d143afb2cd140ade16` under `apps/base/sysbox/`.
+The Sysbox manifest is vendored under `apps/base/sysbox/`. Its installer uses
+the digest-pinned v0.7.1 amd64 image, which supports Ubuntu 24.04, kernel 6.8+,
+and containerd 2.x.
