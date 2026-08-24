@@ -6,7 +6,7 @@ OpenClaw is an autonomous AI agent that can execute tasks, orchestrate tools, an
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `ghcr.io/openclaw/openclaw:2026.4.8-arm64` (pinned to latest verified ARM64 release) |
+| **Image** | `ghcr.io/openclaw/openclaw:2026.7.1-2-arm64` (pinned to latest verified ARM64 release) |
 | **Node** | `orangepi6plus` (with control-plane toleration) |
 | **Gateway Port** | `18789` (WebSocket) |
 | **Canvas Port** | `18793` (HTTP) |

@@ -167,7 +167,7 @@ spec:
             memory: 128Mi
       containers:
       - name: openclaw
-        image: ghcr.io/openclaw/openclaw:2026.6.34-arm64
+        image: ghcr.io/openclaw/openclaw:2026.7.1-2-arm64
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 18789
@@ -177,6 +177,11 @@ spec:
         # (~/.openclaw/workspace) lives on the PVC, not ephemeral storage.
         - name: HOME
           value: "/home/user"
+        # Newer releases install configured provider plugins during startup.
+        # Keep npm's cache on the UID 1000-owned PVC instead of the image's
+        # root-owned /home/user/.npm directory.
+        - name: NPM_CONFIG_CACHE
+          value: "/home/user/.openclaw/npm-cache"
         # OpenClaw binds strictly to 127.0.0.1 for security.
         - name: OPENCLAW_GATEWAY_BIND
           value: "loopback"
@@ -380,4 +385,3 @@ spec:
       - name: openclaw-bootstrap
         configMap:
           name: openclaw-bootstrap
-
