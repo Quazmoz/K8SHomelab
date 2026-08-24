@@ -18,9 +18,10 @@ image set.
 - The runner is scheduled only on `quinn-hpprobook430g6`.
 - Sysbox provides the nested-container isolation through `sysbox-runc`.
 - The API uses a 1 GiB local PV for routing state.
-- The runner uses a 16 GiB local PV with a 12 GiB XFS quota pool.
-- Each generated sandbox is limited to 512 MiB RAM, one CPU, 256 PIDs, and a
-  1 GiB writable layer. At most four sandboxes may run concurrently.
+- The runner's complete Docker data root is bounded by a 16 GiB local PV.
+- Each generated sandbox is limited to 512 MiB RAM, one CPU, and 256 PIDs. At
+  most four sandboxes may run concurrently. Per-sandbox XFS disk quotas are
+  disabled because they are incompatible with Kubernetes user namespaces.
 - Idle sandboxes stop after 15 minutes and are deleted after one hour.
 
 ## Secrets

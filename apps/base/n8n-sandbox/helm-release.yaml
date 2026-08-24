@@ -87,8 +87,9 @@ spec:
         defaultMemoryMb: "512"
         defaultCpuPercent: "100"
         defaultPidsMax: "256"
-        defaultDiskQuotaMb: "1024"
-        diskQuotaPoolSizeGb: "12"
+        # Per-sandbox XFS quotas are incompatible with hostUsers: false. The
+        # persistent volume bounds the runner's complete Docker data root.
+        defaultDiskQuotaMb: "0"
         dockerStorageDriver: overlay2
       resources:
         requests:
