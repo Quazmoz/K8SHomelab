@@ -5,6 +5,10 @@ metadata:
   namespace: apps
 spec:
   interval: 5m
+  # This site's uplink is slow enough that pulling a new chart's images can take
+  # far longer than the 5m default, which marks the release failed even though
+  # the rollout eventually succeeds.
+  timeout: 30m
   chart:
     spec:
       chart: prometheus
