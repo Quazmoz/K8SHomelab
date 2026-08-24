@@ -101,6 +101,13 @@ spec:
             secretKeyRef:
               name: context-forge-secrets
               key: JWT_SECRET_KEY
+        # Required since v1.0.x: the gateway refuses to start while this is the
+        # built-in "__REPLACE_ME__" placeholder.
+        - name: AUTH_ENCRYPTION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: context-forge-auth
+              key: AUTH_ENCRYPTION_SECRET
         # Tell Context Forge to use the 'email' claim as the user identity
         - name: AUTH_USER_CLAIM
           value: "email"

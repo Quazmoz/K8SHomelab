@@ -75,9 +75,14 @@ spec:
         - -c
         - |
           echo "Seeding Hermes config from ConfigMap..."
-          cp /config-src/config.yaml /opt/data/config.yaml
+          sed -e "s|__DASHBOARD_USERNAME__|${DASHBOARD_USERNAME}|" \
+              -e "s|__DASHBOARD_PASSWORD_HASH__|${DASHBOARD_PASSWORD_HASH}|" \
+              /config-src/config.yaml > /opt/data/config.yaml
           mkdir -p /opt/data/skills
           echo "Done."
+        envFrom:
+        - secretRef:
+            name: hermes-agent-dashboard
         volumeMounts:
         - name: hermes-data
           mountPath: /opt/data
@@ -106,7 +111,7 @@ spec:
         - -c
         - |
           /opt/hermes/.venv/bin/hermes gateway run &
-          exec /opt/hermes/.venv/bin/hermes dashboard --host 0.0.0.0 --insecure
+          exec /opt/hermes/.venv/bin/hermes dashboard --host 0.0.0.0
         ports:
         - containerPort: 9119
           name: dashboard

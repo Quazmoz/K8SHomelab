@@ -39,6 +39,15 @@ data:
     provider: openai
     model: kimi-k2.5
 
+    # ─── Dashboard auth ───────────────────────────────────────────────────────────
+    # Since v2026.6.x a non-loopback dashboard bind requires an auth provider;
+    # "--insecure" is now a documented no-op. The init container substitutes
+    # __DASHBOARD_PASSWORD_HASH__ from the hermes-agent-dashboard Secret.
+    dashboard:
+      basic_auth:
+        username: "__DASHBOARD_USERNAME__"
+        password_hash: "__DASHBOARD_PASSWORD_HASH__"
+
     # ─── API Server ───────────────────────────────────────────────────────────────
     # Exposes an OpenAI-compatible REST endpoint on :8642.
     # API_SERVER_KEY is sourced from the hermes-agent-credentials Secret.

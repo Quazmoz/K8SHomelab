@@ -4,6 +4,7 @@ resources:
   - hermes-agent-pvc.yaml
   - hermes-agent-service.yaml
   - hermes-agent-ingress.yaml
+  - hermes-agent-dashboard.secret.enc.yaml
   - hermes-agent-configmap.yaml
   - hermes-agent-deployment.yaml
   - hermes-agent-credentials.secret.enc.yaml

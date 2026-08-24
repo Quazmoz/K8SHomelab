@@ -4,6 +4,7 @@ namespace: apps
 resources:
   # === Context Forge - MCP Gateway ===
   # Handles: GroupMe, Azure, ClickUp (SSE/HTTP servers with per-user auth)
+  - contextforge/context-forge-auth.secret.enc.yaml
   - contextforge/context-forge.yaml
   - contextforge/context-forge-servers.yaml
   - contextforge/context-forge-rbac.yaml
