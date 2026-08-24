@@ -13,3 +13,6 @@ apps/base/mcp-servers/mcp-gateway-secrets.yaml
 
 # Use .template files instead - they contain placeholders only
 # Template files ARE committed to git for easy setup documentation
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+graft/
