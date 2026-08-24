@@ -115,7 +115,7 @@ spec:
                   summary: "PostgreSQL metrics exporter is down"
                   description: "Cannot scrape PostgreSQL metrics. Database monitoring is degraded."
 
-    # Static scrape configs for Oracle VMs via WireGuard IPs
+    # Extra scrape configs that the chart's built-in jobs cannot express.
     extraScrapeConfigs: |
       # MetalLB (v0.16+) serves metrics over TLS with token auth on port 9120,
       # so it cannot be scraped by the plain-HTTP kubernetes-pods job (its
@@ -145,15 +145,3 @@ spec:
             target_label: node
           - source_labels: [__meta_kubernetes_namespace]
             target_label: namespace
-      - job_name: 'oracle-wireguard-node'
-        static_configs:
-          - targets: ['10.49.104.1:9100']
-            labels:
-              instance: 'oracle-wireguard'
-              node: 'oracle-wireguard'
-      - job_name: 'oracle-groupmebot-node'
-        static_configs:
-          - targets: ['10.49.104.4:9100']
-            labels:
-              instance: 'oracle-groupmebot'
-              node: 'oracle-groupmebot'
