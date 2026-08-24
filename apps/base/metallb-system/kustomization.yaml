@@ -5,6 +5,8 @@ resources:
   - https://raw.githubusercontent.com/metallb/metallb/v0.16.1/config/manifests/metallb-native.yaml
   # Our local configuration file
   - ./config.yaml
+  # Lets MetalLB authenticate Prometheus against its HTTPS metrics endpoint
+  - ./metrics-rbac.yaml
 
 patches:
   # Exclude Oracle VMs from MetalLB speaker DaemonSet
@@ -29,4 +31,24 @@ patches:
                       operator: NotIn
                       values:
                       - oracle-wireguard
-                      - oracle-groupmebot
+                      - oracle-groupmebot  # MetalLB v0.16+ serves metrics over authenticated HTTPS on 9120, but still
+  # ships prometheus.io/scrape: "true", which makes the plain-HTTP
+  # kubernetes-pods job fail with "client sent an HTTP request to an HTTPS
+  # server". Turn the annotation off and scrape it with the dedicated
+  # 'metallb' job in apps/base/prometheus/helm-release.yaml instead.
+  - patch: |-
+      - op: replace
+        path: /spec/template/metadata/annotations/prometheus.io~1scrape
+        value: "false"
+    target:
+      kind: DaemonSet
+      name: speaker
+      namespace: metallb-system
+  - patch: |-
+      - op: replace
+        path: /spec/template/metadata/annotations/prometheus.io~1scrape
+        value: "false"
+    target:
+      kind: Deployment
+      name: controller
+      namespace: metallb-system

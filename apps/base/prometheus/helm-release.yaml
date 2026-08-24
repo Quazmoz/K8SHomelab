@@ -117,6 +117,34 @@ spec:
 
     # Static scrape configs for Oracle VMs via WireGuard IPs
     extraScrapeConfigs: |
+      # MetalLB (v0.16+) serves metrics over TLS with token auth on port 9120,
+      # so it cannot be scraped by the plain-HTTP kubernetes-pods job (its
+      # prometheus.io/scrape annotation is set to "false" for that reason).
+      # Authentication is delegated via the metallb-metrics-auth-delegator
+      # ClusterRole in apps/base/metallb-system/metrics-rbac.yaml. The serving
+      # cert is self-signed, hence insecure_skip_verify.
+      - job_name: 'metallb'
+        scheme: https
+        tls_config:
+          insecure_skip_verify: true
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ['metallb-system']
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            action: keep
+            regex: '9120'
+          - source_labels: [__meta_kubernetes_pod_label_component]
+            target_label: component
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: node
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
       - job_name: 'oracle-wireguard-node'
         static_configs:
           - targets: ['10.49.104.1:9100']
