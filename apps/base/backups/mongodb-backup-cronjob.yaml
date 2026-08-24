@@ -16,6 +16,9 @@ metadata:
     description: "Daily MongoDB backup to SD card storage"
 spec:
   schedule: "0 3 * * *"  # Daily at 3 AM
+  # Suspended: MongoDB is disabled in apps/base/kustomization.yaml, so there is
+  # nothing to back up. Set to false when MongoDB is re-enabled.
+  suspend: true
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
