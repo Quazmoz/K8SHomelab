@@ -1,0 +1,11 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: n8n-sandbox-service
+  namespace: flux-system
+spec:
+  interval: 24h
+  url: oci://ghcr.io/n8n-io/n8n-sandbox-service/n8n-sandbox-service
+  ref:
+    # Official chart 0.4.0, pinned to the immutable OCI manifest digest.
+    digest: sha256:be63d1c9b2d1efdb07b6ae0d5d2534ce9730002aa5e97685e70f5cdf3651c308

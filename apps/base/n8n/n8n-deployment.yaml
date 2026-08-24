@@ -43,6 +43,13 @@ spec:
               name: groupme-mcp-credentials
               key: GROUPME_TOKEN
               optional: true
+        # Internal n8n Sandbox Service authentication. The URL and provider are
+        # configured in n8n-config; this key is shared with the sandbox API.
+        - name: N8N_SANDBOX_SERVICE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: n8n-sandbox-auth
+              key: api-keys
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n

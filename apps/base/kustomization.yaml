@@ -11,7 +11,9 @@ resources:
   - ./grafana
   - ./homepage
   - ./metrics-server
+  - ./sysbox
   - ./n8n
+  - ./n8n-sandbox
   - ./postgres
 #  - ./jenkins # Temporarily disabled to save RAM
   - ./loki
@@ -36,7 +38,6 @@ resources:
 #  - ./llama-cpp  # Disabled — using Ollama Cloud instead
   - ./openclaw  # OpenClaw autonomous AI agent
   - ./hermes-agent # Hermes Agent AI autonomous agent
-
 
 
 

@@ -12,7 +12,7 @@ n8n is a workflow automation platform used for building integrations, RAG pipeli
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `n8nio/n8n:2.8.3` |
+| **Image** | `n8nio/n8n:2.35.7` |
 | **Port** | 5678 |
 | **Storage** | 15Gi PVC (`local-storage`) |
 | **Node** | `quinn-hpprobook430g6` |
@@ -27,6 +27,7 @@ n8n is a workflow automation platform used for building integrations, RAG pipeli
 - GroupMe bot workflows (via optional secret)
 - LangChain RAG workflows
 - Interview agent workflows
+- Instance AI code execution through the internal n8n Sandbox Service
 
 ## Files
 

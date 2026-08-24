@@ -1,0 +1,99 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: n8n-sandbox
+  namespace: apps
+spec:
+  interval: 10m
+  timeout: 30m
+  chartRef:
+    kind: OCIRepository
+    name: n8n-sandbox-service
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+      strategy: rollback
+  values:
+    fullnameOverride: n8n-sandbox
+
+    auth:
+      existingSecret: n8n-sandbox-auth
+
+    dataPlane:
+      mode: in-cluster
+
+    networkPolicy:
+      enabled: true
+      api:
+        httpIngressFrom:
+          - podSelector:
+              matchLabels:
+                app: n8n
+
+    api:
+      image:
+        tag: "1.1.0"
+      config:
+        idleStopAfter: 15m
+        idleDeleteAfter: 1h
+      persistence:
+        enabled: true
+        size: 1Gi
+        storageClass: local-storage
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+
+    runner:
+      isolation: sysbox
+      replicaCount: 1
+      image:
+        tag: "1.1.0"
+      sandboxImage:
+        tag: "1.1.0"
+      dockerDataRoot:
+        persistence:
+          enabled: true
+          size: 16Gi
+          storageClass: local-storage
+          accessModes:
+            - ReadWriteOnce
+      sysbox:
+        runtime:
+          runtimeClassName: sysbox-runc
+          hostUsers: false
+        scheduling:
+          nodeSelector:
+            sysbox-install: "yes"
+            kubernetes.io/hostname: quinn-hpprobook430g6
+          tolerations:
+            - key: sysbox-runtime
+              operator: Equal
+              value: not-running
+              effect: NoSchedule
+      config:
+        idleTtlSeconds: "900"
+        capacityTotal: "4"
+        defaultMemoryMb: "512"
+        defaultCpuPercent: "100"
+        defaultPidsMax: "256"
+        defaultDiskQuotaMb: "1024"
+        diskQuotaPoolSizeGb: "12"
+        dockerStorageDriver: overlay2
+      resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: 2500m
+          memory: 4Gi
