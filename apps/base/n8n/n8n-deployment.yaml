@@ -50,6 +50,21 @@ spec:
             secretKeyRef:
               name: n8n-sandbox-auth
               key: api-keys
+        # Marketing automation suite configuration, read through n8n `$env`.
+        # Provided by marketing-credentials (SOPS-encrypted in this repo) and
+        # marked optional so the deployment still starts before it is applied.
+        - name: MARKETING_WEBHOOK_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: marketing-credentials
+              key: MARKETING_WEBHOOK_TOKEN
+              optional: true
+        - name: MARKETING_APPROVAL_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: marketing-credentials
+              key: MARKETING_APPROVAL_EMAIL
+              optional: true
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n

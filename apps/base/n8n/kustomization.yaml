@@ -11,6 +11,7 @@ resources:
   - n8n-groupme-workflows.yaml
   - n8n-langchain-rag-workflow.yaml
   - n8n-interview-agent-workflows.yaml
+  - marketing-credentials.secret.enc.yaml
 
 # The generated name includes a content hash. Kustomize rewrites the
 # Deployment reference, so every environment change rolls the n8n pod.
