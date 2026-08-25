@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: searxng-config
+  namespace: apps
+  labels:
+    app.kubernetes.io/name: searxng
+    app.kubernetes.io/component: search
+data:
+  settings.yml: |
+    use_default_settings: true
+
+    general:
+      debug: false
+      instance_name: "Homelab Search"
+      enable_metrics: false
+
+    server:
+      limiter: false
+      public_instance: false
+      image_proxy: false
+
+    search:
+      safe_search: 1
+      autocomplete: ""
+      default_lang: "en"
+      formats:
+        - html
+        - json
