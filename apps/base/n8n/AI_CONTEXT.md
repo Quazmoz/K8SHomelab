@@ -9,7 +9,7 @@ Visual workflow automation platform for integrations, MCP-connected automations,
 ## Architecture
 
 - **Type:** Deployment
-- **Image:** `n8nio/n8n:2.8.3`
+- **Image:** `n8nio/n8n:2.35.7`
 - **Namespace:** `apps`
 - **Port:** 5678
 - **Node:** `quinn-hpprobook430g6`
@@ -26,7 +26,7 @@ Visual workflow automation platform for integrations, MCP-connected automations,
 | `n8n-ingress.yaml` | Ingress with 50m body size |
 | `n8n-pv.yaml` | PersistentVolume |
 | `n8n-pvc.yaml` | PersistentVolumeClaim |
-| `n8n-configmap.yaml` | ConfigMap (`N8N_PORT`, `N8N_HOST`, `TZ`, `N8N_MCP_ENABLED`) |
+| `n8n.env` | Environment source for the hash-named `n8n-config` ConfigMap |
 | `n8n-groupme-workflows.yaml` | GroupMe workflow ConfigMap |
 | `n8n-langchain-rag-workflow.yaml` | RAG workflow ConfigMap |
 | `n8n-interview-agent-workflows.yaml` | Interview agent workflow ConfigMap |
@@ -35,6 +35,8 @@ Visual workflow automation platform for integrations, MCP-connected automations,
 ## Key Configuration
 
 - MCP integration enabled via `N8N_MCP_ENABLED=true`
+- Instance AI sandbox configured through the internal n8n Sandbox Service
+- Instance AI web research configured through `N8N_INSTANCE_AI_SEARXNG_URL=http://searxng.apps.svc.cluster.local:8080`
 - Optional `GROUPME_TOKEN` from secret `groupme-mcp-credentials`
 - Health checks: HTTP `/healthz` on port 5678
 - Database: uses n8n's built-in SQLite by default (stored on PVC)
@@ -56,6 +58,8 @@ OpenClaw has an `n8n` skill that calls the n8n REST API (`/api/v1`).
 ## Modification Notes
 
 - Workflow ConfigMaps are separate from the main deployment
-- Environment variables are split between ConfigMap and deployment spec
+- Non-secret environment variables come from `n8n.env`; Kustomize adds a
+  content hash to the generated ConfigMap name so changes roll the Deployment
+- Secret environment variables remain in the deployment spec
 - The PV is defined separately (`n8n-pv.yaml`) from the main `local-storage/storage.yaml`
 - GroupMe token is optional — deployment works without it

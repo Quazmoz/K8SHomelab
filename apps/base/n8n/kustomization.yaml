@@ -5,10 +5,16 @@ namespace: apps
 resources:
   - n8n-pv.yaml
   - n8n-pvc.yaml
-  - n8n-configmap.yaml
   - n8n-deployment.yaml
   - n8n-service.yaml
   - n8n-ingress.yaml
   - n8n-groupme-workflows.yaml
   - n8n-langchain-rag-workflow.yaml
   - n8n-interview-agent-workflows.yaml
+
+# The generated name includes a content hash. Kustomize rewrites the
+# Deployment reference, so every environment change rolls the n8n pod.
+configMapGenerator:
+  - name: n8n-config
+    envs:
+      - n8n.env

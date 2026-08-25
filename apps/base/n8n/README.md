@@ -18,6 +18,7 @@ n8n is a workflow automation platform used for building integrations, RAG pipeli
 | **Node** | `quinn-hpprobook430g6` |
 | **Resources** | Requests: 256Mi/100m, Limits: 2Gi/2000m |
 | **MCP** | Enabled (`N8N_MCP_ENABLED=true`) |
+| **Instance AI search** | SearXNG (`http://searxng.apps.svc.cluster.local:8080`) |
 | **Timezone** | `America/New_York` |
 
 ## Features
@@ -28,6 +29,7 @@ n8n is a workflow automation platform used for building integrations, RAG pipeli
 - LangChain RAG workflows
 - Interview agent workflows
 - Instance AI code execution through the internal n8n Sandbox Service
+- Instance AI web research through the internal SearXNG service
 
 ## Files
 
@@ -39,7 +41,7 @@ n8n is a workflow automation platform used for building integrations, RAG pipeli
 | `n8n-ingress.yaml` | Ingress for `n8n.k8s.local` (50m body size) |
 | `n8n-pv.yaml` | PersistentVolume (15Gi) |
 | `n8n-pvc.yaml` | PersistentVolumeClaim |
-| `n8n-configmap.yaml` | Environment configuration |
+| `n8n.env` | Environment configuration; generated as a hash-named ConfigMap |
 | `n8n-groupme-workflows.yaml` | GroupMe bot workflow definitions |
 | `n8n-langchain-rag-workflow.yaml` | RAG workflow definitions |
 | `n8n-interview-agent-workflows.yaml` | Interview agent workflow |
@@ -66,9 +68,9 @@ When setting up external OAuth integrations (such as the Gmail OAuth2 API), you 
 2. **The `nip.io` Workaround:** To satisfy Google's public TLD requirement within a homelab environment without a real domain, we use `nip.io` (a wildcard DNS service that resolves to the IP inside it).
     - Example: Instead of `n8n.k8s.local`, we use `n8n.<CLUSTER_IP>.nip.io` (e.g., `n8n.192.168.8.40.nip.io`).
     - The `n8n-ingress.yaml` has been configured with this `nip.io` hostname under both the `rules` and the `tls` block so it is served via HTTPS.
-    - The `n8n-configmap.yaml` has its `N8N_HOST`, `N8N_EDITOR_BASE_URL`, and `WEBHOOK_URL` updated to `https://n8n.<CLUSTER_IP>.nip.io` so n8n internally generates the matching callback URLs for OAuth.
+    - The `n8n.env` file has its `N8N_HOST`, `N8N_EDITOR_BASE_URL`, and `WEBHOOK_URL` updated to `https://n8n.<CLUSTER_IP>.nip.io` so n8n internally generates the matching callback URLs for OAuth.
 3. **The "Unauthorized" Callback Error:** n8n v2+ introduced a very strict security policy that verifies your browser's session cookie during the precise moment of the OAuth callback. Often, your browser will drop the session cookie during the redirect from Google, resulting in a blank page with `{"status":"error","message":"Unauthorized"}`.
-    - We bypass this by keeping `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK="true"` in the `n8n-configmap.yaml`. This allows n8n to securely save the generated tokens from Google without strictly verifying session cookies mid-flight. 
+    - We bypass this by keeping `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true` in `n8n.env`. This allows n8n to securely save the generated tokens from Google without strictly verifying session cookies mid-flight.
     
 **Flow to add a new API:** 
 - Open n8n from `https://n8n.<CLUSTER_IP>.nip.io`
