@@ -30,22 +30,42 @@ data:
         icon: mdi-brain
         style: row
         columns: 4
+        tab: Applications
       MCP Tools:
         icon: mdi-api
         style: row
         columns: 5
+        tab: Applications
       DevOps:
         icon: mdi-infinity
         style: row
         columns: 4
+        tab: Applications
       Operations:
         icon: mdi-monitor-dashboard
         style: row
         columns: 4
+        tab: Applications
+      Admin:
+        icon: mdi-shield-account
+        style: row
+        columns: 4
+        tab: Applications
       Portfolio:
         icon: mdi-account-star
         style: row
         columns: 4
+        tab: Applications
+      Kubernetes Cluster:
+        icon: si-kubernetes
+        style: row
+        columns: 4
+        tab: Cluster
+      Cluster Tools:
+        icon: mdi-tools
+        style: row
+        columns: 4
+        tab: Cluster
 
   services.yaml: |-
     - AI & LLM:
@@ -190,6 +210,88 @@ data:
             description: MongoDB Admin
             siteMonitor: http://mongo-express.apps.svc.cluster.local:8081
             statusStyle: dot
+
+    - Kubernetes Cluster:
+        - Apps Workloads:
+            href: http://grafana.k8s.local/d/pod-resources/pod-resources?orgId=1
+            icon: si-kubernetes
+            description: Live status and resources for apps pods
+            namespace: apps
+            podSelector: ""
+            showStats: true
+            statusStyle: basic
+        - System Workloads:
+            href: http://dashboard.k8s.local
+            icon: kubernetes-dashboard.png
+            description: Live status and resources for system pods
+            namespace: kube-system
+            podSelector: ""
+            showStats: true
+            statusStyle: basic
+        - Pod Health:
+            href: http://grafana.k8s.local/d/pod-resources/pod-resources?orgId=1
+            icon: mdi-cube-outline
+            description: Cluster-wide pod health signals
+            widget:
+              type: prometheusmetric
+              url: http://prometheus-server.apps.svc.cluster.local
+              refreshInterval: 30000
+              metrics:
+                - label: Running
+                  query: 'sum(kube_pod_status_phase{phase="Running"} == 1) or vector(0)'
+                  format:
+                    type: number
+                    options:
+                      maximumFractionDigits: 0
+                - label: Not Ready
+                  query: 'sum(kube_pod_status_ready{condition="false"} == 1) or vector(0)'
+                  format:
+                    type: number
+                    options:
+                      maximumFractionDigits: 0
+                - label: Pending/Failed
+                  query: 'sum(kube_pod_status_phase{phase=~"Pending|Failed|Unknown"} == 1) or vector(0)'
+                  format:
+                    type: number
+                    options:
+                      maximumFractionDigits: 0
+                - label: Restarts 1h
+                  query: 'sum(increase(kube_pod_container_status_restarts_total[1h])) or vector(0)'
+                  format:
+                    type: number
+                    options:
+                      maximumFractionDigits: 0
+        - Persistent Storage:
+            href: http://grafana.k8s.local/d/storage/storage?orgId=1
+            icon: mdi-database-cog-outline
+            description: PVC capacity, usage, and binding health
+            widget:
+              type: prometheusmetric
+              url: http://prometheus-server.apps.svc.cluster.local
+              refreshInterval: 60000
+              metrics:
+                - label: Bound PVCs
+                  query: 'count(kube_persistentvolumeclaim_status_phase{phase="Bound"} == 1) or vector(0)'
+                  format:
+                    type: number
+                    options:
+                      maximumFractionDigits: 0
+                - label: Pending PVCs
+                  query: 'count(kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1) or vector(0)'
+                  format:
+                    type: number
+                    options:
+                      maximumFractionDigits: 0
+                - label: Requested
+                  query: 'sum(kube_persistentvolumeclaim_resource_requests_storage_bytes) or vector(0)'
+                  format:
+                    type: bytes
+                - label: Used
+                  query: '100 * sum(kubelet_volume_stats_used_bytes) / sum(kubelet_volume_stats_capacity_bytes)'
+                  format:
+                    type: percent
+                    options:
+                      maximumFractionDigits: 1
 
     - Portfolio:
         - quinnfavo.com:
@@ -416,7 +518,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v34-hermes-added"
+        checksum/config: "v35-cluster-overview"
     spec:
       serviceAccountName: homepage
       nodeSelector:
@@ -430,7 +532,7 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
         fsGroupChangePolicy: "OnRootMismatch"
-      # Init container copies config from ConfigMap to PVC on first run
+      # Init container copies the ConfigMap into the writable emptyDir each run
       initContainers:
         - name: init-config
           image: busybox:1.38
