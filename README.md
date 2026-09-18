@@ -15,6 +15,15 @@ A production-grade **GitOps-managed Kubernetes homelab** running on hybrid infra
 
 ---
 
+## 🎥 Video walkthroughs
+
+| Homelab tour | MCP + OpenWebUI on Kubernetes | Grafana monitoring |
+| :---: | :---: | :---: |
+| [![Homelab Walkthrough: Kubernetes Cluster on Orange Pi 6 Plus & HP ProBook](https://img.youtube.com/vi/JsVBrGkCoos/0.jpg)](https://www.youtube.com/watch?v=JsVBrGkCoos) | [![Supercharging OpenWebUI with MCP, Kubernetes & MCPO](https://img.youtube.com/vi/JqYFe6K03HE/0.jpg)](https://www.youtube.com/watch?v=JqYFe6K03HE) | [![Ultimate Homelab Dashboard: Monitoring OpenWebUI & MCP with Grafana](https://img.youtube.com/vi/rFQtDQ-dZis/0.jpg)](https://www.youtube.com/watch?v=rFQtDQ-dZis) |
+| **[Kubernetes Homelab Walkthrough](https://www.youtube.com/watch?v=JsVBrGkCoos)** | **[MCP + OpenWebUI Integration](https://www.youtube.com/watch?v=JqYFe6K03HE)** | **[Grafana Monitoring Dashboard](https://www.youtube.com/watch?v=rFQtDQ-dZis)** |
+
+---
+
 ## 🏗️ Architecture
 
 ```
