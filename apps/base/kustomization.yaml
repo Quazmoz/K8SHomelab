@@ -26,7 +26,7 @@ resources:
 #  - ./uptime-kuma  # Removed - not needed
 #  - ./authentik    # Re-enabled
 #  - ./freshrss # Temporarily disabled to save RAM
-#  - ./qdrant # Temporarily disabled to free RAM on quinn-hpprobook430g6
+  - ./qdrant
 #  - ./ansible # Temporarily disabled (AWX off)
 #  - ./mongodb  # Temporarily disabled to free resources for OpenClaw
 #  - ./librechat # Temporarily disabled to save RAM
