@@ -3,18 +3,6 @@
 # Docs: https://ibm.github.io/mcp-context-forge/
 ---
 apiVersion: v1
-kind: Secret
-metadata:
-  name: context-forge-secrets
-  namespace: apps
-type: Opaque
-stringData:
-  # Generate with: openssl rand -hex 32
-  JWT_SECRET_KEY: "SuperSecretSecureKey123456789012345678"
-  BASIC_AUTH_PASSWORD: "Admin123!"
-  PLATFORM_ADMIN_PASSWORD: "Admin123!"
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: context-forge-data
