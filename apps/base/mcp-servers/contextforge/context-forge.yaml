@@ -108,6 +108,12 @@ spec:
             secretKeyRef:
               name: context-forge-secrets
               key: PLATFORM_ADMIN_PASSWORD
+        # v1.0.10+ rejects weak values; the image default is 8 chars.
+        - name: DEFAULT_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: context-forge-secrets
+              key: DEFAULT_USER_PASSWORD
         - name: PLATFORM_ADMIN_FULL_NAME
           value: "Platform Administrator"
         - name: SECURE_COOKIES
