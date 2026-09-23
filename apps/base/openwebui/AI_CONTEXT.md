@@ -45,6 +45,7 @@ Primary AI chat interface. Connects to local LLM backends, supports RAG via vect
 
 - Environment variables control all integrations — check deployment spec carefully
 - Ingress timeout of 3600s is critical for LLM streaming responses
+- Ingress adds `Cache-Control: no-cache` to everything except `/_app/immutable/`; without it browsers keep the old app shell after an upgrade and reload-loop on 404ing chunks
 - The `tools/` directory contains MCP tool definitions loaded by OpenWebUI
 - Password for DB comes from `postgres-credentials` secret
 - Resource limits are high (8Gi RAM, 4 CPU) to handle LLM proxy workloads

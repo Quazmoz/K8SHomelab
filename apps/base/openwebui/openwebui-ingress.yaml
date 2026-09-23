@@ -11,6 +11,13 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # Upstream sends no Cache-Control, so browsers heuristically cache the app shell and,
+    # after an upgrade, reload-loop on 404ing old chunk hashes. Revalidate everything
+    # except the content-hashed /_app/immutable/ assets.
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($uri !~ "^/_app/immutable/") {
+        more_set_headers "Cache-Control: no-cache";
+      }
     # Homepage integration
     gethomepage.dev/enabled: "false"
     gethomepage.dev/group: "AI & Automation"
