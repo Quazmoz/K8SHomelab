@@ -38,7 +38,7 @@ Vector similarity search engine for RAG. Stores document embeddings used by Open
 ## Dependencies
 
 - **Depends on:** local-storage (PV)
-- **Depended on by:** OpenWebUI (RAG vector store), Jupyter (notebook queries)
+- **Depended on by:** OpenWebUI (RAG vector store), Jupyter (notebook queries), `scripts/qdrant-ingest.py` (`knowledge_base` collection, bge-small-en-v1.5 384-dim; query with the same model)
 
 ## Modification Notes
 

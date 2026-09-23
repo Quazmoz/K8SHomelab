@@ -35,6 +35,7 @@ Qdrant is a high-performance vector similarity search engine. It stores embeddin
 
 - OpenWebUI uses Qdrant as its RAG vector store (embedding model: `text-embedding-3-small`)
 - Jupyter notebooks can connect via `qdrant-client` Python library
+- `knowledge_base` collection: docs embedded on the Mac with [`scripts/qdrant-ingest.py`](../../../scripts/qdrant-ingest.py) (fastembed `BAAI/bge-small-en-v1.5`, 384-dim, cosine). Ingest: `scripts/qdrant-ingest.py FILE...`; search: `scripts/qdrant-ingest.py --query "..."`
 
 ## Troubleshooting
 
