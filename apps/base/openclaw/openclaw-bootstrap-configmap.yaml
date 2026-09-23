@@ -277,6 +277,9 @@ data:
         commands["nativeSkills"] = False
         # Drop stale plugin state from previous versions to avoid warning churn.
         data.pop("plugins", None)
+        # 2026.9+ rejects forwarded headers from untrusted peers (proxy_attribution_required).
+        # The gateway only sees the socat sidecar on loopback; token auth stays on.
+        data.setdefault("gateway", {})["trustedProxies"] = ["127.0.0.1"]
 
         model_config = data.setdefault("models", {})
         providers = normalize_provider_map(model_config.setdefault("providers", {}))

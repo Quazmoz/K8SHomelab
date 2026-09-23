@@ -18,6 +18,7 @@ OpenClaw is an autonomous AI agent that can execute tasks, orchestrate tools, an
 
 - Runs as **non-root** user (UID 1000)
 - Gateway secured with `OPENCLAW_GATEWAY_TOKEN`
+- `gateway.trustedProxies` is `["127.0.0.1"]` (set by bootstrap) so the socat sidecar can pass nginx's forwarded headers; without it 2026.9+ returns `proxy_attribution_required`
 - API keys stored in SOPS-encrypted Kubernetes Secret
 - **Do NOT expose the gateway port to the internet** — use SSH tunneling or keep internal
 

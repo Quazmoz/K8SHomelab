@@ -5,6 +5,7 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 
 ## Runtime Notes
 - The container binds gateway traffic to loopback and uses a `socat` sidecar to expose traffic to Kubernetes networking.
+- Because every request reaches the gateway from socat on `127.0.0.1`, bootstrap sets `gateway.trustedProxies: ["127.0.0.1"]` (2026.9+ otherwise returns `proxy_attribution_required`), and the ingress overwrites `X-Forwarded-For` with `$remote_addr`.
 - Device identity and pairing are required by the Control UI.
 - TLS is enabled at ingress for secure-context browser requirements.
 - `HOME` is explicitly set to `/home/user` so that OpenClaw's memory workspace (`~/.openclaw/workspace/`) resolves to the PVC mount, not ephemeral storage.
