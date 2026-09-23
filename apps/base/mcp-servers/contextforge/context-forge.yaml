@@ -40,7 +40,7 @@ spec:
       containers:
       - name: context-forge
         image: ghcr.io/ibm/mcp-context-forge:v1.0.10
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4444
           name: http
