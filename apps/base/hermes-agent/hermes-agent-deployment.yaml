@@ -99,7 +99,7 @@ spec:
 
       containers:
       - name: hermes-agent
-        image: nousresearch/hermes-agent:v2026.8.19
+        image: nousresearch/hermes-agent:v2026.9.21
         imagePullPolicy: IfNotPresent
         # Start gateway in the background, then dashboard in the foreground.
         # The gateway writes its PID + state to /opt/data/gateway_state.json,

@@ -9,7 +9,7 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 - TLS is enabled at ingress for secure-context browser requirements.
 - `HOME` is explicitly set to `/home/user` so that OpenClaw's memory workspace (`~/.openclaw/workspace/`) resolves to the PVC mount, not ephemeral storage.
 - `NPM_CONFIG_CACHE` points to `/home/user/.openclaw/npm-cache` so non-root startup plugin migrations can use the writable PVC.
-- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.7.1-2-arm64` (latest verified ARM64 release).
+- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.9.5-arm64` (latest verified ARM64 release).
 
 ## Memory System
 - Provider: `local` (on-device embeddings via node-llama-cpp, no external API needed)

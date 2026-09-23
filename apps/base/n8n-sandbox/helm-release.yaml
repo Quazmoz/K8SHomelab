@@ -36,7 +36,7 @@ spec:
 
     api:
       image:
-        tag: "1.1.0"
+        tag: "1.4.0"
       config:
         idleStopAfter: 15m
         idleDeleteAfter: 1h
@@ -58,9 +58,9 @@ spec:
       isolation: sysbox
       replicaCount: 1
       image:
-        tag: "1.1.0"
+        tag: "1.4.0"
       sandboxImage:
-        tag: "1.1.0"
+        tag: "1.4.0"
       dockerDataRoot:
         persistence:
           enabled: true
@@ -82,7 +82,6 @@ spec:
               value: not-running
               effect: NoSchedule
       config:
-        idleTtlSeconds: "900"
         capacityTotal: "4"
         defaultMemoryMb: "512"
         defaultCpuPercent: "100"

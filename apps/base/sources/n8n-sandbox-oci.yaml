@@ -7,5 +7,5 @@ spec:
   interval: 24h
   url: oci://ghcr.io/n8n-io/n8n-sandbox-service/n8n-sandbox-service
   ref:
-    # Official chart 0.4.0, pinned to the immutable OCI manifest digest.
-    digest: sha256:be63d1c9b2d1efdb07b6ae0d5d2534ce9730002aa5e97685e70f5cdf3651c308
+    # Official chart 0.7.1, pinned to the immutable OCI manifest digest.
+    digest: sha256:09bef3194d6a5bfa43f59f76068d39ce03e9260ece3157058a286c5924a0688c
