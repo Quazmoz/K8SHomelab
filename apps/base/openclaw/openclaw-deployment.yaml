@@ -165,6 +165,33 @@ spec:
           limits:
             cpu: 100m
             memory: 128Mi
+      # Upgrades can ship state-DB schema migrations that the gateway refuses to
+      # run itself ("run openclaw doctor --fix"). Apply the safe ones before
+      # start; the gateway still refuses to boot if one is left pending.
+      - name: migrate-openclaw
+        image: ghcr.io/openclaw/openclaw:2026.9.5-arm64
+        imagePullPolicy: IfNotPresent
+        command: ["node", "/app/openclaw.mjs", "doctor", "--fix", "--non-interactive"]
+        env:
+        - name: HOME
+          value: "/home/user"
+        - name: OPENCLAW_STATE_DIR
+          value: "/home/user/.openclaw"
+        - name: XDG_CACHE_HOME
+          value: "/home/user/.openclaw/cache"
+        - name: NPM_CONFIG_CACHE
+          value: "/home/user/.openclaw/npm-cache"
+        - name: OPENCLAW_BUNDLED_PLUGINS_DIR
+          value: "/home/user/.openclaw/skills"
+        volumeMounts:
+        - name: openclaw-data
+          mountPath: /home/user/.openclaw
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
       containers:
       - name: openclaw
         image: ghcr.io/openclaw/openclaw:2026.9.5-arm64

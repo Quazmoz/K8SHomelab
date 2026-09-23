@@ -5,6 +5,8 @@ metadata:
   namespace: flux-system
 spec:
   interval: 24h
+  # The index is tens of MB; the 60s default times out on this site's uplink.
+  timeout: 10m
   url: https://prometheus-community.github.io/helm-charts
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
