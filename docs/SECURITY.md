@@ -11,10 +11,9 @@ We use [SOPS](https://github.com/getsops/sops) (Secret Operations) with **Age** 
 - **Age**: Installed via `winget install FiloSottile.age`.
 
 ### 🔑 Key Management
-- **Public Key**: `age1lcl4x9eckuj7skyjq26h4e70dl2qvjec3saerxzunp8z7r28e3qsd0c8d9`
-  - Safe to share. Located in `.sops.yaml` in the repo root.
+- **Public Key**: the `age:` recipient in `.sops.yaml` in the repo root.
 - **Private Key**: 
-  - **Local**: User's machine at `%APPDATA%\sops\age\keys.txt` (Windows) or `~/.config/sops/age/keys.txt` (Linux/Mac).
+  - **Local**: User's machine at `%APPDATA%\sops\age\keys.txt` (Windows) `~/.config/sops/age/keys.txt` (Linux) or `~/Library/Application Support/sops/age/keys.txt` (macOS).
   - **Cluster**: Stored in `flux-system` namespace as `sops-age` secret.
 
 ### 📝 Workflow
