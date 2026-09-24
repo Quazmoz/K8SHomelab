@@ -68,6 +68,11 @@ spec:
         # URL handed to agents/MCP; the public *.k8s.local name only resolves on LAN clients.
         - name: PAPERCLIP_API_URL
           value: "http://paperclip.apps.svc.cluster.local:3100"
+        # Ollama Cloud: OpenCode's built-in "ollama-cloud" provider turns on when
+        # OLLAMA_API_KEY (paperclip-secrets) is set. Agents: adapter OpenCode, model
+        # ollama-cloud/nemotron-3-super. Pin helper/title calls to the light model.
+        - name: PAPERCLIP_OPENCODE_SMALL_MODEL
+          value: "ollama-cloud/nemotron-3-nano:30b"
         envFrom:
         - secretRef:
             name: paperclip-secrets
