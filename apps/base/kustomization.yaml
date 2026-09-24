@@ -39,6 +39,7 @@ resources:
 #  - ./llama-cpp  # Disabled — using Ollama Cloud instead
   - ./openclaw  # OpenClaw autonomous AI agent
   - ./hermes-agent # Hermes Agent AI autonomous agent
+  - ./paperclip  # Paperclip agent orchestration (orangepi6plus)
 
 
 

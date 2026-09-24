@@ -1,0 +1,138 @@
+# Paperclip — agent orchestration control plane (https://github.com/paperclipai/paperclip)
+# Single container on orangepi6plus (arm64). No DATABASE_URL → embedded Postgres
+# lives on the PVC at /paperclip alongside workspaces, uploads, and the secrets key.
+# ponytail: embedded PG isn't in the backups CronJob; move to shared postgres
+# (DATABASE_URL) if Paperclip data becomes something you can't lose.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperclip-data-pvc
+  namespace: apps
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  volumeName: paperclip-local-pv
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperclip
+  namespace: apps
+  labels:
+    app: paperclip
+    app.kubernetes.io/name: paperclip
+    app.kubernetes.io/component: ai-agent
+    app.kubernetes.io/part-of: ai-stack
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  # RWO volume + embedded Postgres: never run two
+  selector:
+    matchLabels:
+      app: paperclip
+  template:
+    metadata:
+      labels:
+        app: paperclip
+        app.kubernetes.io/name: paperclip
+        app.kubernetes.io/component: ai-agent
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      # Image entrypoint starts as root, chowns /paperclip, then drops to node (1000) via gosu.
+      containers:
+      - name: paperclip
+        # 2026.916.1 multi-arch index; ~1.7 GB compressed — pre-pull on slow uplink.
+        image: ghcr.io/paperclipai/paperclip:2026.916.1@sha256:a02ac35ac41df911af477422ea0e781cf41d2b2c600c66f0a5ac9d8c63f52c2c
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3100
+          name: http
+        env:
+        - name: PAPERCLIP_PUBLIC_URL
+          value: "http://paperclip.k8s.local"
+        - name: PAPERCLIP_DEPLOYMENT_MODE
+          value: "authenticated"
+        - name: PAPERCLIP_DEPLOYMENT_EXPOSURE
+          value: "private"
+        envFrom:
+        - secretRef:
+            name: paperclip-secrets
+        volumeMounts:
+        - name: data
+          mountPath: /paperclip
+        resources:
+          requests:
+            cpu: 200m
+            memory: 768Mi
+          limits:
+            cpu: "3"
+            memory: 4Gi
+        # First boot initialises embedded Postgres + migrations; allow 10 min.
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          periodSeconds: 10
+          failureThreshold: 60
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 5
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: paperclip-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paperclip
+  namespace: apps
+spec:
+  selector:
+    app: paperclip
+  ports:
+  - name: http
+    port: 3100
+    targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: paperclip-ingress
+  namespace: apps
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: paperclip.k8s.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: paperclip
+            port:
+              number: 3100
