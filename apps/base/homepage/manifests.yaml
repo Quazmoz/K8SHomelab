@@ -123,6 +123,12 @@ data:
             description: Hermes AI Agent
             siteMonitor: http://hermes-agent.apps.svc.cluster.local:9119/
             statusStyle: dot
+        - Paperclip:
+            href: http://paperclip.k8s.local
+            icon: mdi-paperclip
+            description: Agent Orchestration
+            siteMonitor: http://paperclip.apps.svc.cluster.local:3100/api/health
+            statusStyle: dot
 
     - MCP Tools:
         - Context Forge:
@@ -518,7 +524,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v35-cluster-overview"
+        checksum/config: "v36-paperclip"
     spec:
       serviceAccountName: homepage
       nodeSelector:
