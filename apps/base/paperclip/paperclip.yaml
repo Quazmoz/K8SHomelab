@@ -1,8 +1,8 @@
 # Paperclip — agent orchestration control plane (https://github.com/paperclipai/paperclip)
 # Single container on orangepi6plus (arm64). No DATABASE_URL → embedded Postgres
 # lives on the PVC at /paperclip alongside workspaces, uploads, and the secrets key.
-# ponytail: embedded PG isn't in the backups CronJob; move to shared postgres
-# (DATABASE_URL) if Paperclip data becomes something you can't lose.
+# ponytail: embedded PG's built-in backups land on the same PVC/disk and it isn't in the
+# backups CronJob; move to shared postgres (DATABASE_URL) if this data becomes irreplaceable.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -81,12 +81,18 @@ spec:
           httpGet:
             path: /api/health
             port: http
+            httpHeaders:  # host allowlist rejects the pod-IP Host with 403
+            - name: Host
+              value: paperclip.k8s.local
           periodSeconds: 10
           failureThreshold: 60
         livenessProbe:
           httpGet:
             path: /api/health
             port: http
+            httpHeaders:  # host allowlist rejects the pod-IP Host with 403
+            - name: Host
+              value: paperclip.k8s.local
           periodSeconds: 30
           timeoutSeconds: 5
           failureThreshold: 3
@@ -94,6 +100,9 @@ spec:
           httpGet:
             path: /api/health
             port: http
+            httpHeaders:  # host allowlist rejects the pod-IP Host with 403
+            - name: Host
+              value: paperclip.k8s.local
           periodSeconds: 10
           timeoutSeconds: 5
       volumes:
