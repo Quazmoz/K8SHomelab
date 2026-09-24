@@ -63,8 +63,11 @@ spec:
           value: "authenticated"
         - name: PAPERCLIP_DEPLOYMENT_EXPOSURE
           value: "private"
-        - name: PAPERCLIP_ALLOWED_HOSTNAMES  # homepage siteMonitor hits the service name
+        - name: PAPERCLIP_ALLOWED_HOSTNAMES  # service name: homepage siteMonitor + agent API
           value: "paperclip.apps.svc.cluster.local"
+        # URL handed to agents/MCP; the public *.k8s.local name only resolves on LAN clients.
+        - name: PAPERCLIP_API_URL
+          value: "http://paperclip.apps.svc.cluster.local:3100"
         envFrom:
         - secretRef:
             name: paperclip-secrets
