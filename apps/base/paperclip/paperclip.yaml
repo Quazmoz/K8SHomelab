@@ -130,7 +130,8 @@ spec:
             memory: 768Mi
           limits:
             cpu: "3"
-            memory: 4Gi
+            # Each concurrent OpenCode run adds ~0.5-1 GiB; 4Gi OOMKilled with ~5 running.
+            memory: 8Gi
         # First boot initialises embedded Postgres + migrations; allow 10 min.
         startupProbe:
           httpGet:
