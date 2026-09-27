@@ -61,6 +61,7 @@ A production-grade **GitOps-managed Kubernetes homelab** running on hybrid infra
 | **Homepage** | http://homepage.k8s.local | Service dashboard |
 | **Ansible AWX** | http://awx.k8s.local | Automation & config management |
 | **Phoenix** | http://phoenix.k8s.local | LLM observability |
+| **Paperclip** | https://paperclip.k8s.local | AI-agent organization/orchestration control plane |
 | **MCPO Gateway** | http://mcpo.k8s.local/docs | OpenAPI proxy for MCP servers |
 | **Context Forge** | http://mcp.k8s.local | Dynamic MCP server hub |
 
@@ -94,6 +95,7 @@ This cluster runs a self-hosted **Model Context Protocol (MCP)** stack, making l
 - **OpenWebUI** — Frontend for local Ollama models with tool-use and agent pipeline support
 - **n8n** — Low-code AI workflow automation, integrated with MCP endpoints and external APIs
 - **Phoenix** — LLM observability: traces, evals, and prompt monitoring
+- **Paperclip** — AI-agent business/control-plane layer for goals, org structure, work, budgets, approvals, and execution coordination
 
 ---
 
@@ -136,6 +138,8 @@ flux get all -A
 | [FLUX_JENKINS_INTEGRATION.md](FLUX_JENKINS_INTEGRATION.md) | Flux + Jenkins CI/CD integration |
 | [docs/NETWORK.md](docs/NETWORK.md) | Network architecture & IP allocation |
 | [apps/base/mcp-servers/README.md](apps/base/mcp-servers/README.md) | MCP server deployment guide |
+| [apps/base/paperclip/README.md](apps/base/paperclip/README.md) | Paperclip deployment, architectural role, and productionization guidance |
+| [docs/SUPABASE_KNOWLEDGE_LAYER_REFERENCE.md](docs/SUPABASE_KNOWLEDGE_LAYER_REFERENCE.md) | Reference Postgres + pgvector business-knowledge layer and Drive sync/ACL pattern |
 
 ---
 
@@ -160,6 +164,7 @@ flux get all -A
 | AI/LLM | OpenWebUI, Ollama, Phoenix |
 | MCP | MCPO, Context Forge |
 | Automation | n8n, Ansible AWX |
+| Agent orchestration | Paperclip |
 | Storage | Local PVs, PostgreSQL, Qdrant, Redis, MongoDB |
 | Auth | Authentik (SSO) |
 | Infrastructure | Oracle Cloud (free tier VMs), local ARM/x86 nodes |
