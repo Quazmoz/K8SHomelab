@@ -90,8 +90,10 @@ spec:
         - containerPort: 3100
           name: http
         env:
+        # HTTPS required: Paperclip Cloud enrollment (GitHub/Drive connectors) rejects
+        # non-loopback http origins. Cert is self-signed, same as openclaw-tls.
         - name: PAPERCLIP_PUBLIC_URL
-          value: "http://paperclip.k8s.local"
+          value: "https://paperclip.k8s.local"
         - name: PAPERCLIP_DEPLOYMENT_MODE
           value: "authenticated"
         - name: PAPERCLIP_DEPLOYMENT_EXPOSURE
@@ -187,6 +189,10 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - paperclip.k8s.local
+    secretName: paperclip-tls
   rules:
   - host: paperclip.k8s.local
     http:

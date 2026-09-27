@@ -124,7 +124,7 @@ data:
             siteMonitor: http://hermes-agent.apps.svc.cluster.local:9119/
             statusStyle: dot
         - Paperclip:
-            href: http://paperclip.k8s.local
+            href: https://paperclip.k8s.local
             icon: mdi-paperclip
             description: Agent Orchestration
             siteMonitor: http://paperclip.apps.svc.cluster.local:3100/api/health
