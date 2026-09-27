@@ -111,9 +111,11 @@ spec:
           value: "2026.916.1"
         # Ollama Cloud: OpenCode's built-in "ollama-cloud" provider turns on when
         # OLLAMA_API_KEY (paperclip-secrets) is set. Agents: adapter OpenCode, model
-        # ollama-cloud/nemotron-3-super. Pin helper/title calls to the light model.
+        # ollama-cloud/nemotron-3-super. Cloudflare Workers AI ("cloudflare-workers-ai")
+        # turns on via CLOUDFLARE_API_KEY + CLOUDFLARE_ACCOUNT_ID; helper/title calls use its
+        # cheap GLM-4.7-Flash (131k ctx, tool calls).
         - name: PAPERCLIP_OPENCODE_SMALL_MODEL
-          value: "ollama-cloud/nemotron-3-nano:30b"
+          value: "cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash"
         envFrom:
         - secretRef:
             name: paperclip-secrets
