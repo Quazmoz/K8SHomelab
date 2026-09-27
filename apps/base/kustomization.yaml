@@ -41,6 +41,6 @@ resources:
   - ./hermes-agent # Hermes Agent AI autonomous agent
   - ./paperclip  # Paperclip agent orchestration (orangepi6plus)
 
-
-
-
+replicas:
+  - name: hermes-agent
+    count: 0
