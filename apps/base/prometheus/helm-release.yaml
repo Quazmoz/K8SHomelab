@@ -114,6 +114,17 @@ spec:
                 annotations:
                   summary: "PostgreSQL metrics exporter is down"
                   description: "Cannot scrape PostgreSQL metrics. Database monitoring is degraded."
+          - name: backups
+            rules:
+              - alert: PostgresBackupStale
+                expr: |
+                  time() - kube_cronjob_status_last_successful_time{namespace="apps",cronjob="postgres-backup"} > 26 * 3600
+                for: 5m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "PostgreSQL backup is over 26 hours old"
+                  description: "The last successful postgres-backup run was {{ humanizeDuration $value }} ago."
 
     # Extra scrape configs that the chart's built-in jobs cannot express.
     extraScrapeConfigs: |
