@@ -47,12 +47,45 @@ spec:
       - key: "node-role.kubernetes.io/control-plane"
         operator: "Exists"
         effect: "NoSchedule"
+      # Paperclip's OTEL SDK is an optional peer dependency, absent from its image.
+      # Cache the exact versions supported by this Paperclip release on its PVC.
+      # ponytail: first boot needs npm; bake these into an image if startup must work offline.
+      initContainers:
+      - name: install-otel
+        image: ghcr.io/paperclipai/paperclip:2026.916.1@sha256:a02ac35ac41df911af477422ea0e781cf41d2b2c600c66f0a5ac9d8c63f52c2c
+        command: [sh, -ec]
+        args:
+        - |
+          if ! test -f /paperclip/otel/.ready-2026.916.1 || ! npm ls --prefix /paperclip/otel --depth=0 >/dev/null 2>&1; then
+            npm install --prefix /paperclip/otel --ignore-scripts --omit=dev --no-audit --no-fund --save-exact \
+              @opentelemetry/sdk-node@0.221.0 \
+              @opentelemetry/auto-instrumentations-node@0.79.0 \
+              @opentelemetry/exporter-trace-otlp-grpc@0.221.0 \
+              @opentelemetry/resources@2.10.0 \
+              @opentelemetry/semantic-conventions@1.43.0
+            touch /paperclip/otel/.ready-2026.916.1
+          fi
+        volumeMounts:
+        - name: data
+          mountPath: /paperclip
       # Image entrypoint starts as root, chowns /paperclip, then drops to node (1000) via gosu.
       containers:
       - name: paperclip
         # 2026.916.1 multi-arch index; ~1.7 GB compressed — pre-pull on slow uplink.
         image: ghcr.io/paperclipai/paperclip:2026.916.1@sha256:a02ac35ac41df911af477422ea0e781cf41d2b2c600c66f0a5ac9d8c63f52c2c
         imagePullPolicy: IfNotPresent
+        # Resolve optional packages from the PVC while preserving the image's entrypoint.
+        args:
+        - sh
+        - -ec
+        - |
+          for package in sdk-node auto-instrumentations-node exporter-trace-otlp-grpc resources semantic-conventions; do
+            ln -sfn "/paperclip/otel/node_modules/@opentelemetry/$package" "/app/server/node_modules/@opentelemetry/$package"
+          done
+          cd /app/server
+          node --input-type=module -e 'await Promise.all(["sdk-node", "auto-instrumentations-node", "exporter-trace-otlp-grpc", "resources", "semantic-conventions"].map(name => import(`@opentelemetry/${name}`)))'
+          cd /app
+          exec node --import ./server/node_modules/tsx/dist/loader.mjs server/dist/index.js
         ports:
         - containerPort: 3100
           name: http
@@ -68,6 +101,14 @@ spec:
         # URL handed to agents/MCP; the public *.k8s.local name only resolves on LAN clients.
         - name: PAPERCLIP_API_URL
           value: "http://paperclip.apps.svc.cluster.local:3100"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://phoenix.apps.svc.cluster.local:4317"
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          value: "grpc"
+        - name: OTEL_SERVICE_NAME
+          value: "paperclip"
+        - name: OTEL_SERVICE_VERSION
+          value: "2026.916.1"
         # Ollama Cloud: OpenCode's built-in "ollama-cloud" provider turns on when
         # OLLAMA_API_KEY (paperclip-secrets) is set. Agents: adapter OpenCode, model
         # ollama-cloud/nemotron-3-super. Pin helper/title calls to the light model.
