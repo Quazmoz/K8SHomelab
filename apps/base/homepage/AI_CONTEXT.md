@@ -28,7 +28,7 @@ Central dashboard providing visibility into all homelab services with health mon
 - **ConfigMap (`homepage-config`):** Contains `settings.yaml`, `services.yaml`, `widgets.yaml`, `bookmarks.yaml`, `kubernetes.yaml`, `custom.css`, `custom.js`
 - **Service list** in ConfigMap includes siteMonitor URLs for all services
 - Config is loaded into an emptyDir volume via init container, not directly from PVC
-- **Tabs:** `Applications` contains Growth OS, service/portfolio/admin groups; `Cluster` contains Kubernetes workload, storage health, and auto-discovered cluster tools
+- **Tabs:** `Applications` contains Growth OS (n8n, Paperclip, SearXNG, changedetection.io), service/portfolio/admin groups; `Cluster` contains Kubernetes workload, storage health, and auto-discovered cluster tools
 - **Kubernetes summaries:** Blank `podSelector` values aggregate all pods in the `apps` and `kube-system` namespaces
 - **Prometheus summaries:** The `prometheusmetric` widgets show running/not-ready pods, pending/failed pods, recent restarts, bound/pending PVCs, requested bytes, and aggregate PVC utilization
 

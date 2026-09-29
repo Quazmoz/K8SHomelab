@@ -91,6 +91,12 @@ data:
             description: Internal search API (no public ingress)
             siteMonitor: http://searxng.apps.svc.cluster.local:8080/healthz
             statusStyle: dot
+        - changedetection.io:
+            href: http://changedetection.k8s.local
+            icon: mdi-bell-ring-outline
+            description: Page-change triggers for Growth OS
+            siteMonitor: http://changedetection.apps.svc.cluster.local:5000/
+            statusStyle: dot
     - AI & LLM:
         - OpenWebUI:
             href: http://openwebui.k8s.local
@@ -547,7 +553,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v37-growth-os"
+        checksum/config: "v38-changedetection-tile"
     spec:
       serviceAccountName: homepage
       nodeSelector:
