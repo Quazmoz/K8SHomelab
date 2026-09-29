@@ -36,6 +36,11 @@ data:
         style: row
         columns: 5
         tab: Applications
+      Growth OS:
+        icon: mdi-chart-line
+        style: row
+        columns: 4
+        tab: Applications
       DevOps:
         icon: mdi-infinity
         style: row
@@ -68,6 +73,24 @@ data:
         tab: Cluster
 
   services.yaml: |-
+    - Growth OS:
+        - n8n:
+            href: http://n8n.k8s.local
+            icon: n8n.png
+            description: Deterministic collection / execution
+            siteMonitor: http://n8n.apps.svc.cluster.local:5678
+            statusStyle: dot
+        - Paperclip:
+            href: https://paperclip.k8s.local
+            icon: mdi-paperclip
+            description: Agent control plane
+            siteMonitor: http://paperclip.apps.svc.cluster.local:3100/api/health
+            statusStyle: dot
+        - SearXNG:
+            icon: mdi-magnify
+            description: Internal search API (no public ingress)
+            siteMonitor: http://searxng.apps.svc.cluster.local:8080/healthz
+            statusStyle: dot
     - AI & LLM:
         - OpenWebUI:
             href: http://openwebui.k8s.local
@@ -524,7 +547,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v36-paperclip"
+        checksum/config: "v37-growth-os"
     spec:
       serviceAccountName: homepage
       nodeSelector:

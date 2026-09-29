@@ -613,3 +613,29 @@ spec:
           operator: In
           values:
           - orangepi6plus
+---
+# changedetection.io watch config + snapshots. RWO local disk on the HP
+# worker (same node as n8n). Losing this node loses the PV until the path
+# is restored; reclaim policy is Retain.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: changedetection-local-pv
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/k8s-data/changedetection
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - quinn-hpprobook430g6

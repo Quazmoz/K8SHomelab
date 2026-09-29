@@ -58,6 +58,7 @@ A production-grade **GitOps-managed Kubernetes homelab** running on hybrid infra
 | **Grafana** | http://grafana.k8s.local | Dashboards & monitoring |
 | **Prometheus** | http://prometheus.k8s.local | Metrics collection & alerting |
 | **n8n** | http://n8n.k8s.local | Workflow automation & AI pipelines |
+| **changedetection.io** | http://changedetection.k8s.local | Growth OS page-change triggers (LAN UI; ClusterIP for n8n) |
 | **Homepage** | http://homepage.k8s.local | Service dashboard |
 | **Ansible AWX** | http://awx.k8s.local | Automation & config management |
 | **Phoenix** | http://phoenix.k8s.local | LLM observability |
@@ -115,7 +116,7 @@ flux get all -A
 
 ### Local DNS (add to `/etc/hosts` or Pi-hole)
 ```
-192.168.8.40 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local awx.k8s.local jupyter.k8s.local phoenix.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local
+192.168.8.40 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local changedetection.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local awx.k8s.local jupyter.k8s.local phoenix.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local
 ```
 
 ---
@@ -140,6 +141,7 @@ flux get all -A
 | [apps/base/mcp-servers/README.md](apps/base/mcp-servers/README.md) | MCP server deployment guide |
 | [apps/base/paperclip/README.md](apps/base/paperclip/README.md) | Paperclip deployment, architectural role, and productionization guidance |
 | [docs/SUPABASE_KNOWLEDGE_LAYER_REFERENCE.md](docs/SUPABASE_KNOWLEDGE_LAYER_REFERENCE.md) | Reference Postgres + pgvector business-knowledge layer and Drive sync/ACL pattern |
+| [docs/GROWTH_OS_INFRASTRUCTURE.md](docs/GROWTH_OS_INFRASTRUCTURE.md) | Homelab runtime boundary for Growth OS (n8n, Paperclip, SearXNG, changedetection) |
 
 ---
 

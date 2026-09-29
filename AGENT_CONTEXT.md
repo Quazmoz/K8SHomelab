@@ -77,11 +77,14 @@ flux reconcile kustomization apps --with-source
 | Prometheus | quinn-hpprobook430g6 | Needs local storage |
 | Grafana | quinn-hpprobook430g6 | Needs local storage |
 | Loki | quinn-hpprobook430g6 | Needs local storage |
+| n8n | quinn-hpprobook430g6 | Needs local storage |
+| changedetection | quinn-hpprobook430g6 | Needs local storage; keep off Oracle |
+| Paperclip | orangepi6plus | Needs local storage on the Pi |
 
 | metrics-server | Non-Oracle nodes | API server connectivity |
 | MetalLB speaker | Non-Oracle nodes | Network announcement |
 
-> **Oracle Node Policy**: Oracle VMs are excluded from scheduling for most workloads due to WireGuard stability issues. See `apps/base/ORACLE_NODE_POLICY.md`.
+> **Oracle Node Policy**: Oracle VMs (`oracle-wireguard`, `oracle-groupmebot`) are excluded from most workloads because WireGuard drops take them NotReady. Encoded as hostname `NotIn` affinity (metrics-server, MetalLB, changedetection) plus local-PV nodeAffinity. Do not schedule Growth OS acquisition onto Oracle.
 
 ## MCP Integration
 

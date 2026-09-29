@@ -21,6 +21,7 @@ resources:
   - ./mcp-servers
   - ./openwebui
   - ./searxng  # Private metasearch backend for AI assistants
+  - ./changedetection  # Growth OS page-change triggers (internal + k8s.local UI)
   - ./pgadmin
 #  - ./llamafactory # Temporarily disabled to save RAM
 #  - ./uptime-kuma  # Removed - not needed
