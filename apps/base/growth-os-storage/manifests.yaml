@@ -85,7 +85,7 @@ spec:
       containers:
       - name: exporter
         image: docker.io/dgtlmoon/changedetection.io:0.60.8@sha256:34df3680db1cbffc45ac1e9c1514bc0507dd0c5b5fde47d1992fe6f14a7b40e4
-        command: [python, -B, /app/exporter.py]
+        command: [python, -B, /opt/growth-os-exporter/exporter.py]
         env:
         - name: VOLUMES
           value: n8n-data-pvc,changedetection-data-pvc
@@ -96,8 +96,7 @@ spec:
           containerPort: 9118
         volumeMounts:
         - name: script
-          mountPath: /app/exporter.py
-          subPath: exporter.py
+          mountPath: /opt/growth-os-exporter
           readOnly: true
         - name: n8n-data
           mountPath: /data/n8n-data-pvc
@@ -155,7 +154,7 @@ spec:
       containers:
       - name: exporter
         image: docker.io/dgtlmoon/changedetection.io:0.60.8@sha256:34df3680db1cbffc45ac1e9c1514bc0507dd0c5b5fde47d1992fe6f14a7b40e4
-        command: [python, -B, /app/exporter.py]
+        command: [python, -B, /opt/growth-os-exporter/exporter.py]
         env:
         - name: VOLUMES
           value: paperclip-data-pvc
@@ -166,8 +165,7 @@ spec:
           containerPort: 9118
         volumeMounts:
         - name: script
-          mountPath: /app/exporter.py
-          subPath: exporter.py
+          mountPath: /opt/growth-os-exporter
           readOnly: true
         - name: paperclip-data
           mountPath: /data/paperclip-data-pvc
