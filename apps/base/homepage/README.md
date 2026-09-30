@@ -24,6 +24,7 @@ Homepage is split into two tabs so the dashboard can grow without becoming one l
 | Tab | Category | Contents |
 |-----|----------|----------|
 | Applications | Growth OS | n8n, Paperclip, SearXNG, changedetection.io |
+| Applications | Growth OS Storage | Actual directory bytes for three dedicated PVCs, plus shared backing-disk free space |
 | Applications | AI & LLM | OpenWebUI, LLaMA Factory, Qdrant, FreshRSS, LibreChat, Phoenix, OpenClaw, Hermes |
 | Applications | MCP Tools | Context Forge, GroupMe, ClickUp, Kubernetes, and Postgres MCP endpoints |
 | Applications | DevOps | Jenkins, Grafana, Prometheus, Loki |
@@ -34,6 +35,8 @@ Homepage is split into two tabs so the dashboard can grow without becoming one l
 | Cluster | Cluster Tools | Auto-discovered cluster tools such as Kubernetes Dashboard |
 
 The `Cluster` tab links to the detailed Kubernetes, Pod Resources, and Storage Overview dashboards in Grafana. Pod and storage summary cards refresh every 30 and 60 seconds respectively.
+
+Growth OS Storage uses `growth_os_storage_used_bytes` from two read-only, no-token exporters under `apps/base/growth-os-storage/`. The total requires all three PVC series; a missing exporter or PVC shows N/A instead of a false partial total. The `Requested` and `% request` values are PVC requests, **not enforced local-PV quotas**. The HP and Orange Pi backing-disk cards show shared physical filesystem availability, including unrelated workloads. Kubelet's `kubelet_volume_stats_used_bytes` is intentionally not used for these local PVs: live checks showed it reporting the host filesystem's usage for each claim.
 
 ## Files
 

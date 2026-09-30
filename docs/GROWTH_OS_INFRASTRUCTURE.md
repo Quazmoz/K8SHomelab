@@ -97,3 +97,34 @@ Do not schedule this acquisition stack onto `oracle-wireguard` or
 `oracle-groupmebot`. WireGuard drops take those nodes NotReady (see
 `AGENT_CONTEXT.md`). Local PVs already pin n8n and changedetection to the HP
 worker; Paperclip stays on the Orange Pi because its disk is there.
+
+## Storage observability and retention — 2026-09-30
+
+The Growth OS storage section uses two small read-only exporters in
+`apps/base/growth-os-storage/`, scraped by the existing Prometheus pod job.
+They count allocated bytes inside the dedicated n8n, changedetection, and
+Paperclip PVC directories, and expose the available/capacity bytes of the
+two **shared** backing filesystems. They have no Kubernetes token, PVCs are
+mounted read-only, and no Homepage privilege is added. The claimed 15 + 5 +
+20 GiB is only a request on these local PVs, not an enforced quota. The total
+requires all three series; missing storage shows N/A. Live `du -sk` on
+2026-09-30 measured n8n 63,008 KiB, changedetection 496 KiB, and Paperclip
+782,232 KiB. Kubelet volume stats were rejected for per-PVC usage because
+they returned whole backing-filesystem usage (about 92 GB for both n8n and
+changedetection, and about 134 GB for Paperclip).
+
+| Owner/path | Stored and reason | Retention / cleanup | Growth risk and failure behavior |
+|---|---|---|---|
+| n8n `/home/node/.n8n` (dedicated PVC) | SQLite workflow/execution state, small binary-data directory, event logs; required for n8n | No explicit execution-pruning setting in GitOps; live default not verified | Execution rows may grow; at high disk usage, n8n writes can fail. Confirm the desired execution-history window before setting pruning. |
+| changedetection `/datastore` (dedicated PVC) | Watch configuration and page snapshots/history; required to preserve watch state | No explicit snapshot-history cap verified | Each changed page adds history; do not delete snapshots without deciding required audit window. |
+| Paperclip `/paperclip` (dedicated PVC) | Embedded Postgres, workspaces, uploads, logs/caches, and OTEL packages; required for agent control state | No audited task/run-log retention; embedded backups share the PVC | Logs, workspaces, and caches can grow. No automatic deletion was added because the audit and recovery windows are undecided. |
+| Loki PVC (shared cluster logs) | All apps pod logs including Growth OS | 90-day Loki compactor retention in Git | Full Loki volume affects all workloads; Growth OS share cannot be isolated from current metrics. |
+| Prometheus PVC (shared metrics) | Metrics, including Growth OS storage series | 15-day retention in Git | Shared volume; not counted in Growth OS total. |
+| n8n sandbox, Postgres, Redis, SearXNG | Shared/ephemeral dependencies, not dedicated Growth OS evidence volumes | Existing platform policy | Excluded from dedicated total to avoid attributing unrelated usage. Crawlee and Browserless are not deployed. |
+
+Watch directory bytes and physical free space. Suggested warning levels are
+70% and 85% of each backing filesystem, a rapid-rise check on each directory,
+and an unavailable exporter/PVC check. These are guidance, not deployed alerts.
+The exporter measures allocated filesystem blocks, does not follow symlinks,
+and scans every scrape; growth to very large file counts may require a cached
+background scan. No raw artifacts or historical data were deleted.

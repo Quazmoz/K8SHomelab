@@ -65,6 +65,14 @@ spec:
               name: marketing-credentials
               key: MARKETING_APPROVAL_EMAIL
               optional: true
+        # M13 read/write token is provisioned outside Git with Contents access
+        # limited to Quazmoz/growth-os. Missing key leaves M13 unavailable.
+        - name: GROWTH_OS_GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: marketing-credentials
+              key: GROWTH_OS_GITHUB_TOKEN
+              optional: true
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n

@@ -1,0 +1,190 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: growth-os-storage-exporter
+  namespace: apps
+data:
+  exporter.py: |
+    import os
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    roots = [(name, os.path.join(os.environ.get('DATA_ROOT', '/data'), name)) for name in os.environ['VOLUMES'].split(',')]
+
+    def allocated_bytes(root):
+        total = 0
+        seen = set()
+        pending = [root]
+        while pending:
+            path = pending.pop()
+            with os.scandir(path) as entries:
+                for entry in entries:
+                    stat = entry.stat(follow_symlinks=False)
+                    inode = (stat.st_dev, stat.st_ino)
+                    if inode not in seen:
+                        seen.add(inode)
+                        total += stat.st_blocks * 512
+                    if entry.is_dir(follow_symlinks=False):
+                        pending.append(entry.path)
+        return total
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path != '/metrics':
+                self.send_error(404)
+                return
+            try:
+                lines = ['# HELP growth_os_storage_used_bytes Allocated bytes inside one dedicated Growth OS PVC directory.',
+                         '# TYPE growth_os_storage_used_bytes gauge']
+                for name, root in roots:
+                    lines.append(f'growth_os_storage_used_bytes{{persistentvolumeclaim="{name}"}} {allocated_bytes(root)}')
+                filesystem = os.statvfs(roots[0][1])
+                node = os.environ['NODE_NAME']
+                lines += [
+                    '# HELP growth_os_storage_backing_capacity_bytes Capacity of the shared host filesystem behind these local PVCs.',
+                    '# TYPE growth_os_storage_backing_capacity_bytes gauge',
+                    f'growth_os_storage_backing_capacity_bytes{{node="{node}"}} {filesystem.f_blocks * filesystem.f_frsize}',
+                    '# HELP growth_os_storage_backing_available_bytes Available bytes on the shared host filesystem.',
+                    '# TYPE growth_os_storage_backing_available_bytes gauge',
+                    f'growth_os_storage_backing_available_bytes{{node="{node}"}} {filesystem.f_bavail * filesystem.f_frsize}',
+                ]
+                body = ('\n'.join(lines) + '\n').encode()
+            except OSError:
+                self.send_error(503, 'PVC unavailable or unreadable')
+                return
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain; version=0.0.4')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+    if __name__ == '__main__':
+        ThreadingHTTPServer(('0.0.0.0', 9118), Handler).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: growth-os-storage-hp
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: growth-os-storage-hp
+  template:
+    metadata:
+      labels:
+        app: growth-os-storage-hp
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9118"
+        prometheus.io/path: /metrics
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      containers:
+      - name: exporter
+        image: docker.io/dgtlmoon/changedetection.io:0.60.8@sha256:34df3680db1cbffc45ac1e9c1514bc0507dd0c5b5fde47d1992fe6f14a7b40e4
+        command: [python, -B, /app/exporter.py]
+        env:
+        - name: VOLUMES
+          value: n8n-data-pvc,changedetection-data-pvc
+        - name: NODE_NAME
+          value: quinn-hpprobook430g6
+        ports:
+        - name: metrics
+          containerPort: 9118
+        volumeMounts:
+        - name: script
+          mountPath: /app/exporter.py
+          subPath: exporter.py
+          readOnly: true
+        - name: n8n-data
+          mountPath: /data/n8n-data-pvc
+          readOnly: true
+        - name: changedetection-data
+          mountPath: /data/changedetection-data-pvc
+          readOnly: true
+        resources:
+          requests: {cpu: 10m, memory: 32Mi}
+          limits: {cpu: 100m, memory: 128Mi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+          seccompProfile: {type: RuntimeDefault}
+      volumes:
+      - name: script
+        configMap:
+          name: growth-os-storage-exporter
+      - name: n8n-data
+        persistentVolumeClaim:
+          claimName: n8n-data-pvc
+          readOnly: true
+      - name: changedetection-data
+        persistentVolumeClaim:
+          claimName: changedetection-data-pvc
+          readOnly: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: growth-os-storage-opi
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: growth-os-storage-opi
+  template:
+    metadata:
+      labels:
+        app: growth-os-storage-opi
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9118"
+        prometheus.io/path: /metrics
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: orangepi6plus
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: exporter
+        image: docker.io/dgtlmoon/changedetection.io:0.60.8@sha256:34df3680db1cbffc45ac1e9c1514bc0507dd0c5b5fde47d1992fe6f14a7b40e4
+        command: [python, -B, /app/exporter.py]
+        env:
+        - name: VOLUMES
+          value: paperclip-data-pvc
+        - name: NODE_NAME
+          value: orangepi6plus
+        ports:
+        - name: metrics
+          containerPort: 9118
+        volumeMounts:
+        - name: script
+          mountPath: /app/exporter.py
+          subPath: exporter.py
+          readOnly: true
+        - name: paperclip-data
+          mountPath: /data/paperclip-data-pvc
+          readOnly: true
+        resources:
+          requests: {cpu: 10m, memory: 32Mi}
+          limits: {cpu: 100m, memory: 128Mi}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: [ALL]}
+          seccompProfile: {type: RuntimeDefault}
+      volumes:
+      - name: script
+        configMap:
+          name: growth-os-storage-exporter
+      - name: paperclip-data
+        persistentVolumeClaim:
+          claimName: paperclip-data-pvc
+          readOnly: true

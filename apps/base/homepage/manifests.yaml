@@ -41,6 +41,11 @@ data:
         style: row
         columns: 4
         tab: Applications
+      Growth OS Storage:
+        icon: mdi-database-outline
+        style: row
+        columns: 4
+        tab: Applications
       DevOps:
         icon: mdi-infinity
         style: row
@@ -97,6 +102,113 @@ data:
             description: Page-change triggers for Growth OS
             siteMonitor: http://changedetection.apps.svc.cluster.local:5000/
             statusStyle: dot
+    - Growth OS Storage:
+        - Dedicated data total:
+            href: http://grafana.k8s.local/d/storage/storage?orgId=1
+            icon: mdi-database-outline
+            description: Actual allocated bytes across three dedicated PVC directories
+            widget:
+              type: prometheusmetric
+              url: http://prometheus-server.apps.svc.cluster.local
+              refreshInterval: 60000
+              metrics:
+                - label: Used
+                  query: 'sum(growth_os_storage_used_bytes) and on() (count(growth_os_storage_used_bytes) == 3)'
+                  format:
+                    type: bytes
+                - label: Requested
+                  query: 'sum(kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace="apps",persistentvolumeclaim=~"n8n-data-pvc|changedetection-data-pvc|paperclip-data-pvc"})'
+                  format:
+                    type: bytes
+                - label: '% request'
+                  query: '100 * (sum(growth_os_storage_used_bytes) and on() (count(growth_os_storage_used_bytes) == 3)) / sum(kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace="apps",persistentvolumeclaim=~"n8n-data-pvc|changedetection-data-pvc|paperclip-data-pvc"})'
+                  format:
+                    type: percent
+        - n8n data:
+            href: http://grafana.k8s.local/d/storage/storage?orgId=1
+            icon: n8n.png
+            description: Dedicated directory; SQLite and execution data
+            widget:
+              type: prometheusmetric
+              url: http://prometheus-server.apps.svc.cluster.local
+              refreshInterval: 60000
+              metrics:
+                - label: Used
+                  query: 'growth_os_storage_used_bytes{persistentvolumeclaim="n8n-data-pvc"}'
+                  format:
+                    type: bytes
+                - label: '% request'
+                  query: '100 * growth_os_storage_used_bytes{persistentvolumeclaim="n8n-data-pvc"} / on(persistentvolumeclaim) kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace="apps",persistentvolumeclaim="n8n-data-pvc"}'
+                  format:
+                    type: percent
+        - changedetection data:
+            href: http://grafana.k8s.local/d/storage/storage?orgId=1
+            icon: mdi-bell-ring-outline
+            description: Dedicated directory; watch history and snapshots
+            widget:
+              type: prometheusmetric
+              url: http://prometheus-server.apps.svc.cluster.local
+              refreshInterval: 60000
+              metrics:
+                - label: Used
+                  query: 'growth_os_storage_used_bytes{persistentvolumeclaim="changedetection-data-pvc"}'
+                  format:
+                    type: bytes
+                - label: '% request'
+                  query: '100 * growth_os_storage_used_bytes{persistentvolumeclaim="changedetection-data-pvc"} / on(persistentvolumeclaim) kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace="apps",persistentvolumeclaim="changedetection-data-pvc"}'
+                  format:
+                    type: percent
+        - Paperclip data:
+            href: http://grafana.k8s.local/d/storage/storage?orgId=1
+            icon: mdi-paperclip
+            description: Dedicated directory; embedded DB, workspaces, uploads
+            widget:
+              type: prometheusmetric
+              url: http://prometheus-server.apps.svc.cluster.local
+              refreshInterval: 60000
+              metrics:
+                - label: Used
+                  query: 'growth_os_storage_used_bytes{persistentvolumeclaim="paperclip-data-pvc"}'
+                  format:
+                    type: bytes
+                - label: '% request'
+                  query: '100 * growth_os_storage_used_bytes{persistentvolumeclaim="paperclip-data-pvc"} / on(persistentvolumeclaim) kube_persistentvolumeclaim_resource_requests_storage_bytes{namespace="apps",persistentvolumeclaim="paperclip-data-pvc"}'
+                  format:
+                    type: percent
+        - HP backing disk (shared):
+            href: http://grafana.k8s.local/d/storage/storage?orgId=1
+            icon: mdi-harddisk
+            description: Physical filesystem shared with other HP workloads
+            widget:
+              type: prometheusmetric
+              url: http://prometheus-server.apps.svc.cluster.local
+              refreshInterval: 60000
+              metrics:
+                - label: Free
+                  query: 'growth_os_storage_backing_available_bytes{node="quinn-hpprobook430g6"}'
+                  format:
+                    type: bytes
+                - label: Used %
+                  query: '100 * (1 - growth_os_storage_backing_available_bytes{node="quinn-hpprobook430g6"} / growth_os_storage_backing_capacity_bytes{node="quinn-hpprobook430g6"})'
+                  format:
+                    type: percent
+        - Orange Pi backing disk (shared):
+            href: http://grafana.k8s.local/d/storage/storage?orgId=1
+            icon: mdi-harddisk
+            description: Physical filesystem shared with other Orange Pi workloads
+            widget:
+              type: prometheusmetric
+              url: http://prometheus-server.apps.svc.cluster.local
+              refreshInterval: 60000
+              metrics:
+                - label: Free
+                  query: 'growth_os_storage_backing_available_bytes{node="orangepi6plus"}'
+                  format:
+                    type: bytes
+                - label: Used %
+                  query: '100 * (1 - growth_os_storage_backing_available_bytes{node="orangepi6plus"} / growth_os_storage_backing_capacity_bytes{node="orangepi6plus"})'
+                  format:
+                    type: percent
     - AI & LLM:
         - OpenWebUI:
             href: http://openwebui.k8s.local
@@ -541,7 +653,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v38-changedetection-tile"
+        checksum/config: "v39-growth-os-storage"
     spec:
       serviceAccountName: homepage
       nodeSelector:
