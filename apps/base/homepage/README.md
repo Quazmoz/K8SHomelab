@@ -38,6 +38,8 @@ The `Cluster` tab links to the detailed Kubernetes, Pod Resources, and Storage O
 
 Growth OS Storage uses `growth_os_storage_used_bytes` from two read-only, no-token exporters under `apps/base/growth-os-storage/`. The total requires all three PVC series; a missing exporter or PVC shows N/A instead of a false partial total. The `Requested` and `% request` values are PVC requests, **not enforced local-PV quotas**. The HP and Orange Pi backing-disk cards show shared physical filesystem availability, including unrelated workloads. Kubelet's `kubelet_volume_stats_used_bytes` is intentionally not used for these local PVs: live checks showed it reporting the host filesystem's usage for each claim.
 
+Production check on 2026-09-30: the rendered dashboard showed n8n `64.5 MB`, changedetection `504 kB`, and HP shared free space `26.9 GB`. Paperclip, Orange Pi free space, and the combined total rendered as `-` because the Orange Pi exporter returned HTTP 503 on a UID/GID 1000 protected Paperclip directory. A local permission fix exists but has not been approved for deployment. See [the exporter qualification](../growth-os-storage/README.md) for current status and retention notes.
+
 ## Files
 
 | File | Purpose |

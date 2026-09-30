@@ -125,6 +125,35 @@ spec:
                 annotations:
                   summary: "PostgreSQL backup is over 26 hours old"
                   description: "The last successful postgres-backup run was {{ humanizeDuration $value }} ago."
+          - name: growth-os-storage
+            rules:
+              - alert: GrowthOSBackingDiskWarning
+                expr: |
+                  100 * (1 - growth_os_storage_backing_available_bytes / growth_os_storage_backing_capacity_bytes) > 70
+                for: 10m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "Growth OS backing disk on {{ $labels.node }} is over 70% used"
+                  description: "This is a shared host filesystem, not a dedicated PVC quota. Current usage is {{ printf \"%.1f\" $value }}%."
+              - alert: GrowthOSBackingDiskCritical
+                expr: |
+                  100 * (1 - growth_os_storage_backing_available_bytes / growth_os_storage_backing_capacity_bytes) > 85
+                for: 5m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "Growth OS backing disk on {{ $labels.node }} is over 85% used"
+                  description: "This is a shared host filesystem, not a dedicated PVC quota. Current usage is {{ printf \"%.1f\" $value }}%."
+              - alert: GrowthOSStorageMeasurementMissing
+                expr: |
+                  count(growth_os_storage_used_bytes{namespace="apps",persistentvolumeclaim=~"n8n-data-pvc|changedetection-data-pvc|paperclip-data-pvc"}) != 3
+                for: 5m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "A Growth OS storage measurement is unavailable"
+                  description: "Expected three dedicated PVC metrics but received {{ $value }}. The Homepage total is unavailable until all three report."
 
     # Extra scrape configs that the chart's built-in jobs cannot express.
     extraScrapeConfigs: |
