@@ -152,12 +152,6 @@ data:
             description: Hermes AI Agent
             siteMonitor: http://hermes-agent.apps.svc.cluster.local:9119/
             statusStyle: dot
-        - Paperclip:
-            href: https://paperclip.k8s.local
-            icon: mdi-paperclip
-            description: Agent Orchestration
-            siteMonitor: http://paperclip.apps.svc.cluster.local:3100/api/health
-            statusStyle: dot
 
     - MCP Tools:
         - Context Forge:
@@ -197,12 +191,6 @@ data:
             icon: jenkins.png
             description: CI/CD Pipelines
             siteMonitor: http://jenkins.apps.svc.cluster.local:8080
-            statusStyle: dot
-        - n8n:
-            href: http://n8n.k8s.local
-            icon: n8n.png
-            description: Workflow Automation
-            siteMonitor: http://n8n.apps.svc.cluster.local:5678
             statusStyle: dot
         - Grafana:
             href: http://grafana.k8s.local

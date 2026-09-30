@@ -26,7 +26,7 @@ Homepage is split into two tabs so the dashboard can grow without becoming one l
 | Applications | Growth OS | n8n, Paperclip, SearXNG, changedetection.io |
 | Applications | AI & LLM | OpenWebUI, LLaMA Factory, Qdrant, FreshRSS, LibreChat, Phoenix, OpenClaw, Hermes |
 | Applications | MCP Tools | Context Forge, GroupMe, ClickUp, Kubernetes, and Postgres MCP endpoints |
-| Applications | DevOps | Jenkins, n8n, Grafana, Prometheus, Loki |
+| Applications | DevOps | Jenkins, Grafana, Prometheus, Loki |
 | Applications | Operations | pgAdmin, RedisInsight, Mongo Express |
 | Applications | Admin | Auto-discovered cluster administration services such as Authentik |
 | Applications | Portfolio | Personal and professional links |
