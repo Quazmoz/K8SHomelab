@@ -69,6 +69,11 @@ flux reconcile kustomization apps --with-source
 **Cause**: VXLAN MTU error from wrong interface detection
 **Fix**: Delete vxlan.calico device, restart Calico pod
 
+### Batched Image Upgrades Stall (2026-10-05)
+**Cause**: Shared slow uplink + kubelet serialized pulls. Bumping many images at once (incl. the ~1.7 GB Paperclip image) left every new pull on a node hung for 25+ min; `Recreate` Deployments (Paperclip, Prometheus, qdrant) and the Alloy DaemonSet were down meanwhile, and pods stuck pulling would not finish `Terminating`.
+**Fix**: Roll back to the cached tag; force-delete pods stuck `Terminating` that never started; delete a never-Ready StatefulSet pod (e.g. `prometheus-alertmanager-0`) so it takes the restored revision.
+**Prevention**: Bump one or two images per push; pre-pull large images on the target node first. Do not change images in existing Jobs (`n8n-import-*`): Job templates are immutable and the failed dry-run blocks the whole `apps` Kustomization — rename the Job instead.
+
 ## Node Scheduling Constraints
 
 | Workload | Node | Reason |
