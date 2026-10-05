@@ -52,18 +52,18 @@ spec:
       # ponytail: first boot needs npm; bake these into an image if startup must work offline.
       initContainers:
       - name: install-otel
-        image: ghcr.io/paperclipai/paperclip:2026.916.1@sha256:a02ac35ac41df911af477422ea0e781cf41d2b2c600c66f0a5ac9d8c63f52c2c
+        image: ghcr.io/paperclipai/paperclip:2026.1001.0@sha256:08dbadebd4d40550eb336c25c3691f582322a88bae3f1cca101c5dd096bdc9d3
         command: [sh, -ec]
         args:
         - |
-          if ! test -f /paperclip/otel/.ready-2026.916.1 || ! npm ls --prefix /paperclip/otel --depth=0 >/dev/null 2>&1; then
+          if ! test -f /paperclip/otel/.ready-2026.1001.0 || ! npm ls --prefix /paperclip/otel --depth=0 >/dev/null 2>&1; then
             npm install --prefix /paperclip/otel --ignore-scripts --omit=dev --no-audit --no-fund --save-exact \
               @opentelemetry/sdk-node@0.221.0 \
               @opentelemetry/auto-instrumentations-node@0.79.0 \
               @opentelemetry/exporter-trace-otlp-grpc@0.221.0 \
               @opentelemetry/resources@2.10.0 \
               @opentelemetry/semantic-conventions@1.43.0
-            touch /paperclip/otel/.ready-2026.916.1
+            touch /paperclip/otel/.ready-2026.1001.0
           fi
         volumeMounts:
         - name: data
@@ -71,8 +71,8 @@ spec:
       # Image entrypoint starts as root, chowns /paperclip, then drops to node (1000) via gosu.
       containers:
       - name: paperclip
-        # 2026.916.1 multi-arch index; ~1.7 GB compressed — pre-pull on slow uplink.
-        image: ghcr.io/paperclipai/paperclip:2026.916.1@sha256:a02ac35ac41df911af477422ea0e781cf41d2b2c600c66f0a5ac9d8c63f52c2c
+        # 2026.1001.0 multi-arch index; ~1.7 GB compressed — pre-pull on slow uplink.
+        image: ghcr.io/paperclipai/paperclip:2026.1001.0@sha256:08dbadebd4d40550eb336c25c3691f582322a88bae3f1cca101c5dd096bdc9d3
         imagePullPolicy: IfNotPresent
         # Resolve optional packages from the PVC while preserving the image's entrypoint.
         args:
@@ -110,7 +110,7 @@ spec:
         - name: OTEL_SERVICE_NAME
           value: "paperclip"
         - name: OTEL_SERVICE_VERSION
-          value: "2026.916.1"
+          value: "2026.1001.0"
         # Ollama Cloud: OpenCode's built-in "ollama-cloud" provider turns on when
         # OLLAMA_API_KEY (paperclip-secrets) is set. Agents: adapter OpenCode, model
         # ollama-cloud/nemotron-3-super. Cloudflare Workers AI ("cloudflare-workers-ai")
