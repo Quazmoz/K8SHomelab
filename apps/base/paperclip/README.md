@@ -12,7 +12,7 @@ Current manifest: `paperclip.yaml`.
 
 | Area | Current state |
 |---|---|
-| Image | `ghcr.io/paperclipai/paperclip:2026.1001.0`, digest pinned |
+| Image | `ghcr.io/paperclipai/paperclip:2026.916.1`, digest pinned |
 | Deployment | Kubernetes `Deployment`, 1 replica, `Recreate` strategy |
 | Scheduling | Pinned to `orangepi6plus` |
 | Exposure | `authenticated` + `private` |
@@ -201,7 +201,6 @@ Write-capable tools should use separate scopes and explicit approval policy.
 - External side effects should be approval-gated until a workflow is intentionally authorized and tested.
 - Preserve provenance for important retrieved claims.
 - Bound model/tool spend through Paperclip budgets and runtime limits.
-- Since `2026.1001.0`, agents with no stored permission mode run **full auto** (OpenCode `allow`, ACPX Claude `approve-all`, Codex `never`), including connected tools. Agents that must keep provider-side gates need an explicit restrictive mode (OpenCode `ask`/`deny`; ACPX `approve-paperclip`/`approve-reads`/`deny-all`). Paperclip approvals, company isolation, and workspace boundaries still apply. See the [v2026.1001.0 release notes](https://github.com/paperclipai/paperclip/releases/tag/v2026.1001.0).
 
 ## Observability and evaluation
 
