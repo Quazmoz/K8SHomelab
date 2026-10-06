@@ -41,6 +41,36 @@ That means:
 
 Do not claim an RTO/RPO until restore procedures have actually been tested.
 
+## Organization configuration receipt — 2026-10-06
+
+**Fact:** The live instance now has three companies: Quinn Favo AI Consulting (12 configured active agents), Quazmoz Android Development (7), and Quazmoz Growth OS (5). Nine redundant administration/test roles are paused, and the previously terminated test agent remains terminated. Existing mobile/research agents were reused; only the Android and Growth OS directors were added.
+
+**Inference:** Claude Opus 5 handles leadership, architecture, security review, and experiment judgment. Codex `gpt-6-sol` with medium reasoning handles implementation and substantive synthesis. Ollama Cloud `nemotron-3-super` and Cloudflare `@cf/zai-org/glm-4.7-flash`, through OpenCode, handle bounded research and support roles. Runtime/model assignments are deployment policy; the Growth OS portable package remains provider-independent.
+
+**Fact:** Backend services and transactional database changes configured reporting, memberships, transferred task ownership, company objectives, repository-linked projects, isolated instruction/workspace paths, and paused Growth OS routines. Timers are disabled and per-agent concurrency is one. Agents cannot hire more agents. Historical execution identity, audit records, and costs keep their original company attribution; provider sessions do not resume prior company context. New-company repository links do not establish full checkouts or qualified GitHub connectors.
+
+**Fact:** Before the change, Paperclip's own backup engine produced `/paperclip/reorganization-2026-10-06/before-three-companies-20261006-073645.sql.gz` and archived agent instructions. Restoring this SQL backup into an isolated temporary database reproduced the original one company, 32 agents, and 15 issues. Live relationship, runtime-user file-readability, and historical attribution checks pass. An unchanged migration revision no-ops on reapplication. The backup remains on the existing PVC; this check does not establish off-node recovery.
+
+**Fact:** Ollama Cloud and Cloudflare authenticate and list the configured models. The initial Claude HTTP 401 and Codex sign-in blockers were resolved through an isolated Claude browser login and three separate Codex device sign-ins. All 18 subscription agents passed strict connection selection, and all six provider/company checks passed ACP readiness plus native CLI hello inference. The checks do not exercise a complete ACP task/approval workflow. No metered Anthropic/OpenAI fallback was enabled, and marketing schedules remain paused. Authentication tasks `QUI-16`, `QUA-13`, and `QUAA-16` are resolved.
+
+The instance-specific operator implementation is [`scripts/paperclip/reorganize.mjs`](../../../scripts/paperclip/reorganize.mjs). It requires the existing backup receipt and runs inside the pinned container with the installed `tsx` loader. It does not mint a board/admin API key. Database authentication comes from runtime configuration or the pinned server's embedded bootstrap defaults; passwords are not stored in the operator source.
+
+From the repository root, check the current configuration:
+
+```bash
+kubectl exec -i -n apps deployment/paperclip -- \
+  node --import /app/server/node_modules/tsx/dist/loader.mjs --input-type=module - verify \
+  < scripts/paperclip/reorganize.mjs
+```
+
+Provider setup must run as the runtime user. Use `gosu node node` in place of `node` for `prepare`, `claude-login`, `connections`, and `qualify`; these phases reject root execution. `claude-login` prepares/promotes the isolated consulting Claude login. After native sign-in, run `connections` to promote Codex logins and install the verified Claude connection in each company, then `qualify`, `finish-auth`, and `verify`. Other phases are `apply`, `history`, `permissions`, `goals`, and `handoffs`; they are scoped to this reviewed migration revision. Authentication promotion uses Paperclip's native account service and separate Codex login homes, not copies of the MacBook login. Do not assume a database change is a qualified agent/business execution.
+
+The `qualify` phase writes sanitized check codes to `/paperclip/reorganization-2026-10-06/subscription-qualification.json`. Successful unchanged inputs no-op; `PAPERCLIP_QUALIFY_PROVIDER=openai` or `anthropic` narrows troubleshooting. Codex's hello probe adds `--skip-git-repo-check` for the empty agent workspace; the production agent configuration is unchanged. `finish-auth` resolves only the three authentication handoffs after all six probes pass.
+
+**Fact:** The initial operator-created login directories were root-owned with mode `0700`. Paperclip's `node` user could not reap expired attempts, causing both providers' sign-in-start endpoints to return HTTP 500 (`EACCES`, `scandir`). The three affected directories were reassigned to UID/GID 1000; native cleanup then removed the expired attempts, and fresh sign-in preparation succeeded as `node`. Run the displayed CLI command through `kubectl exec ... -- gosu node env CODEX_HOME=... codex ...` or `gosu node env CLAUDE_CONFIG_DIR=... claude auth login`; retain the native attempt's isolated home.
+
+Growth OS holds the durable business receipt at `integrations/paperclip-reorganization-2026-10-06.md`. Its runtime received only the reviewed instructions/job-specification package, excluding customer evidence and Git history. The entire evidence-to-experiment loop still requires real evidence and manual qualification.
+
 ## Architectural role
 
 Paperclip should sit at the **operating/orchestration layer**, not become the canonical enterprise knowledge store.
