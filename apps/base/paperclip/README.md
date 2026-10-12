@@ -12,7 +12,7 @@ Current manifest: `paperclip.yaml`.
 
 | Area | Current state |
 |---|---|
-| Image | `ghcr.io/paperclipai/paperclip:2026.1001.0`, digest pinned |
+| Image | `ghcr.io/paperclipai/paperclip:2026.1005.0`, digest pinned |
 | Deployment | Kubernetes `Deployment`, 1 replica, `Recreate` strategy |
 | Scheduling | Pinned to `orangepi6plus` |
 | Exposure | `authenticated` + `private` |
@@ -40,6 +40,16 @@ That means:
 - workspace/artifact storage, identity, secrets, monitoring, and recovery ownership also need explicit production decisions.
 
 Do not claim an RTO/RPO until restore procedures have actually been tested.
+
+## Upgrade receipt — 2026-10-12
+
+**Fact:** The reviewed target is stable [v2026.1005.0](https://github.com/paperclipai/paperclip/releases/tag/v2026.1005.0), replacing `2026.1001.0`. Both containers use multi-architecture index `sha256:de762433b50d56ed9180fef96a13fa236b37856c5c7a7718e8f19afe3d1e8670`; its Linux ARM64 manifest is `sha256:0d4b41c1b40d6804c8812dc0af98286af5de90b8ada647681dd15512ad4a5937` (1,786,521,434 compressed bytes). The existing five OpenTelemetry peer versions match this release; their verified PVC cache was staged before restart.
+
+**Fact:** At preflight there were no queued/running agent executions. Paperclip's native backup/restore functions restored the pre-upgrade SQL backup into an isolated temporary database, reproducing 3 companies, 34 agents, 18 issues, 4 projects, 2 routines, and the agent configuration fingerprint. The temporary database was removed after verification. Database and persistent-file recovery archives, including local authentication/instruction files but excluding the live database directory and dependency caches, are protected on the existing PVC under `/paperclip/upgrade-2026-10-12-2026.1005.0/`; `backup-manifest.json` records paths, sizes, SHA-256 checksums, and restore verification. Automatic approval review rejected copying these sensitive archives to the Mac; no off-node recovery copy was created.
+
+**Fact:** The Paperclip and complete `apps/base` Kustomize builds and Kubernetes server-side dry run pass. Deployment proceeds through the `main` GitOps branch only after the target image is cached on `orangepi6plus`. Live rollout and post-upgrade verification are pending.
+
+**Fact:** Upstream removes UI snippet injection and keyboard-shortcut preference settings, and agent mentions no longer launch runs; use explicit assignment/review requests. Neither removed UI snippet environment setting is configured here. Migration `0289_drop_user_keyboard_shortcuts.sql` drops the old preference column, so an image-only downgrade is not a tested recovery path: coordinate a GitOps rollback with restoration of the pre-upgrade database/files if recovery is needed. The backup remains on the same disk; this restore check does not establish off-node disaster recovery or an RTO/RPO.
 
 ## Organization configuration receipt — 2026-10-06
 
