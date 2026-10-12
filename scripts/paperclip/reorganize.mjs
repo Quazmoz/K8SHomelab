@@ -12,6 +12,8 @@ import { companyService } from '/app/server/src/services/companies.ts';
 import { accessService } from '/app/server/src/services/access.ts';
 import { agentService } from '/app/server/src/services/agents.ts';
 import { projectService } from '/app/server/src/services/projects.ts';
+import { executionWorkspaceService } from '/app/server/src/services/execution-workspaces.ts';
+import { assertGitSensitiveAdapterWorkspaceValid } from '/app/server/src/services/heartbeat.ts';
 import { goalService } from '/app/server/src/services/goals.ts';
 import { issueService } from '/app/server/src/services/issues.ts';
 import { aiConnectionService } from '/app/server/src/services/ai-connections.ts';
@@ -157,6 +159,77 @@ try {
     console.log('CODEX_COMPANY',key,'connected');
    }else console.log('CODEX_LOGIN_PENDING',key,JSON.stringify({sessionId:login.sessionId,expiresAt:login.expiresAt}));
   }
+ } else if (phase === 'growth-workspace') {
+  // deterministic_steps: allowlist installed instructions, prepare Git, transact workspace repair, validate.
+  // llm_steps: none; idempotency_key: growth-workspace-2026-10-12:<workspace>:<snapshot>.
+  // failure_policy: fail closed on unexpected files/state; cost_policy: no network/model calls.
+  // measurement_path: /paperclip/workspace-repair-2026-10-12/applied.json.
+  const repairRoot='/paperclip/workspace-repair-2026-10-12';
+  const [issue]=await sql`select id,identifier,company_id,project_id,project_workspace_id,assignee_agent_id from issues where company_id=${companies.marketing.id} and identifier='QUAA-17'`;
+  assert(issue?.project_id&&issue.project_workspace_id&&issue.assignee_agent_id,'Missing scoped QUAA-17 project assignment');
+  assert(!(await sql`select id from heartbeat_runs where status in ('queued','running')`).length,'Wait for active runs before workspace repair');
+  const [workspace]=await sql`select * from project_workspaces where id=${issue.project_workspace_id} and project_id=${issue.project_id}`;
+  assert(workspace,'Missing scoped project workspace');
+  const executionRows=[...await sql`select * from execution_workspaces where company_id=${issue.company_id} and project_id=${issue.project_id} and project_workspace_id=${workspace.id} and source_issue_id=${issue.id} and status='active'`];
+  assert(executionRows.length>0&&executionRows.every(w=>w.mode==='shared_workspace'&&w.strategy_type==='project_primary'),'Unexpected execution workspace mode');
+  const source=`${root}/growth-instructions`;
+  const approvedFiles=new Set(['README.md','AGENTS.md','growth-os.yaml','paperclip/growth-os-company/.paperclip.yaml','paperclip/growth-os-company/README.md','paperclip/growth-os-company/COMPANY.md','paperclip/growth-os-company/projects/growth-os/PROJECT.md']);
+  for(const engine of ['01-customer-truth','02-content-engine','03-outbound-engine','04-creative-testing','05-ai-search-visibility','06-growth-cockpit','07-agents'])approvedFiles.add(`${engine}/README.md`);
+  for(const job of ['growth-director','market-intelligence','source-material-miner','content-repurposer','experiment-planner','trigger-intelligence'])approvedFiles.add(`07-agents/jobs/${job}.md`);
+  for(const role of ['ceo','consulting-intelligence','content-intelligence','experimentation','market-intelligence'])approvedFiles.add(`paperclip/growth-os-company/agents/${role}/AGENTS.md`);
+  for(const skill of ['control-plane-boundaries','growth-os-core','privacy-routing'])approvedFiles.add(`paperclip/growth-os-company/skills/${skill}/SKILL.md`);
+  for(const task of ['monday-market-intelligence','weekly-growth-review'])approvedFiles.add(`paperclip/growth-os-company/projects/growth-os/tasks/${task}/TASK.md`);
+  const files=[];
+  function collectInstructions(dir,prefix=''){
+   for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+    const relative=prefix+entry.name;
+    assert(!entry.isSymbolicLink(),'Instruction package contains a symlink');
+    if(entry.isDirectory())collectInstructions(path.join(dir,entry.name),relative+'/');
+    else{
+     assert(entry.isFile()&&approvedFiles.has(relative),'Instruction package contains an unapproved file');
+     files.push(relative);
+    }
+   }
+  }
+  collectInstructions(source);files.sort();
+  assert(files.length===approvedFiles.size,'Instruction package is incomplete');
+  const snapshotHash=createHash('sha256');
+  for(const file of files){snapshotHash.update(file+'\0');snapshotHash.update(fs.readFileSync(path.join(source,file)));}
+  const snapshotSha256=snapshotHash.digest('hex');
+  const cwd=`/paperclip/instances/default/projects/${issue.company_id}/${issue.project_id}/growth-os`;
+  const marker='.paperclip-instructions-source.json';
+  if(!fs.existsSync(cwd)){
+   fs.mkdirSync(path.dirname(cwd),{recursive:true});
+   const stage=fs.mkdtempSync(cwd+'.repair-');
+   try{
+    for(const file of files){const destination=path.join(stage,file);fs.mkdirSync(path.dirname(destination),{recursive:true});fs.copyFileSync(path.join(source,file),destination);}
+    fs.writeFileSync(path.join(stage,marker),JSON.stringify({kind:'instructions-only',canonicalRepository:'https://github.com/Quazmoz/growth-os',sourceSnapshot:'reorganization-2026-10-06',snapshotSha256,files,allowInternalHosted:false,customerEvidenceInstalled:false},null,2));
+    execFileSync('git',['-C',stage,'init','-b','main'],{stdio:'pipe'});
+    execFileSync('git',['-C',stage,'add','--all'],{stdio:'pipe'});
+    execFileSync('git',['-C',stage,'-c','user.name=Paperclip instructions snapshot','-c','user.email=workspace@paperclip.local','-c','commit.gpgsign=false','commit','-m','Initialize approved Growth OS instructions snapshot'],{stdio:'pipe'});
+    execFileSync('chown',['-R','1000:1000',stage]);
+    fs.renameSync(stage,cwd);
+   }finally{if(fs.existsSync(stage))fs.rmSync(stage,{recursive:true});}
+  }
+  assert(fs.existsSync(path.join(cwd,'.git'))&&fs.existsSync(path.join(cwd,marker)),'Existing path is not the approved instruction checkout');
+  assert(JSON.parse(fs.readFileSync(path.join(cwd,marker),'utf8')).snapshotSha256===snapshotSha256,'Instruction snapshot revision changed');
+  execFileSync('gosu',['node','git','-C',cwd,'status','--porcelain'],{stdio:'pipe'});
+  const needsChange=workspace.cwd!==cwd||workspace.repo_url!==null||workspace.source_type!=='local_path'||executionRows.some(w=>w.cwd!==cwd||w.repo_url!==null);
+  if(needsChange&&!fs.existsSync(`${repairRoot}/before.json`))writeOwned(`${repairRoot}/before.json`,JSON.stringify({workspace,executionRows},null,2));
+  await db.transaction(async tx=>{
+   if(needsChange){
+    await projectService(tx).updateWorkspace(issue.project_id,workspace.id,{name:workspace.name,cwd,repoUrl:null,sourceType:'local_path',metadata:{...workspace.metadata,canonicalRepository:'https://github.com/Quazmoz/growth-os',instructionsOnly:true,snapshotSha256,allowInternalHosted:false}});
+   }
+   for(const row of executionRows){
+    const persisted=needsChange?await executionWorkspaceService(tx).update(row.id,{cwd,repoUrl:null,metadata:{...row.metadata,instructionsOnly:true,snapshotSha256}}):await executionWorkspaceService(tx).getById(row.id);
+    assert(persisted,'Missing persisted execution workspace');
+    await assertGitSensitiveAdapterWorkspaceValid({adapterType:'claude_local',agentId:issue.assignee_agent_id,issue:{id:issue.id,identifier:issue.identifier,projectId:issue.project_id,projectWorkspaceId:workspace.id},resolvedWorkspace:{cwd,source:'project_primary',projectId:issue.project_id,workspaceId:workspace.id,warnings:[]},executionWorkspace:{cwd,strategy:'project_primary',projectId:issue.project_id,workspaceId:workspace.id,repoUrl:null,branchName:null},persistedExecutionWorkspace:persisted,executionTarget:null});
+   }
+   if(needsChange)await logActivity(tx,{companyId:issue.company_id,actorType:'user',actorId:admin,action:'project.workspace.updated',entityType:'project',entityId:issue.project_id,details:{workspaceId:workspace.id,issueIdentifier:issue.identifier,source:'authorized local instruction workspace repair',snapshotSha256,instructionsOnly:true,workspaceValidation:'passed'}},[]);
+  });
+  const receipt={issue:issue.identifier,workspaceId:workspace.id,cwd,snapshotSha256,instructionFiles:files.length,gitCommit:execFileSync('gosu',['node','git','-C',cwd,'rev-parse','HEAD'],{encoding:'utf8'}).trim(),nativeWorkspaceValidation:'passed',githubCredentialAdded:false,customerEvidenceInstalled:false,providerWorkStarted:false};
+  if(needsChange||!fs.existsSync(`${repairRoot}/applied.json`))writeOwned(`${repairRoot}/applied.json`,JSON.stringify({appliedAt:new Date().toISOString(),...receipt},null,2));
+  console.log(needsChange?'GROWTH_WORKSPACE_REPAIRED':'GROWTH_WORKSPACE_NOOP',JSON.stringify(receipt));
  } else if (phase === 'models') {
   // deterministic_steps: snapshot, enforce idle state, transact model patches/revisions/audits, compare.
   // llm_steps: none; idempotency_key: model-update-2026-10-12:<agent>:<target>.
@@ -405,5 +478,5 @@ try {
   assert(!(await sql`select id from routines where company_id=${companies.marketing.id} and status<>'paused'`).length,'Marketing routine activated prematurely');
   console.log('VERIFIED',JSON.stringify(await sql`select c.name,a.status,count(*) from companies c join agents a on a.company_id=c.id group by c.name,a.status order by c.name,a.status`));
   console.log('ROSTER',JSON.stringify(all.map(a=>({name:a.name,company:Object.entries(companies).find(([,c])=>c.id===a.company_id)?.[0],status:a.status,adapter:a.adapter_type,model:a.adapter_config.model}))));
- } else throw new Error('Choose prepare, apply, history, permissions, goals, handoffs, claude-login, connections, models, qualify, finish-auth, or verify');
+ } else throw new Error('Choose prepare, apply, history, permissions, goals, handoffs, claude-login, connections, growth-workspace, models, qualify, finish-auth, or verify');
 } finally { await sql.end(); await closeRegisteredClients(url); }

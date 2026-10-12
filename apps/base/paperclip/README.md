@@ -41,6 +41,18 @@ That means:
 
 Do not claim an RTO/RPO until restore procedures have actually been tested.
 
+## Growth OS workspace repair — 2026-10-12
+
+**Fact:** QUAA-17 / run `6202664b-4f21-469c-954e-f6c4dd8c16b2` failed before provider work started. The private `Quazmoz/growth-os` clone had no GitHub credential, and the project workspace had no local `cwd`. Paperclip persisted the agent fallback directory as a shared project execution workspace, then correctly rejected it with `workspace_validation_failed`.
+
+**Fact:** The operator's `growth-workspace` phase created a dedicated local Git checkout from the 30 previously approved instruction files already installed on the PVC. An exact filename allowlist rejects additions and symlinks. No customer evidence, internal experiment ledger, upstream Git history, or GitHub credential was transferred. This is an instructions-only workspace, not a full canonical Growth OS checkout. The source fingerprint is `766b05f5564f186bd9aa456e40614590f92b73c383a2be21878b51384fdab56f`; its local initial Git commit is `f39811546bde804594c8f57383ee2895e2107b9e`.
+
+**Fact:** The project now uses `sourceType: local_path`, with its canonical repository URL retained as metadata. Its `cwd` and the affected persisted shared execution workspace point to the real Git directory under `/paperclip/instances/default/projects/87314a58-3bc9-4a5c-8e85-5a2da24375ba/0fb6882b-b9a2-4985-b907-68402c452816/growth-os`. Paperclip's exact `assertGitSensitiveAdapterWorkspaceValid` function passes against the repaired persisted record. The runtime user can inspect the checkout, an unchanged rerun no-ops, and the organization verification passes. Protected before/applied receipts are under `/paperclip/workspace-repair-2026-10-12/`.
+
+**Fact:** The original failed run and board-owned recovery decision remain intact. No marketing execution was launched. In the authenticated board UI, **Resolve… → Try again** records the explicit recovery decision and requests a retry of QUAA-17. The installed controller restricts manual user wakes to authenticated board routes; the operator does not mint an administrator API key or spoof that authority. Business/evidence qualification and upstream GitHub access remain separate work.
+
+**Inference:** A repository URL does not establish a usable private checkout. For this hosted/public-only runtime, an approved local instruction checkout repairs startup while preserving the evidence-routing boundary; future evidence delivery still needs deterministic record/runtime eligibility enforcement.
+
 ## Model configuration receipt — 2026-10-12
 
 **Fact:** All 7 `claude_local` agents now use [`claude-opus-5-5` (Opus 5.5)](https://platform.claude.com/docs/en/models/opus-5-5/migration-guide), retaining high effort. All 11 `codex_local` agents now use [`gpt-6.1-sol` (GPT-6.1 Sol)](https://developers.openai.com/api/docs/models/gpt-6.1-sol), retaining medium reasoning. The other 16 agents keep their previous models and states. Installed runtimes are Claude Code `2.1.291` and Codex CLI `0.160.1`; the Claude adapter advertises Opus 5.5, and this Paperclip release accepts GPT-6.1 Sol as a custom Codex identifier.
