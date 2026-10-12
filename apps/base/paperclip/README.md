@@ -41,6 +41,26 @@ That means:
 
 Do not claim an RTO/RPO until restore procedures have actually been tested.
 
+## Claude subscription repair — 2026-10-12
+
+**Fact:** Growth OS Director's latest QUAA-18 run `030ea912-9a25-438b-8158-46ba3cfdeefe` reports `acpx_turn_failed`, but its bounded diagnostic identifies `401 OAuth access token has expired`. QUAA-17 had already advanced beyond workspace validation before being cancelled; QUAA-18 is blocked after its automatic retries. The installed `local-ai-credentials.ts` promotes only Claude's access token, and `ai-connection-runtime.ts` places it in `CLAUDE_CODE_OAUTH_TOKEN`; it does not retain the refresh token or renew Anthropic credentials. The three existing personal Claude connections contain the same expired token.
+
+**Fact:** The operator's `claude-auth-health` phase calls Paperclip's native `markAuthenticationFailed` with the persisted failed run's attribution. That service guards the credential generation and update timestamp, leaving a newer login untouched. Growth OS's grant now requires reauthorization and its connection displays a sign-in error. A protected metadata receipt is stored at `/paperclip/claude-auth-repair-2026-10-12/health.json`. No task comment, wake, model probe, or provider fallback was sent.
+
+**Fact:** `claude-reconnect-check` verifies the existing owner and matching credentials without calling a provider. `claude-reconnect` uses the official [`claude setup-token` flow](https://code.claude.com/docs/en/authentication#generate-a-long-lived-token), which generates a one-year subscription token for unattended scripts. It captures the native PTY output in memory, displays only the browser authorization URL, suppresses token/code output, and reconnects the same three connection/grant identities in one native database transaction. Existing installation scopes are checked inside that transaction. The temporary login home is removed and only metadata is written to the repair receipt. No inference or quota probe runs; setup tokens support model requests, while other subscription endpoints require separate scopes.
+
+The reviewed operator is installed on the PVC. The account owner completes the browser sign-in in their own terminal:
+
+```bash
+sh scripts/paperclip/reconnect-claude.sh
+```
+
+Open its authorization URL, then paste the returned browser code into that terminal. A successful run prints `CLAUDE_RECONNECTED`; an unchanged rerun no-ops. The helper checks for active/scheduled runs and fails closed on differing credentials or concurrent reconnection. Then use the authenticated Paperclip board to retry QUAA-18. User sign-in and new-model execution remain pending as of this receipt.
+
+**Fact:** JavaScript and shell syntax checks, a native PTY help-only check, and output-handler checks for split URL/token chunks, ANSI escapes, suppressed secrets, and bounded output pass. The CLI help check did not start sign-in. Source: `scripts/paperclip/reorganize.mjs` and `scripts/paperclip/reconnect-claude.sh`.
+
+**Inference:** Promoting a short-lived browser-login access token into a static environment variable explains why a previously verified connection later expired. A setup token addresses that expiry path without transferring the Mac's rotating credentials or changing agent access.
+
 ## Growth OS workspace repair — 2026-10-12
 
 **Fact:** QUAA-17 / run `6202664b-4f21-469c-954e-f6c4dd8c16b2` failed before provider work started. The private `Quazmoz/growth-os` clone had no GitHub credential, and the project workspace had no local `cwd`. Paperclip persisted the agent fallback directory as a shared project execution workspace, then correctly rejected it with `workspace_validation_failed`.

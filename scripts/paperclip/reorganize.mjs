@@ -2,12 +2,12 @@
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { isDeepStrictEqual } from 'node:util';
 import postgres from '/app/packages/db/node_modules/postgres/src/index.js';
 import { createDb, closeRegisteredClients } from '/app/packages/db/src/client.ts';
-import { agents as agentTable, agentConfigRevisions } from '/app/packages/db/src/index.ts';
-import { eq } from '/app/server/node_modules/drizzle-orm/index.js';
+import { agents as agentTable, agentConfigRevisions, toolConnections, connectionGrants, toolConnectionInstalls } from '/app/packages/db/src/index.ts';
+import { eq, and, inArray } from '/app/server/node_modules/drizzle-orm/index.js';
 import { companyService } from '/app/server/src/services/companies.ts';
 import { accessService } from '/app/server/src/services/access.ts';
 import { agentService } from '/app/server/src/services/agents.ts';
@@ -41,7 +41,7 @@ const url = databaseUrl();
 const sql = postgres(url, { max: 1 });
 const db = createDb(url, { maxConnections: 1 });
 const phase = process.argv.at(-1);
-if (['prepare', 'connections', 'claude-login', 'qualify'].includes(phase) && process.getuid() !== 1000) {
+if (['prepare', 'connections', 'claude-login', 'claude-auth-health', 'claude-reconnect-check', 'claude-reconnect', 'qualify'].includes(phase) && process.getuid() !== 1000) {
  throw new Error('Run provider setup as the Paperclip runtime user: kubectl exec ... -- gosu node node --import ...');
 }
 const companyNames = { consulting: 'Quinn Favo AI Consulting', android: 'Quazmoz Android Development', marketing: 'Quazmoz Growth OS' };
@@ -158,6 +158,104 @@ try {
     await localAiLoginService(db).complete(c.id,admin,login.sessionId,intent);
     console.log('CODEX_COMPANY',key,'connected');
    }else console.log('CODEX_LOGIN_PENDING',key,JSON.stringify({sessionId:login.sessionId,expiresAt:login.expiresAt}));
+  }
+ } else if (phase === 'claude-auth-health') {
+  // deterministic_steps: verify persisted 401, invoke guarded native health repair, record metadata.
+  // llm_steps: none; idempotency_key: claude-auth-health:<run>:<credential-generation>.
+  // failure_policy: never invalidate a newer credential; cost_policy: no provider calls.
+  // measurement_path: /paperclip/claude-auth-repair-2026-10-12/health.json.
+  const [run]=await sql`select id,company_id,agent_id,status,error,started_at,context_snapshot->'aiConnection' as attribution from heartbeat_runs where id='030ea912-9a25-438b-8158-46ba3cfdeefe'`;
+  assert(run?.company_id===companies.marketing.id&&run.agent_id==='ce3afae4-f7f4-4e50-a16e-69e58edd1ae2'&&run.status==='failed'&&run.error?.includes('401 OAuth access token has expired.'),'Expected persisted Growth OS Claude authentication failure');
+  assert(run.attribution?.provider==='anthropic'&&run.attribution.method==='subscription'&&run.started_at,'Missing subscription failure attribution');
+  await aiConnectionService(db).markAuthenticationFailed({companyId:run.company_id,runId:run.id,agentId:run.agent_id,runStartedAt:run.started_at,attribution:run.attribution});
+  const [state]=await sql`select g.status as grant_status,c.health_status from connection_grants g join tool_connections c on c.id=g.connection_id where g.id=${run.attribution.grantId} and c.company_id=${run.company_id}`;
+  const receipt={runId:run.id,connectionId:run.attribution.connectionId,...state,reason:'claude_oauth_access_token_expired',checkedAt:new Date().toISOString()};
+  writeOwned('/paperclip/claude-auth-repair-2026-10-12/health.json',JSON.stringify(receipt,null,2));
+  console.log('CLAUDE_AUTH_HEALTH',JSON.stringify(receipt));
+ } else if (['claude-reconnect-check','claude-reconnect'].includes(phase)) {
+  // deterministic_steps: scope existing connections, native CLI authorization, atomic native reconnect.
+  // llm_steps: none; idempotency_key: claude-reconnect:<current-credential-generation>.
+  // failure_policy: retain existing secrets on incomplete sign-in/concurrent drift; cost_policy: subscription login only.
+  // measurement_path: /paperclip/claude-auth-repair-2026-10-12/reconnected.json.
+  const repairRoot='/paperclip/claude-auth-repair-2026-10-12';
+  const failedConnection='203b52cb-ca6d-4668-bc8e-ec29a9b74d6a';
+  const targets=[];
+  for(const [key,c] of Object.entries(companies)){
+   const rows=await db.select({connection:toolConnections,grant:connectionGrants}).from(toolConnections).innerJoin(connectionGrants,eq(connectionGrants.connectionId,toolConnections.id)).where(and(eq(toolConnections.companyId,c.id),eq(toolConnections.connectionPurpose,'ai'),eq(connectionGrants.subjectUserId,admin)));
+   const matching=rows.filter(r=>r.connection.config.ai?.provider==='anthropic'&&r.connection.config.ai?.method==='subscription'&&r.connection.enabled&&r.grant.kind==='user'&&r.grant.createdByUserId===admin);
+   assert(matching.length===1,`Expected one existing personal Claude connection in ${key}`);
+   const row=matching[0];
+   assert(['active','needs_reauthorization'].includes(row.grant.status),'Do not restore a revoked connection');
+   const value=await aiConnectionService(db).credential(row);
+   targets.push({key,...row,value});
+  }
+  const growth=targets.find(t=>t.connection.id===failedConnection);
+  assert(growth,'Missing existing Growth OS Claude connection');
+  const generation=createHash('sha256').update(growth.value).digest('hex');
+  if(phase==='claude-reconnect-check'){
+   assert(targets.every(t=>t.value===growth.value),'Company Claude credentials differ; reconnect them separately');
+   console.log('CLAUDE_RECONNECT_READY',JSON.stringify({connections:targets.length,credentialsMatch:true,growthGrantStatus:growth.grant.status,loginMethod:'native claude setup-token',ownerSignInRequired:true}));
+  }else if(fs.existsSync(`${repairRoot}/reconnected.json`)){
+   const receipt=JSON.parse(fs.readFileSync(`${repairRoot}/reconnected.json`,'utf8'));
+   if(receipt.credentialGeneration===generation&&targets.every(t=>t.value===growth.value&&t.grant.status==='active'&&t.connection.healthStatus==='ok')){
+    console.log('CLAUDE_RECONNECT_NOOP');
+    process.exitCode=0;
+   }else throw new Error('A later credential change requires a newly reviewed repair revision');
+  }else{
+   assert(process.stdin.isTTY,'Use kubectl exec -it for the owner browser sign-in');
+   assert(targets.every(t=>t.value===growth.value),'Company Claude credentials differ; reconnect them separately');
+   const companyIds=targets.map(t=>t.connection.companyId);
+   async function assertNoRuns(){assert(!(await sql`select id from heartbeat_runs where company_id in ${sql(companyIds)} and status in ('queued','running','scheduled_retry')`).length,'Wait for active or scheduled runs before reconnecting');}
+   await assertNoRuns();
+   const connectionIds=targets.map(t=>t.connection.id);
+   async function readScope(client){return [...await client.select().from(toolConnectionInstalls).where(inArray(toolConnectionInstalls.connectionId,connectionIds)).orderBy(toolConnectionInstalls.connectionId,toolConnectionInstalls.targetType,toolConnectionInstalls.targetId)];}
+   const scopeBefore=await readScope(db);
+   const attemptStartedAt=new Date();
+   const loginHome=fs.mkdtempSync('/tmp/paperclip-claude-reconnect-');
+   let output='';
+   let token;
+   try{
+    const env={...process.env,CLAUDE_CONFIG_DIR:loginHome,NO_COLOR:'1',TERM:'dumb',ANTHROPIC_API_KEY:'',ANTHROPIC_AUTH_TOKEN:'',CLAUDE_CODE_OAUTH_TOKEN:'',CLAUDE_CODE_USE_BEDROCK:'',CLAUDE_CODE_USE_VERTEX:'',CLAUDE_CODE_USE_FOUNDRY:'',ANTHROPIC_BASE_URL:'',ANTHROPIC_PROFILE:''};
+    console.log('Authorizing the existing Claude subscription. Open the URL below, then paste its browser login code into this terminal and press Enter.');
+    // A real PTY is required by the native CLI. Never relay its raw output: it contains the new token.
+    const child=spawn('script',['-q','-e','-f','-c','stty cols 4096; exec claude setup-token','/dev/null'],{env,stdio:['inherit','pipe','pipe'],detached:true});
+    const clean=text=>text.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g,'');
+    let urlShown=false;
+    const collect=chunk=>{
+     output+=chunk.toString('utf8');
+     if(output.length>256*1024){try{process.kill(-child.pid,'SIGTERM');}catch{}return;}
+     if(!urlShown){const url=clean(output).match(/https:\/\/(?:claude\.ai|console\.anthropic\.com|platform\.claude\.com)\/oauth\/authorize\?[^\s\x00-\x1f]+(?=[\s\x00-\x1f])/);if(url){console.log(url[0]);urlShown=true;}}
+    };
+    child.stdout.on('data',collect);child.stderr.on('data',collect);
+    const terminate=()=>{try{process.kill(-child.pid,'SIGTERM');}catch{}};
+    process.once('SIGTERM',terminate);process.once('SIGINT',terminate);
+    const timeout=setTimeout(()=>{try{process.kill(-child.pid,'SIGTERM');}catch{}},10*60*1000);
+    const wasRaw=process.stdin.isRaw;process.stdin.setRawMode(true);
+    let code;
+    try{code=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',resolve);});}
+    finally{clearTimeout(timeout);process.removeListener('SIGTERM',terminate);process.removeListener('SIGINT',terminate);process.stdin.setRawMode(wasRaw);}
+    assert(code===0&&output.length<=256*1024,'Claude sign-in did not complete; existing credentials were preserved');
+    const tokens=[...new Set(clean(output).match(/sk-ant-oat01-[A-Za-z0-9_-]{40,}/g)??[])];
+    assert(tokens.length===1,'Claude did not return one complete setup token; existing credentials were preserved');
+    [token]=tokens;output='';
+    await assertNoRuns();
+    const saved=await db.transaction(async tx=>{
+     await tx.select().from(toolConnections).where(inArray(toolConnections.id,connectionIds)).for('update');
+     assert(isDeepStrictEqual(scopeBefore,await readScope(tx)),'Connection scope changed during sign-in; start again');
+     const svc=aiConnectionService(tx);
+     const receipts=[];
+     for(const t of targets){
+      const result=await svc.save(t.connection.companyId,admin,{provider:'anthropic',method:'subscription',name:t.connection.name,ownership:'personal',agentIds:[],allAgents:false,connectionId:t.connection.id},token,undefined,attemptStartedAt);
+      assert(result.connectionId===t.connection.id&&result.grantId===t.grant.id,'Reconnect changed the existing connection identity');receipts.push({company:t.key,...result});
+     }
+     assert(isDeepStrictEqual(scopeBefore,await readScope(tx)),'Reconnect changed an installation scope');
+     return receipts;
+    });
+    const receipt={reconnectedAt:new Date().toISOString(),connections:saved,credentialGeneration:createHash('sha256').update(token).digest('hex'),method:'native claude setup-token',scopeUnchanged:true,modelInferenceTested:false};
+    writeOwned(`${repairRoot}/reconnected.json`,JSON.stringify(receipt,null,2));
+    console.log('CLAUDE_RECONNECTED',JSON.stringify({connections:saved.length,scopeUnchanged:true,modelInferenceTested:false}));
+   }catch{throw new Error('Claude reconnect could not finish. Check connection health before retrying.');}
+   finally{output='';token=undefined;fs.rmSync(loginHome,{recursive:true,force:true});}
   }
  } else if (phase === 'growth-workspace') {
   // deterministic_steps: allowlist installed instructions, prepare Git, transact workspace repair, validate.
@@ -478,5 +576,5 @@ try {
   assert(!(await sql`select id from routines where company_id=${companies.marketing.id} and status<>'paused'`).length,'Marketing routine activated prematurely');
   console.log('VERIFIED',JSON.stringify(await sql`select c.name,a.status,count(*) from companies c join agents a on a.company_id=c.id group by c.name,a.status order by c.name,a.status`));
   console.log('ROSTER',JSON.stringify(all.map(a=>({name:a.name,company:Object.entries(companies).find(([,c])=>c.id===a.company_id)?.[0],status:a.status,adapter:a.adapter_type,model:a.adapter_config.model}))));
- } else throw new Error('Choose prepare, apply, history, permissions, goals, handoffs, claude-login, connections, growth-workspace, models, qualify, finish-auth, or verify');
+ } else throw new Error('Choose prepare, apply, history, permissions, goals, handoffs, claude-login, claude-auth-health, claude-reconnect-check, claude-reconnect, connections, growth-workspace, models, qualify, finish-auth, or verify');
 } finally { await sql.end(); await closeRegisteredClients(url); }
