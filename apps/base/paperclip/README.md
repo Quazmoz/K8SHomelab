@@ -61,6 +61,8 @@ Open its authorization URL, then paste the returned browser code into that termi
 
 **Inference:** Promoting a short-lived browser-login access token into a static environment variable explains why a previously verified connection later expired. A setup token addresses that expiry path without transferring the Mac's rotating credentials or changing agent access.
 
+**Fact — reconnect follow-up:** The first helper attempt hid the login URL because its allowlist recognized the older OAuth hosts/paths, while installed Claude Code emits `https://claude.com/cai/oauth/authorize`. The handler now accepts that official endpoint. A bounded real `setup-token` startup check fed the CLI output through the installed handler and verified a complete URL with state and PKCE parameters, without exposing their values, completing authorization, or saving a credential. The original stalled attempt was closed and the corrected helper was deployed. The earlier help-only and fixture checks did not qualify actual sign-in startup; future runtime changes should include this bounded check. Owner authorization remains pending.
+
 ## Growth OS workspace repair — 2026-10-12
 
 **Fact:** QUAA-17 / run `6202664b-4f21-469c-954e-f6c4dd8c16b2` failed before provider work started. The private `Quazmoz/growth-os` clone had no GitHub credential, and the project workspace had no local `cwd`. Paperclip persisted the agent fallback directory as a shared project execution workspace, then correctly rejected it with `workspace_validation_failed`.

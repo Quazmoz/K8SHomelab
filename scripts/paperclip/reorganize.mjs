@@ -224,7 +224,7 @@ try {
     const collect=chunk=>{
      output+=chunk.toString('utf8');
      if(output.length>256*1024){try{process.kill(-child.pid,'SIGTERM');}catch{}return;}
-     if(!urlShown){const url=clean(output).match(/https:\/\/(?:claude\.ai|console\.anthropic\.com|platform\.claude\.com)\/oauth\/authorize\?[^\s\x00-\x1f]+(?=[\s\x00-\x1f])/);if(url){console.log(url[0]);urlShown=true;}}
+     if(!urlShown){const url=clean(output).match(/https:\/\/(?:claude\.com\/cai|claude\.ai|console\.anthropic\.com|platform\.claude\.com)\/oauth\/authorize\?[^\s\x00-\x1f]+(?=[\s\x00-\x1f])/);if(url){console.log(url[0]);urlShown=true;}}
     };
     child.stdout.on('data',collect);child.stderr.on('data',collect);
     const terminate=()=>{try{process.kill(-child.pid,'SIGTERM');}catch{}};
