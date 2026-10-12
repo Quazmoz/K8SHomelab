@@ -30,7 +30,7 @@ process.stdin.on("data",chunk=>{
   const footer=process.env.FIXTURE_UNKNOWN_SCREEN==="1"?"Fixture completion wording changed.":"Store this token securely. You won’t be able to see it again.";
   const record="\\x1b[2J\\x1b[H✓ Long-lived authentication token created successfully!\\r\\nYour OAuth token (valid for 1 year):\\r\\n"+${JSON.stringify(token.slice(0,38))}+"\\r\\n"+${JSON.stringify(token.slice(38))}+"\\r\\n"+footer+"\\r\\n";
   process.stdout.write(partial);
-  process.stdout.write(record,()=>process.exit(0));
+  process.stdout.write(record+"\\x1b[2J\\x1b[H",()=>process.exit(0));
  }else{entered+=value;codeAt=Date.now();}
 });
 `,{mode:0o600});

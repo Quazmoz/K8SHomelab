@@ -21,6 +21,15 @@ export function createScriptPtyDriver(env) {
    if(command!=='claude setup-token')throw new Error('Unexpected Claude login command');
    child=spawn('script',['-q','-e','-f','-c','stty cols 4096 rows 64; exec claude setup-token','/dev/null'],{env,stdio:['pipe','pipe','pipe'],detached:true});
    child.stdout.setEncoding('utf8');child.stderr.setEncoding('utf8');
+   const inspectScreen=()=>{
+    if(disposed)return;
+    const screen=snapshot();
+    if(screen.includes('sk-ant-oat01-')&&!diagnostics.credentialParsed)unparsed=screen;
+    if(!diagnostics.promptParsed){const prompt=parseSetupTokenPrompt(screen);if(prompt){diagnostics.promptParsed=true;onData(`Browser didn't open? Use the url below to sign in (c to copy)\n${prompt.url}\n${prompt.prompt} >\n`);}}
+    if(diagnostics.promptParsed&&!diagnostics.credentialParsed){const token=parseSetupTokenCredential(screen);if(token){diagnostics.credentialParsed=true;unparsed='';onData(`\n${SETUP_TOKEN_BEFORE_ANCHOR}\n${token}\n${SETUP_TOKEN_AFTER_ANCHOR}\n`);}}
+   };
+   // Capture a completed frame before a later erase/redraw in the same output chunk.
+   for(const final of ['J','K','A','H','f','G'])terminal.parser.registerCsiHandler({final},()=>{inspectScreen();return false;});
    const collect=chunk=>{
     const text=chunk.toString('utf8');retained=(retained+text).slice(-65536);
     diagnostics.oauthTokenPrefixSeen ||= retained.includes('sk-ant-oat01-');
@@ -33,10 +42,7 @@ export function createScriptPtyDriver(env) {
      if(disposed){resolve();return;}
      terminal.write(text,()=>{
       if(disposed){resolve();return;}
-      const screen=snapshot();
-      if(diagnostics.oauthTokenPrefixSeen&&!diagnostics.credentialParsed)unparsed=screen;
-      if(!diagnostics.promptParsed){const prompt=parseSetupTokenPrompt(screen);if(prompt){diagnostics.promptParsed=true;onData(`Browser didn't open? Use the url below to sign in (c to copy)\n${prompt.url}\n${prompt.prompt} >\n`);}}
-      if(diagnostics.promptParsed&&!diagnostics.credentialParsed){const token=parseSetupTokenCredential(screen);if(token){diagnostics.credentialParsed=true;unparsed='';onData(`\n${SETUP_TOKEN_BEFORE_ANCHOR}\n${token}\n${SETUP_TOKEN_AFTER_ANCHOR}\n`);}}
+      inspectScreen();
       resolve();
      });
     }));
