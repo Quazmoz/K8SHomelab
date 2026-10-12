@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { isDeepStrictEqual } from 'node:util';
 import postgres from '/app/packages/db/node_modules/postgres/src/index.js';
 import { createDb, closeRegisteredClients } from '/app/packages/db/src/client.ts';
@@ -21,9 +21,10 @@ import { prepareManagedAiRuntime, assertManagedAiProjectAuth } from '/app/server
 import { requireServerAdapter } from '/app/server/src/adapters/registry.ts';
 import { localAiLoginService } from '/app/server/src/services/local-ai-login.ts';
 import { logActivity } from '/app/server/src/services/activity-log.ts';
-import { createAgentSchema, createRoutineSchema, createRoutineTriggerSchema } from '/app/packages/shared/src/index.ts';
+import { createAgentSchema, createRoutineSchema, createRoutineTriggerSchema, isValidBrowserCode } from '/app/packages/shared/src/index.ts';
 import { routineService } from '/app/server/src/services/routines.ts';
-import { fetchClaudeQuota } from '/app/packages/adapters/claude-local/src/server/index.ts';
+import { fetchClaudeQuota, runSetupTokenLogin } from '/app/packages/adapters/claude-local/src/server/index.ts';
+import { localEncryptedProvider } from '/app/server/src/secrets/local-encrypted-provider.ts';
 
 process.umask(0o077);
 const root = '/paperclip/reorganization-2026-10-06';
@@ -210,36 +211,50 @@ try {
    const connectionIds=targets.map(t=>t.connection.id);
    async function readScope(client){return [...await client.select().from(toolConnectionInstalls).where(inArray(toolConnectionInstalls.connectionId,connectionIds)).orderBy(toolConnectionInstalls.connectionId,toolConnectionInstalls.targetType,toolConnectionInstalls.targetId)];}
    const scopeBefore=await readScope(db);
-   const attemptStartedAt=new Date();
+   let attemptStartedAt=new Date();
    const loginHome=fs.mkdtempSync('/tmp/paperclip-claude-reconnect-');
-   let output='';
+   const pendingFile=`${repairRoot}/pending-credential.json`;
+   const scopeHash=createHash('sha256').update(JSON.stringify(scopeBefore)).digest('hex');
+   let stage='sign_in';
+   let loginResult;
    let token;
    try{
-    const env={...process.env,CLAUDE_CONFIG_DIR:loginHome,NO_COLOR:'1',TERM:'dumb',ANTHROPIC_API_KEY:'',ANTHROPIC_AUTH_TOKEN:'',CLAUDE_CODE_OAUTH_TOKEN:'',CLAUDE_CODE_USE_BEDROCK:'',CLAUDE_CODE_USE_VERTEX:'',CLAUDE_CODE_USE_FOUNDRY:'',ANTHROPIC_BASE_URL:'',ANTHROPIC_PROFILE:''};
-    console.log('Authorizing the existing Claude subscription. Open the URL below, then paste its browser login code into this terminal and press Enter.');
-    // A real PTY is required by the native CLI. Never relay its raw output: it contains the new token.
-    const child=spawn('script',['-q','-e','-f','-c','stty cols 4096; exec claude setup-token','/dev/null'],{env,stdio:['inherit','pipe','pipe'],detached:true});
-    const clean=text=>text.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g,'');
-    let urlShown=false;
-    const collect=chunk=>{
-     output+=chunk.toString('utf8');
-     if(output.length>256*1024){try{process.kill(-child.pid,'SIGTERM');}catch{}return;}
-     if(!urlShown){const url=clean(output).match(/https:\/\/(?:claude\.com\/cai|claude\.ai|console\.anthropic\.com|platform\.claude\.com)\/oauth\/authorize\?[^\s\x00-\x1f]+(?=[\s\x00-\x1f])/);if(url){console.log(url[0]);urlShown=true;}}
-    };
-    child.stdout.on('data',collect);child.stderr.on('data',collect);
-    const terminate=()=>{try{process.kill(-child.pid,'SIGTERM');}catch{}};
-    process.once('SIGTERM',terminate);process.once('SIGINT',terminate);
-    const timeout=setTimeout(()=>{try{process.kill(-child.pid,'SIGTERM');}catch{}},10*60*1000);
-    const wasRaw=process.stdin.isRaw;process.stdin.setRawMode(true);
-    let code;
-    try{code=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',resolve);});}
-    finally{clearTimeout(timeout);process.removeListener('SIGTERM',terminate);process.removeListener('SIGINT',terminate);process.stdin.setRawMode(wasRaw);}
-    assert(code===0&&output.length<=256*1024,'Claude sign-in did not complete; existing credentials were preserved');
-    const tokens=[...new Set(clean(output).match(/sk-ant-oat01-[A-Za-z0-9_-]{40,}/g)??[])];
-    assert(tokens.length===1,'Claude did not return one complete setup token; existing credentials were preserved');
-    [token]=tokens;output='';
+    let pending;
+    if(fs.existsSync(pendingFile)){
+     stage='resume_credential';
+     const stat=fs.lstatSync(pendingFile);
+     assert(stat.isFile()&&stat.uid===1000&&(stat.mode&0o777)===0o600&&stat.size<65536,'Invalid encrypted login checkpoint');
+     pending=JSON.parse(fs.readFileSync(pendingFile,'utf8'));
+     assert(Date.parse(pending.expiresAt)>Date.now()&&pending.owner===admin&&pending.scopeHash===scopeHash&&isDeepStrictEqual(pending.connectionIds,connectionIds),'Encrypted login checkpoint expired or changed scope');
+     assert(pending.inputGeneration===generation||pending.prepared.valueSha256===generation,'Credentials changed after login; reconnect separately');
+     token=await localEncryptedProvider.resolveVersion({material:pending.prepared.material});
+     assert(createHash('sha256').update(token).digest('hex')===pending.prepared.valueSha256,'Encrypted credential fingerprint mismatch');
+     attemptStartedAt=new Date(pending.attemptStartedAt);
+     console.log('CLAUDE_LOGIN_RESUMED: using the encrypted completed-login checkpoint');
+    }else{
+     stage='sign_in';
+     const env={...process.env,CLAUDE_CONFIG_DIR:loginHome,NO_COLOR:'1',TERM:'dumb',ANTHROPIC_API_KEY:'',ANTHROPIC_AUTH_TOKEN:'',CLAUDE_CODE_OAUTH_TOKEN:'',CLAUDE_CODE_USE_BEDROCK:'',CLAUDE_CODE_USE_VERTEX:'',CLAUDE_CODE_USE_FOUNDRY:'',ANTHROPIC_BASE_URL:'',ANTHROPIC_PROFILE:''};
+     console.log('Authorizing the existing Claude subscription through Paperclip\'s native sign-in runner.');
+     const {authorizeClaude}=await import('/paperclip/claude-auth-repair-2026-10-12/claude-login.mjs');
+     loginResult=await authorizeClaude({env,runner:runSetupTokenLogin,validateCode:isValidBrowserCode,onUnparsedCredential:async screen=>{
+      const prepared=await localEncryptedProvider.createVersion({value:screen});
+      writeOwned(`${repairRoot}/unparsed-credential.json`,JSON.stringify({owner:admin,connectionIds,scopeHash,inputGeneration:generation,expiresAt:new Date(Date.now()+60*60*1000).toISOString(),prepared}));
+     },onCredential:async bytes=>{
+      stage='encrypt_credential';
+      const value=bytes.toString('utf8');
+      const prepared=await localEncryptedProvider.createVersion({value});
+      assert(prepared.material?.scheme==='local_encrypted_v1','Expected native encrypted credential material');
+      pending={owner:admin,connectionIds,scopeHash,inputGeneration:generation,attemptStartedAt:attemptStartedAt.toISOString(),expiresAt:new Date(Date.now()+60*60*1000).toISOString(),prepared};
+      writeOwned(`${pendingFile}.tmp`,JSON.stringify(pending));fs.renameSync(`${pendingFile}.tmp`,pendingFile);
+      token=value;
+     }});
+     writeOwned(`${repairRoot}/last-login.json`,JSON.stringify({checkedAt:new Date().toISOString(),...loginResult},null,2));
+     assert(loginResult.outcome==='success'&&token,'Native Claude sign-in did not complete');
+    }
+    stage='save_connections';
     await assertNoRuns();
-    const saved=await db.transaction(async tx=>{
+    const alreadySaved=pending.prepared.valueSha256===generation&&targets.every(t=>t.grant.status==='active'&&t.connection.healthStatus==='ok');
+    const saved=alreadySaved?targets.map(t=>({company:t.key,connectionId:t.connection.id,grantId:t.grant.id})):await db.transaction(async tx=>{
      await tx.select().from(toolConnections).where(inArray(toolConnections.id,connectionIds)).for('update');
      assert(isDeepStrictEqual(scopeBefore,await readScope(tx)),'Connection scope changed during sign-in; start again');
      const svc=aiConnectionService(tx);
@@ -251,11 +266,18 @@ try {
      assert(isDeepStrictEqual(scopeBefore,await readScope(tx)),'Reconnect changed an installation scope');
      return receipts;
     });
+    stage='write_receipt';
     const receipt={reconnectedAt:new Date().toISOString(),connections:saved,credentialGeneration:createHash('sha256').update(token).digest('hex'),method:'native claude setup-token',scopeUnchanged:true,modelInferenceTested:false};
     writeOwned(`${repairRoot}/reconnected.json`,JSON.stringify(receipt,null,2));
+    fs.rmSync(pendingFile,{force:true});
+    fs.rmSync(`${repairRoot}/unparsed-credential.json`,{force:true});
     console.log('CLAUDE_RECONNECTED',JSON.stringify({connections:saved.length,scopeUnchanged:true,modelInferenceTested:false}));
-   }catch{throw new Error('Claude reconnect could not finish. Check connection health before retrying.');}
-   finally{output='';token=undefined;fs.rmSync(loginHome,{recursive:true,force:true});}
+   }catch(error){
+    const databaseCode=error?.cause?.code??error?.code;
+    const diagnostic={failedAt:new Date().toISOString(),stage,...(typeof databaseCode==='string'&&/^[0-9A-Z]{5}$/.test(databaseCode)?{databaseCode}:{}),loginResult:loginResult??null,encryptedCredentialRetained:fs.existsSync(pendingFile),encryptedUnparsedCompletionRetained:fs.existsSync(`${repairRoot}/unparsed-credential.json`)};
+    writeOwned(`${repairRoot}/last-failure.json`,JSON.stringify(diagnostic,null,2));console.log('CLAUDE_RECONNECT_FAILED',JSON.stringify(diagnostic));
+    throw new Error('Claude reconnect stopped at '+stage+'. The diagnostic contains no login code or token.');
+   }finally{token=undefined;fs.rmSync(loginHome,{recursive:true,force:true});}
   }
  } else if (phase === 'growth-workspace') {
   // deterministic_steps: allowlist installed instructions, prepare Git, transact workspace repair, validate.
