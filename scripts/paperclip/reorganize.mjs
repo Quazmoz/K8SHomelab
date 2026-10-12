@@ -3,8 +3,11 @@ import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { isDeepStrictEqual } from 'node:util';
 import postgres from '/app/packages/db/node_modules/postgres/src/index.js';
 import { createDb, closeRegisteredClients } from '/app/packages/db/src/client.ts';
+import { agents as agentTable, agentConfigRevisions } from '/app/packages/db/src/index.ts';
+import { eq } from '/app/server/node_modules/drizzle-orm/index.js';
 import { companyService } from '/app/server/src/services/companies.ts';
 import { accessService } from '/app/server/src/services/access.ts';
 import { agentService } from '/app/server/src/services/agents.ts';
@@ -69,6 +72,9 @@ const roster = [
 ].map(([name,company,role,title,manager,tier,job])=>({name,company,role,title,manager,tier,job}));
 const retired = ['Agnes','Nora','Porter','Clerk','Constance','Courier','Relay','Scout 2','TestAgent'];
 const models = { claude: 'claude-opus-5', codex: 'gpt-6-sol', ollama: 'ollama-cloud/nemotron-3-super', cloudflare: 'cloudflare-workers-ai/@cf/zai-org/glm-4.7-flash' };
+// Keep the original reorganization revision immutable; model changes have their own receipt.
+const modelUpdateRoot = '/paperclip/model-update-2026-10-12';
+const modelUpdateTargets = { claude_local: 'claude-opus-5-5', codex_local: 'gpt-6.1-sol' };
 
 function assert(value, message) { if (!value) throw new Error(message); }
 function writeOwned(file, content) {
@@ -151,8 +157,48 @@ try {
     console.log('CODEX_COMPANY',key,'connected');
    }else console.log('CODEX_LOGIN_PENDING',key,JSON.stringify({sessionId:login.sessionId,expiresAt:login.expiresAt}));
   }
+ } else if (phase === 'models') {
+  // deterministic_steps: snapshot, enforce idle state, transact model patches/revisions/audits, compare.
+  // llm_steps: none; idempotency_key: model-update-2026-10-12:<agent>:<target>.
+  // failure_policy: transaction rollback; unchanged reruns no-op; never widen permissions.
+  // cost_policy: no inference or paid fallback; measurement_path: modelUpdateRoot/applied.json.
+  assert(!(await sql`select id from heartbeat_runs where status in ('queued','running')`).length,'Wait for active runs before updating models');
+  const before=[...await sql`select id,company_id,name,status,reports_to,adapter_type,adapter_config,runtime_config,permissions,budget_monthly_cents from agents order by id`];
+  const targets=before.filter(a=>Object.hasOwn(modelUpdateTargets,a.adapter_type));
+  const changed=targets.filter(a=>a.adapter_config.model!==modelUpdateTargets[a.adapter_type]);
+  if(!changed.length){console.log('MODELS_NOOP',targets.length);}
+  else{
+   assert(!fs.existsSync(`${modelUpdateRoot}/applied.json`),'Applied model revision drifted; review a new revision');
+   const snapshotFile=`${modelUpdateRoot}/agents-before.json`;
+   if(fs.existsSync(snapshotFile))assert(isDeepStrictEqual(JSON.parse(fs.readFileSync(snapshotFile,'utf8')),before),'Model snapshot drifted');
+   else writeOwned(snapshotFile,JSON.stringify(before,null,2));
+   const expected=before.map(a=>Object.hasOwn(modelUpdateTargets,a.adapter_type)?{...a,adapter_config:{...a.adapter_config,model:modelUpdateTargets[a.adapter_type]}}:a);
+   const fields={id:agentTable.id,company_id:agentTable.companyId,name:agentTable.name,status:agentTable.status,reports_to:agentTable.reportsTo,adapter_type:agentTable.adapterType,adapter_config:agentTable.adapterConfig,runtime_config:agentTable.runtimeConfig,permissions:agentTable.permissions,budget_monthly_cents:agentTable.budgetMonthlyCents};
+   await db.transaction(async tx=>{
+    const locked=await tx.select(fields).from(agentTable).orderBy(agentTable.id).for('update');
+    assert(isDeepStrictEqual(locked,before),'Agent configuration changed before model transaction');
+    const revisionFields=['name','role','title','icon','appearance','reportsTo','capabilities','adapterType','adapterConfig','runtimeConfig','defaultEnvironmentId','budgetMonthlyCents','metadata'];
+    for(const a of changed){
+     const [current]=await tx.select().from(agentTable).where(eq(agentTable.id,a.id)).for('update');
+     assert(current&&isDeepStrictEqual(current.adapterConfig,a.adapter_config),'Agent changed during model update');
+     const config={...a.adapter_config,model:modelUpdateTargets[a.adapter_type]};
+     // The general updater normalizes env (including explicit no-API-fallback entries).
+     // Patch only this field using Paperclip's schema, retaining its revisions and audit trail.
+     const [updated]=await tx.update(agentTable).set({adapterConfig:config,updatedAt:new Date()}).where(eq(agentTable.id,a.id)).returning();
+     assert(updated&&isDeepStrictEqual(updated.adapterConfig,config),'Model patch changed additional adapter settings');
+     assert(isDeepStrictEqual(updated.runtimeConfig,a.runtime_config)&&isDeepStrictEqual(updated.permissions,a.permissions)&&updated.status===a.status,'Model patch changed runtime policy');
+     const beforeConfig=Object.fromEntries(revisionFields.map(key=>[key,current[key]]));
+     await tx.insert(agentConfigRevisions).values({companyId:a.company_id,agentId:a.id,createdByUserId:admin,source:'patch',changedKeys:['adapterConfig'],beforeConfig,afterConfig:{...beforeConfig,adapterConfig:config}});
+     await logActivity(tx,{companyId:a.company_id,actorType:'user',actorId:admin,action:'agent.updated',entityType:'agent',entityId:a.id,details:{changedKeys:['adapterConfig.model'],previousModel:a.adapter_config.model,model:config.model,source:'authorized model-update-2026-10-12'}},[]);
+    }
+    const after=await tx.select(fields).from(agentTable).orderBy(agentTable.id);
+    assert(isDeepStrictEqual(after,expected),'Unexpected configuration drift in model transaction');
+   });
+   writeOwned(`${modelUpdateRoot}/applied.json`,JSON.stringify({appliedAt:new Date().toISOString(),targets:modelUpdateTargets,changedAgents:changed.map(a=>({id:a.id,companyId:a.company_id,adapter:a.adapter_type,previousModel:a.adapter_config.model,model:modelUpdateTargets[a.adapter_type]})),verifiedModelOnly:true},null,2));
+   console.log('MODELS_UPDATED',JSON.stringify({changed:changed.length,targets:modelUpdateTargets,verifiedModelOnly:true}));
+  }
  } else if (phase === 'qualify') {
-  const receiptPath=`${root}/subscription-qualification.json`;
+  const receiptPath=fs.existsSync(`${modelUpdateRoot}/applied.json`)?`${modelUpdateRoot}/subscription-qualification.json`:`${root}/subscription-qualification.json`;
   const receipts=fs.existsSync(receiptPath)?JSON.parse(fs.readFileSync(receiptPath,'utf8')):[];
   const provider=process.env.PAPERCLIP_QUALIFY_PROVIDER;
   assert(!provider||['anthropic','openai'].includes(provider),'Invalid qualification provider');
@@ -165,7 +211,7 @@ try {
     let managed;
     try{
      managed=await prepareManagedAiRuntime(db,{companyId:c.id,agentId:a.id,responsibleUserId:admin,adapterType:adapter,binding:a.runtime_config.aiConnection,config:{...a.adapter_config,helloProbeTimeoutSec:45}});
-     const inputKey=createHash('sha256').update(JSON.stringify({company:c.id,adapter,config:a.adapter_config,identity:managed.identity,version:'2026.1001.0'})).digest('hex');
+     const inputKey=createHash('sha256').update(JSON.stringify({company:c.id,adapter,config:a.adapter_config,identity:managed.identity,version:process.env.PAPERCLIP_BUILD_VERSION??'2026.1005.0'})).digest('hex');
      if(receipts.some(r=>r.company===key&&r.adapter===adapter&&r.inputKey===inputKey&&r.status==='pass')){console.log('SUBSCRIPTION_PROBE_NOOP',key,adapter);continue;}
      await assertManagedAiProjectAuth(managed.config,a.runtime_config.aiConnection.provider);
      const context={companyId:c.id,adapterType:adapter,config:managed.config,executionTarget:null,environmentName:'Paperclip local pod'};
@@ -349,8 +395,9 @@ try {
   writeOwned(`${root}/applied.json`,JSON.stringify({appliedAt:new Date().toISOString(),companies:Object.fromEntries(Object.entries(companies).map(([k,c])=>[k,c.id])),roster,retired,models},null,2));
   console.log('APPLIED',JSON.stringify({active:roster.length,paused:retired.length,models}));
  } else if(phase==='verify') {
+  const currentModels=fs.existsSync(`${modelUpdateRoot}/applied.json`)?{...models,claude:modelUpdateTargets.claude_local,codex:modelUpdateTargets.codex_local}:models;
   const all=await sql`select id,company_id,name,status,reports_to,adapter_type,adapter_config,runtime_config from agents`;
-  for(const d of roster){const a=all.find(a=>a.name===d.name);assert(a,`Missing ${d.name}`);assert(a.company_id===companies[d.company].id,`Wrong company ${d.name}`);assert(a.adapter_config.model===models[d.tier],`Wrong model ${d.name}`);assert(a.runtime_config.heartbeat.maxConcurrentRuns===1,`Unbounded concurrency ${d.name}`);assert(fs.existsSync(a.adapter_config.instructionsFilePath),`Missing instructions ${d.name}`);execFileSync('gosu',['node','test','-r',a.adapter_config.instructionsFilePath]);}
+  for(const d of roster){const a=all.find(a=>a.name===d.name);assert(a,`Missing ${d.name}`);assert(a.company_id===companies[d.company].id,`Wrong company ${d.name}`);assert(a.adapter_config.model===currentModels[d.tier],`Wrong model ${d.name}`);assert(a.runtime_config.heartbeat.maxConcurrentRuns===1,`Unbounded concurrency ${d.name}`);assert(fs.existsSync(a.adapter_config.instructionsFilePath),`Missing instructions ${d.name}`);execFileSync('gosu',['node','test','-r',a.adapter_config.instructionsFilePath]);}
   assert(!(await sql`select a.id from agents a join agents m on m.id=a.reports_to where a.company_id<>m.company_id`).length,'Cross-company manager');
   assert(!(await sql`select i.id from issues i join agents a on a.id=i.assignee_agent_id where i.company_id<>a.company_id`).length,'Cross-company assignee');
   assert(!(await sql`select c.id from run_identity_contexts c join heartbeat_runs r on r.id=c.run_id where c.company_id<>r.company_id`).length,'Historical run identity attribution mismatch');
@@ -358,5 +405,5 @@ try {
   assert(!(await sql`select id from routines where company_id=${companies.marketing.id} and status<>'paused'`).length,'Marketing routine activated prematurely');
   console.log('VERIFIED',JSON.stringify(await sql`select c.name,a.status,count(*) from companies c join agents a on a.company_id=c.id group by c.name,a.status order by c.name,a.status`));
   console.log('ROSTER',JSON.stringify(all.map(a=>({name:a.name,company:Object.entries(companies).find(([,c])=>c.id===a.company_id)?.[0],status:a.status,adapter:a.adapter_type,model:a.adapter_config.model}))));
- } else throw new Error('Choose prepare, apply, history, permissions, goals, handoffs, claude-login, connections, qualify, finish-auth, or verify');
+ } else throw new Error('Choose prepare, apply, history, permissions, goals, handoffs, claude-login, connections, models, qualify, finish-auth, or verify');
 } finally { await sql.end(); await closeRegisteredClients(url); }

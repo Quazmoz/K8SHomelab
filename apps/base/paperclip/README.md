@@ -41,6 +41,22 @@ That means:
 
 Do not claim an RTO/RPO until restore procedures have actually been tested.
 
+## Model configuration receipt — 2026-10-12
+
+**Fact:** All 7 `claude_local` agents now use [`claude-opus-5-5` (Opus 5.5)](https://platform.claude.com/docs/en/models/opus-5-5/migration-guide), retaining high effort. All 11 `codex_local` agents now use [`gpt-6.1-sol` (GPT-6.1 Sol)](https://developers.openai.com/api/docs/models/gpt-6.1-sol), retaining medium reasoning. The other 16 agents keep their previous models and states. Installed runtimes are Claude Code `2.1.291` and Codex CLI `0.160.1`; the Claude adapter advertises Opus 5.5, and this Paperclip release accepts GPT-6.1 Sol as a custom Codex identifier.
+
+**Fact:** The operator's `models` phase applied all 18 changes in one database transaction using Paperclip's schema, recording configuration revisions and native audit entries. A comparison of all 34 agent records confirmed that only the targeted model fields changed; authentication bindings, environment entries, reasoning settings, permissions, budgets, reporting lines, and runtime schedules were preserved. The general native updater normalized `env`, so its guarded attempt was rolled back before the model-only patch. Protected rollback configuration and the applied receipt live under `/paperclip/model-update-2026-10-12/`. The original reorganization revision and original subscription qualification history remain intact.
+
+**Fact:** The updated `verify` phase passes company/reporting/assignment/membership/history, instruction readability, and concurrency checks, with Growth OS routines still paused. A repeated `models` run no-ops. Local JavaScript syntax and diff checks pass. Automatic approval review rejected live subscription/inference probes because the configuration update did not authorize provider calls or possible cost; new-model inference availability remains unqualified. Any later authorized `qualify` run writes a separate `/paperclip/model-update-2026-10-12/subscription-qualification.json` receipt.
+
+From the repository root, safely recheck/apply this model revision:
+
+```bash
+kubectl exec -i -n apps deployment/paperclip -c paperclip -- \
+  node --import /app/server/node_modules/tsx/dist/loader.mjs --input-type=module - models \
+  < scripts/paperclip/reorganize.mjs
+```
+
 ## Upgrade receipt — 2026-10-12
 
 **Fact:** The reviewed target is stable [v2026.1005.0](https://github.com/paperclipai/paperclip/releases/tag/v2026.1005.0), replacing `2026.1001.0`. Both containers use multi-architecture index `sha256:de762433b50d56ed9180fef96a13fa236b37856c5c7a7718e8f19afe3d1e8670`; its Linux ARM64 manifest is `sha256:0d4b41c1b40d6804c8812dc0af98286af5de90b8ada647681dd15512ad4a5937` (1,786,521,434 compressed bytes). The existing five OpenTelemetry peer versions match this release; their verified PVC cache was staged before restart.
