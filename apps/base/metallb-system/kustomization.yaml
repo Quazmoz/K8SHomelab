@@ -9,6 +9,16 @@ resources:
   - ./metrics-rbac.yaml
 
 patches:
+  # Allow the wired control-plane node despite kubeadm's default exclude-LB label.
+  # L2Advertisement restricts election to that node and its LAN interface.
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --ignore-exclude-lb
+    target:
+      kind: DaemonSet
+      name: speaker
+      namespace: metallb-system
   # Exclude Oracle VMs from MetalLB speaker DaemonSet
   # They use WireGuard which doesn't support UDP memberlist gossip properly
   - patch: |-
@@ -31,7 +41,8 @@ patches:
                       operator: NotIn
                       values:
                       - oracle-wireguard
-                      - oracle-groupmebot  # MetalLB v0.16+ serves metrics over authenticated HTTPS on 9120, but still
+                      - oracle-groupmebot
+  # MetalLB v0.16+ serves metrics over authenticated HTTPS on 9120, but still
   # ships prometheus.io/scrape: "true", which makes the plain-HTTP
   # kubernetes-pods job fail with "client sent an HTTP request to an HTTPS
   # server". Turn the annotation off and scrape it with the dedicated

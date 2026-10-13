@@ -8,7 +8,7 @@ Provides bare-metal LoadBalancer IP allocation using Layer 2 ARP advertisement. 
 
 ## Architecture
 
-- **Type:** Remote manifest install (MetalLB v0.14.5 native manifests)
+- **Type:** Remote manifest install (MetalLB v0.16.1 native manifests)
 - **Namespace:** `metallb-system`
 - **Mode:** L2 Advertisement (ARP-based)
 - **IP Pool:** `192.168.8.40-192.168.8.99`
@@ -23,8 +23,10 @@ Provides bare-metal LoadBalancer IP allocation using Layer 2 ARP advertisement. 
 ## Key Details
 
 - Oracle VMs (`oracle-wireguard`, `oracle-groupmebot`) are excluded from speaker DaemonSet via node affinity patch (WireGuard causes L2 issues)
-- The IPAddressPool `homelab-pool` is the only pool and serves all LoadBalancer services
-- L2Advertisement has no specific ipAddressPools selector (advertises all pools)
+- The IPAddressPool `first-pool` serves `192.168.8.40-192.168.8.99`
+- L2Advertisement `example` selects `first-pool`, node `orangepi6plus`, and wired interface `enp97s0`
+- Speaker argument `--ignore-exclude-lb` bypasses kubeadm's default control-plane exclusion label; the L2 node selector still bounds eligible announcers
+- The HP worker uses Wi-Fi (`wlp2s0`). On 2026-10-13, the Mac could not reach its advertised ingress VIP, while the Pi's ingress NodePort worked. Keep this pool on the wired Pi; do not restore Wi-Fi election without an external LAN reachability check.
 
 ## Dependencies
 
@@ -35,4 +37,5 @@ Provides bare-metal LoadBalancer IP allocation using Layer 2 ARP advertisement. 
 
 - Changing the IP pool range affects all LoadBalancer services
 - Adding new nodes may require updating the speaker exclusion patches
+- Adding another announcer requires a verified wired LAN interface and an update to the L2 node/interface selectors
 - MetalLB CRDs (IPAddressPool, L2Advertisement) are part of the MetalLB install, not defined here

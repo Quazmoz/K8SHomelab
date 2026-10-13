@@ -15,3 +15,9 @@ metadata:
 spec:
   ipAddressPools:
   - first-pool
+  # The Wi-Fi worker's ARP advertisements are not reachable from LAN clients.
+  nodeSelectors:
+  - matchLabels:
+      kubernetes.io/hostname: orangepi6plus
+  interfaces:
+  - enp97s0

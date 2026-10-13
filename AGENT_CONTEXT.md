@@ -69,6 +69,10 @@ flux reconcile kustomization apps --with-source
 **Cause**: VXLAN MTU error from wrong interface detection
 **Fix**: Delete vxlan.calico device, restart Calico pod
 
+### Ingress VIP Unreachable From LAN Despite Ready Pods (2026-10-13)
+**Observed**: MetalLB elected the HP worker on Wi-Fi (`wlp2s0`). The Mac could not resolve ARP for `192.168.8.40`, while HTTPS through the Pi's NodePort worked. A node-local request to a LoadBalancer IP alone does not verify external advertisement.
+**Fix**: `L2Advertisement` pins `first-pool` to `orangepi6plus` / wired `enp97s0`; speaker `--ignore-exclude-lb` permits the control-plane node despite kubeadm's default exclusion label. Keep Oracle exclusion and the existing ingress traffic policy. Verify the normal VIP from an external LAN client after changes.
+
 ### Batched Image Upgrades Stall (2026-10-05)
 **Cause**: Shared slow uplink + kubelet serialized pulls. Bumping many images at once (incl. the ~1.7 GB Paperclip image) left every new pull on a node hung for 25+ min; `Recreate` Deployments (Paperclip, Prometheus, qdrant) and the Alloy DaemonSet were down meanwhile, and pods stuck pulling would not finish `Terminating`.
 **Fix**: Roll back to the cached tag; force-delete pods stuck `Terminating` that never started; delete a never-Ready StatefulSet pod (e.g. `prometheus-alertmanager-0`) so it takes the restored revision.
