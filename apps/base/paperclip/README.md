@@ -12,7 +12,7 @@ Current manifest: `paperclip.yaml`.
 
 | Area | Current state |
 |---|---|
-| Image | `ghcr.io/paperclipai/paperclip:2026.1005.0`, digest pinned |
+| Image | `ghcr.io/paperclipai/paperclip:2026.1012.0`, digest pinned |
 | Deployment | Kubernetes `Deployment`, 1 replica, `Recreate` strategy |
 | Scheduling | Pinned to `orangepi6plus` |
 | Exposure | `authenticated` + `private` |
@@ -40,6 +40,18 @@ That means:
 - workspace/artifact storage, identity, secrets, monitoring, and recovery ownership also need explicit production decisions.
 
 Do not claim an RTO/RPO until restore procedures have actually been tested.
+
+## Upgrade and ingress repair — 2026-10-13
+
+**Fact:** The latest stable [Paperclip release `2026.1012.0`](https://github.com/paperclipai/paperclip/releases/tag/v2026.1012.0) is deployed through Flux, from commit `d4999a1`. The verified multi-architecture index is `sha256:1661b3dd3fdf7a9b59542d1ced464c3faf9dc8309798b4d15a9923ed32795307`; its ARM64 manifest is `sha256:f40c29335cf2ff74dbbdd86ef0a2cb067bbadc1129058eb8c90bb0b6bef13c31`. Runtime build `v2026.1012.0-0-gbba6a45f0` matches upstream commit `bba6a45f0d364cfd962ac59b3bdf2426a8222adb`, and all 304 database migrations are applied. The 2.4 GB compressed image was pre-pulled on the Pi before replacement. The unchanged telemetry dependency pins were qualified and cached for startup.
+
+**Fact:** A fresh native SQL backup was restored successfully into an isolated temporary database before deployment; configuration fingerprints and record counts matched, and the temporary database was removed. Database and persistent-files backups remain protected on the existing PVC under `/paperclip/upgrade-2026-10-13-2026.1012.0/`. This is a same-volume upgrade recovery point, not an off-node disaster-recovery backup. There were no active/queued/retry runs and both routines were paused. `Recreate` stopped the old pod before the new initialization, which preserves any legacy `.lock/` directories outside the lock root while leaving `.lock.sqlite` files untouched, following the upstream [restore-lock upgrade protocol](https://raw.githubusercontent.com/paperclipai/paperclip/v2026.1012.0/doc/workspace-restore-locks.md).
+
+**Fact:** Post-upgrade verification preserves 3 companies, 34 agents, 20 issues, 4 projects, 2 routines, 9 connections, 9 grants, and 18 connection installations. All 7 Claude agents remain on Opus 5.5 and all 11 Codex agents on GPT-6.1 Sol. Original configuration columns are compared so additive migration columns do not cause false mismatches. Observed GitHub webhook/cache revision and health-check timestamps are excluded explicitly; account identity, repository access lists, credential references, grant scope/status, health status, models, permissions, budgets, and agent states remain checked. Raw before/current rows and metadata-change diagnosis stay protected on the PVC. All 18 subscription agents pass native strict connection selection; all 7 AI connections are healthy and all 9 grants active. One tool connection was already `unchecked` before the upgrade and remains so.
+
+**Fact:** The Kubernetes ingress IP was unreachable from the Mac despite Ready pods. MetalLB had elected the HP worker on Wi-Fi. Commit `1d37303` moves its announcement to the Pi's wired interface; see the [cluster receipt](../../../docs/CLUSTER_HEALTH_2026-10-13.md) and [MetalLB policy](../metallb-system/README.md). The normal Paperclip hostname, HTTPS UI, frontend bundle, and health endpoint now pass; unauthenticated company access remains HTTP 403. Organization verification and the synthetic Claude reconnect regression pass on the new image. No provider/model calls, task wakes, permission expansion, or marketing schedule activation were performed by upgrade verification. Full ACP task/file-collection execution remains separate qualification work.
+
+Protected verification receipts: `backup-manifest.json`, `pre-upgrade-snapshot.json`, `verified.json`, and `connections-verified.json` in the upgrade directory. Local lock preservation/collision check: `python3 scripts/paperclip/test-upgrade-locks.py`. Rollback requires stopping all writers before changing lock protocols and restoring a compatible database; reverting the image alone does not reverse database migrations or justify moving permanent SQLite lock files.
 
 ## Claude subscription repair — 2026-10-12
 

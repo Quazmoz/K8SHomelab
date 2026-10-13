@@ -116,7 +116,7 @@ flux get all -A
 
 ### Local DNS (add to `/etc/hosts` or Pi-hole)
 ```
-192.168.8.40 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local changedetection.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local awx.k8s.local jupyter.k8s.local phoenix.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local
+192.168.8.40 homepage.k8s.local openwebui.k8s.local grafana.k8s.local prometheus.k8s.local n8n.k8s.local changedetection.k8s.local mcpo.k8s.local mcp.k8s.local pgadmin.k8s.local qdrant.k8s.local awx.k8s.local jupyter.k8s.local phoenix.k8s.local mongo-express.k8s.local authentik.k8s.local redisinsight.k8s.local groupme.k8s.local paperclip.k8s.local
 ```
 
 ---
@@ -142,6 +142,7 @@ flux get all -A
 | [apps/base/paperclip/README.md](apps/base/paperclip/README.md) | Paperclip deployment, architectural role, and productionization guidance |
 | [docs/SUPABASE_KNOWLEDGE_LAYER_REFERENCE.md](docs/SUPABASE_KNOWLEDGE_LAYER_REFERENCE.md) | Reference Postgres + pgvector business-knowledge layer and Drive sync/ACL pattern |
 | [docs/GROWTH_OS_INFRASTRUCTURE.md](docs/GROWTH_OS_INFRASTRUCTURE.md) | Homelab runtime boundary for Growth OS (n8n, Paperclip, SearXNG, changedetection) |
+| [docs/CLUSTER_HEALTH_2026-10-13.md](docs/CLUSTER_HEALTH_2026-10-13.md) | Verified wired-ingress repair and Paperclip 2026.1012.0 upgrade receipt |
 
 ---
 
