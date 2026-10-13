@@ -26,6 +26,12 @@ Current manifest: `paperclip.yaml`.
 
 The HTTPS ingress exists because Paperclip Cloud connector enrollment for services such as GitHub/Drive requires a secure non-loopback origin.
 
+## Native GitHub connector qualification — 2026-10-13
+
+**Fact:** All three companies now have native managed GitHub connections under Quinn's explicitly approved all-repository scope. The five Growth OS agents passed private README, job-contract, and schema reads with matching connector audit events. The canonical project checkout is authenticated; the original instructions snapshot and `a64ddb6` remain recoverable. An isolated verification commit was pushed and [PR #2](https://github.com/Quazmoz/growth-os/pull/2) merged after Quinn explicitly requested it. Native agent merges remain Off and other selected writes Ask first.
+
+**Fact:** The idempotent operator is [`scripts/paperclip/github-connector.mjs`](../../../scripts/paperclip/github-connector.mjs). The [technical report](../../../docs/PAPERCLIP_GITHUB_CONNECTOR_2026-10-13.md) records connection IDs, access and workspace proof, remote persistence, regression checks, recovery limits, and the distinction between native per-agent tests and full model-driven runs. This setup did not change the pinned image, TLS/networking, model subscriptions, or paused routines. Gateway action permissions do not constrain managed shell Git/gh.
+
 ## Important durability limitation
 
 The current deployment is intentionally homelab-sized.
