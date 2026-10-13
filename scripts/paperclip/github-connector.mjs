@@ -9,6 +9,8 @@ import fs from 'node:fs';
 import {createHash, randomUUID} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
+import {isDeepStrictEqual} from 'node:util';
+import {canonicalGrowthInstructions} from './growth-runtime-guidance.mjs';
 
 const root='/paperclip/github-connector-2026-10-13';
 const companyNames=['Quinn Favo AI Consulting','Quazmoz Android Development','Quazmoz Growth OS'];
@@ -337,6 +339,126 @@ if(phase==='self-test'){
    }
    write('boundaries.json',{checkedAt:new Date().toISOString(),repositoryIsolation:'All repositories authorized across all companies by Quinn; company identity boundaries remain enforced',checks:output});
    console.log('GITHUB_COMPANY_BOUNDARIES',JSON.stringify(output));
+  }else if(phase==='instructions'){
+   await quiet();
+   const growth=companies.find(c=>c.name==='Quazmoz Growth OS');
+   const agents=await db.select().from(t.agents).where(eq(t.agents.companyId,growth.id));
+   check(agents.length===5,'Expected the existing five Growth OS agents');
+   const {agentInstructionRevisionService}=await import('/app/server/src/services/agent-instruction-revisions.ts');
+   const revisions=agentInstructionRevisionService(db);
+   const before=[],output=[];
+   const instructionActor={type:'board',userId:owner,source:'local_implicit'};
+   for(const agent of agents){
+    const target={companyId:growth.id,agentId:agent.id};
+    const current=await revisions.readCommittedForRuntime(target);
+    check(current?.content?.includes('## Growth OS runtime'),'Growth OS runtime instructions are missing; review before replacement');
+    const content=canonicalGrowthInstructions(current.content);
+    before.push({name:agent.name,...target,...current});
+    // Persist the whole recovery set before the first write; each commit is compare-and-swap.
+    output.push({agent,target,current,content,changed:content!==current.content});
+   }
+   if(!fs.existsSync(`${root}/instructions-recovery.json`))write('instructions-recovery.json',before);
+   const receipts=[];
+   for(const item of output){
+    if(item.changed)await revisions.commit({...item.target,entryFile:item.current.revision.entryFile,baseRevisionId:item.current.revision.id,content:item.content,source:'api'},instructionActor);
+    const after=await revisions.readCommittedForRuntime(item.target);
+    check(after.content===item.content,'Native instruction write did not match the reviewed guidance');
+    receipts.push({name:item.agent.name,agentId:item.agent.id,changed:item.changed,contentHash:after.revision.contentHash});
+    write('instructions.json',{checkedAt:new Date().toISOString(),agents:receipts});
+   }
+   console.log('GROWTH_RUNTIME_INSTRUCTIONS',JSON.stringify(receipts));
+  }else if(phase==='scout-codex'){
+   // Explicit user choice: use the existing Codex subscription for Scout.
+   await quiet();
+   const growth=companies.find(c=>c.name==='Quazmoz Growth OS');
+   const all=await db.select().from(t.agents);
+   const scout=all.find(a=>a.companyId===growth.id&&a.name==='Scout');
+   const iris=all.find(a=>a.companyId===growth.id&&a.name==='Iris');
+   check(scout?.status==='idle'&&iris?.adapterType==='codex_local','Expected idle Scout and the existing Codex reference agent');
+   check(['opencode_local','codex_local'].includes(scout.adapterType),'Scout adapter changed; review before migration');
+   check(iris.runtimeConfig.aiConnection?.method==='subscription'&&iris.runtimeConfig.aiConnection?.provider==='openai','The approved reference is not a Codex subscription');
+   const {aiConnectionService}=await import('/app/server/src/services/ai-connections.ts');
+   const ai=aiConnectionService(db);
+   const reference=await ai.select({companyId:growth.id,agentId:iris.id,userId:owner,adapterType:iris.adapterType,model:iris.adapterConfig.model,binding:iris.runtimeConfig.aiConnection});
+   check(reference.attribution.method==='subscription','Reference selection is metered; no fallback is permitted');
+   const installs=await db.select().from(t.toolConnectionInstalls).where(eq(t.toolConnectionInstalls.connectionId,reference.attribution.connectionId));
+   const config={...scout.adapterConfig,env:{...scout.adapterConfig.env,OPENAI_API_KEY:''}};
+   for(const key of ['model','engine','modelReasoningEffort','permissionMode','nonInteractivePermissions','dangerouslyBypassApprovalsAndSandbox']){
+    if(iris.adapterConfig[key]!==undefined)config[key]=iris.adapterConfig[key];else delete config[key];
+   }
+   const {secretService}=await import('/app/server/src/services/secrets.ts');
+   const persistedConfig=await secretService(db).normalizeAdapterConfigForPersistence(growth.id,config,{adapterType:'codex_local'});
+   const runtimeConfig={...scout.runtimeConfig,aiConnection:{...iris.runtimeConfig.aiConnection}};
+   const changed=scout.adapterType!=='codex_local'||!isDeepStrictEqual(persistedConfig,scout.adapterConfig)||!isDeepStrictEqual(runtimeConfig,scout.runtimeConfig);
+   const before=await protectedState(sql);
+   const [connection]=await githubRows(growth.id);
+   const {createToolGatewayService}=await import('/app/server/src/services/tool-gateway.ts');
+   const gateway=createToolGatewayService(db,{deploymentMode:'authenticated',deploymentExposure:'private'});
+   const access=await gateway.summarizeConnectionAccessForAgent({companyId:growth.id,connectionId:connection.id,agentId:scout.id});
+   if(!fs.existsSync(`${root}/scout-codex-before.json`))write('scout-codex-before.json',{scout,installs,taskSessions:await db.select().from(t.agentTaskSessions).where(eq(t.agentTaskSessions.agentId,scout.id)),runtimeState:await db.select().from(t.agentRuntimeState).where(eq(t.agentRuntimeState.agentId,scout.id)),protectedState:before});
+   const {agentService}=await import('/app/server/src/services/agents.ts');
+   await db.transaction(async tx=>{
+    if(!installs.some(i=>i.targetType==='company'||i.targetType==='agent'&&i.targetId===scout.id))await toolAccessService(tx).putConnectionInstalls(reference.attribution.connectionId,{installs:[...installs.map(i=>({targetType:i.targetType,targetId:i.targetId})),{targetType:'agent',targetId:scout.id}]},actor);
+    if(changed)await agentService(tx).update(scout.id,{adapterType:'codex_local',adapterConfig:persistedConfig,runtimeConfig},{recordRevision:{createdByUserId:owner,source:'user_authorized_scout_codex_repair'}});
+   });
+   const [saved]=await db.select().from(t.agents).where(eq(t.agents.id,scout.id));
+   const selected=await ai.select({companyId:growth.id,agentId:scout.id,userId:owner,adapterType:saved.adapterType,model:saved.adapterConfig.model,binding:saved.runtimeConfig.aiConnection});
+   check(selected.attribution.method==='subscription'&&selected.attribution.connectionId===reference.attribution.connectionId,'Scout did not select the existing approved subscription');
+   const fresh=await db.select().from(t.agents);
+   check(hash(fresh.filter(a=>a.id!==scout.id))===hash(all.filter(a=>a.id!==scout.id)),'Another agent changed during migration');
+   const after=await protectedState(sql);
+   for(const table of ['companies','issues','routines','projects','project_workspaces','execution_workspaces'])check(before.fingerprints[table]===after.fingerprints[table],`Unexpected ${table} mutation`);
+   const nextAccess=await gateway.summarizeConnectionAccessForAgent({companyId:growth.id,connectionId:connection.id,agentId:scout.id});
+   check(hash(access.tools)===hash(nextAccess.tools),'Scout GitHub permissions changed during adapter migration');
+   const {prepareManagedAiRuntime}=await import('/app/server/src/services/ai-connection-runtime.ts');
+   const {requireServerAdapter}=await import('/app/server/src/adapters/registry.ts');
+   let managed,environment;
+   try{
+    managed=await prepareManagedAiRuntime(db,{companyId:growth.id,agentId:scout.id,responsibleUserId:owner,adapterType:saved.adapterType,binding:saved.runtimeConfig.aiConnection,config:saved.adapterConfig});
+    environment=await requireServerAdapter(saved.adapterType).testEnvironment({companyId:growth.id,adapterType:saved.adapterType,config:managed.config,executionTarget:null,environmentName:'Paperclip local pod'});
+    check(environment.status!=='fail','Scout Codex environment failed; retain recovery and repair before retrying the task');
+   }finally{await managed?.cleanup?.();}
+   const receipt={checkedAt:new Date().toISOString(),agentId:scout.id,adapter:saved.adapterType,model:saved.adapterConfig.model,engine:saved.adapterConfig.engine,method:selected.attribution.method,connectionId:selected.attribution.connectionId,changed,githubPoliciesUnchanged:true,taskHistoryUnchanged:true,environment:{status:environment.status,checks:environment.checks.map(c=>({code:c.code,level:c.level}))},actualTaskTurn:false};
+   write('scout-codex.json',receipt);console.log('SCOUT_CODEX_CONFIGURED',JSON.stringify(receipt));
+  }else if(phase==='scout-resume'){
+   // Quinn explicitly requested the source-owner decision and standard Scout execution.
+   // Answer the live human question; the existing server owns delivery and wake admission.
+   const issueId='8b8859e3-72cd-454f-9da2-ae7a55e77f80';
+   const interactionId='a96756a7-b11f-4249-877d-fe72b3b84ae9';
+   const scoutId='86db209e-89d6-4149-977b-a3826d817182';
+   const growth=companies.find(c=>c.name==='Quazmoz Growth OS');
+   const [issue]=await db.select().from(t.issues).where(and(eq(t.issues.id,issueId),eq(t.issues.companyId,growth.id)));
+   const [interaction]=await db.select().from(t.issueThreadInteractions).where(and(eq(t.issueThreadInteractions.id,interactionId),eq(t.issueThreadInteractions.issueId,issueId)));
+   check(issue?.identifier==='QUAA-26'&&issue.assigneeAgentId===scoutId&&issue.responsibleUserId===owner,'Source task ownership changed; do not authorize another owner');
+   check(interaction?.kind==='ask_user_questions'&&interaction.effectiveResolverPolicy==='human_only'&&interaction.continuationPolicy==='wake_assignee','Expected the recorded human-only source-owner decision');
+   check(interaction.payload.questions.length===1&&interaction.payload.questions[0].id==='source_execution_path','The pending decision changed; review the new question');
+   const answer='Source-owner decision from Quinn: authorize one standard consulting execution of QUAA-26 by Scout, retaining ownership and all existing approval gates. The historical board recovery notice is resolved and the later agent-owned repair action is cancelled; do not call the stale recovery-resolution route or perform another disposition-only repair pass. Use the existing Codex subscription and the native Paperclip GitHub connector to read the canonical job contract, ICP, watchlist, template and schema. Follow the original task description: review at most about 10 current public candidate sources; deliver one evidence-linked qualified consulting signal or a justified no-op, with Fact/Inference/Hypothesis labels and permalink receipts. Save the consulting-brief issue document on QUAA-26, read it back, add the required short completion comment on this task, then record its final outcome through native task APIs. Do not write to the shared checkout or repository, create branches/commits/PRs/GitHub comments, send outreach, publish, spend, change schedules, or widen permissions. Public eligible evidence only; retain all existing privacy and hosted-model rules. Report genuine missing inputs precisely. A completed brief or justified no-op with stated gaps is done, not a parked recovery summary.';
+   if(interaction.status==='answered'){
+    check(interaction.resolvedByUserId===owner&&interaction.result?.answers?.[0]?.otherText===answer,'This decision already has a different answer; preserve it');
+    console.log('SCOUT_SOURCE_DECISION_NOOP');
+   }else{
+    check(interaction.status==='pending'&&issue.status==='in_review','Source state changed; do not reopen or replace an existing result');
+    await quiet();
+    const {issueService}=await import('/app/server/src/services/issues.ts');
+    const {issueRecoveryActionService}=await import('/app/server/src/services/issue-recovery-actions.ts');
+    const {issueThreadInteractionService}=await import('/app/server/src/services/issue-thread-interactions.ts');
+    const {logActivity}=await import('/app/server/src/services/activity-log.ts');
+    const recovery=issueRecoveryActionService(db);
+    check(!await recovery.getActiveForIssue(growth.id,issueId),'A new recovery action is active; do not bypass its gates');
+    check((await issueService(db).getDependencyReadiness(issueId)).unresolvedBlockerCount===0,'The source task has unresolved dependencies');
+    const memberships=await db.select().from(t.companyMemberships).where(and(eq(t.companyMemberships.companyId,growth.id),eq(t.companyMemberships.principalType,'user'),eq(t.companyMemberships.principalId,owner),eq(t.companyMemberships.status,'active')));
+    check(memberships.length===1,'The recorded source owner is not an active member');
+    if(!fs.existsSync(`${root}/scout-resume-before.json`))write('scout-resume-before.json',{issue,interaction,recoveryActions:await db.select().from(t.issueRecoveryActions).where(eq(t.issueRecoveryActions.sourceIssueId,issueId))});
+    const answered=await issueThreadInteractionService(db).answerQuestions(issue,interactionId,{answers:[{questionId:'source_execution_path',optionIds:[],otherText:answer}],summaryMarkdown:answer},{userId:owner,resolverPolicyRestriction:'human_only'},{beforeResolveInTransaction:async tx=>{
+     const [current]=await tx.select().from(t.issues).where(and(eq(t.issues.id,issueId),eq(t.issues.companyId,growth.id))).for('update');
+     check(current?.statusVersion===issue.statusVersion&&current.assigneeAgentId===scoutId&&current.responsibleUserId===owner,'Task changed before the source decision committed; refresh it');
+     check(!await recovery.getActiveForIssue(growth.id,issueId,tx),'Another recovery action appeared before the decision committed');
+    }});
+    check(answered.status==='answered','The native source-owner answer was not committed');
+    await logActivity(db,{companyId:growth.id,actorType:'user',actorId:owner,action:'issue.thread_interaction_answered',entityType:'issue',entityId:issueId,details:{interactionId,interactionKind:answered.kind,interactionStatus:answered.status,source:'user_authorized_native_operator',resolutionActorKind:'user',answeredQuestionCount:1,ownershipChanged:false,approvalGatesChanged:false}});
+    write('scout-resume.json',{checkedAt:new Date().toISOString(),issueId,interactionId,assigneeAgentId:scoutId,answer,answerHash:hash(answer),sourceOwnerDecision:'explicitly authorized by Quinn',nativeResponseOutbox:true,execution:'standard consulting task',ownershipChanged:false,approvalGatesChanged:false});
+    console.log('SCOUT_SOURCE_DECISION_RECORDED',JSON.stringify({issueId,interactionId,assigneeAgentId:scoutId,status:answered.status,nativeResponseOutbox:true}));
+   }
   }else if(phase==='workspace'){
    await quiet();check(fs.existsSync(`${root}/recovery.json`),'Run preserve first');
    const growth=companies.find(c=>c.name==='Quazmoz Growth OS');
@@ -524,7 +646,7 @@ if(phase==='self-test'){
    }
    write('authorization.json',output);console.log('GITHUB_OWNER_AUTHORIZATION',JSON.stringify(output));
   }else{
-   throw new OperatorError('Choose inspect, preserve, prepare, authorize, reconcile, permissions, reads, cross-reads, boundaries, workspace, verify, write-stage, write, merge, or self-test');
+   throw new OperatorError('Choose inspect, preserve, prepare, authorize, reconcile, permissions, reads, cross-reads, boundaries, instructions, scout-codex, scout-resume, workspace, verify, write-stage, write, merge, or self-test');
   }
  }catch(error){
   // Provider messages and stack traces can contain credentials; retain safe codes only.
