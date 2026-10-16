@@ -17,13 +17,20 @@ Private Apply OS runtime ([source](https://github.com/Quazmoz/apply-os), `docs/R
 - Server dry-run: Namespace and PV accepted. The namespaced objects were accepted when dry-run against `apps`, because the `apply-os` namespace doesn't exist yet.
 - Flux `apps` had applied `main@818c057` (Ready). Paperclip was at generation 16 with 1 restart, and was neither touched nor affected.
 
-## Activation gates (all required)
+## Activation (2026-10-16)
 
-1. Publish `ghcr.io/quazmoz/apply-os:0.4.0` with the apply-os **Apply OS Image** workflow (manual dispatch, tag `0.4.0`); it stays a **private** package. Add a SOPS-encrypted pull secret and reference it from the Deployment and both CronJobs.
-2. On the HP node: `/mnt/k8s-data/apply-os` on an **encrypted** filesystem, owned by `10001:10001`, mode 0700.
-3. Create `apply-os-tls` the same way as `paperclip-tls`, and add `apply-os.k8s.local` to local DNS.
-4. Add `- ./apply-os` to `apps/base/kustomization.yaml`, run `kubectl kustomize apps/base` and a server dry-run, and confirm Paperclip's rendered manifest is unchanged.
-5. After rollout, create the first account with `kubectl -n apply-os exec -it deploy/apply-os -- python -m apply_os.web create-account <email>`.
-6. Real applicant data stays blocked until the `docs/RUNTIME.md` "Before real applicant data" list, including an off-node encrypted backup and a tested restore, is done.
+No registry, pull secret or GitHub Actions: the pods are pinned to `quinn-hpprobook430g6`, so the image only has to exist in that node's containerd.
 
-Rollback: remove the line from step 4. Flux prunes everything except the Retain PV and its data.
+1. Image. Build on the Mac and import on the HP node (re-run for each new tag):
+   `docker build --platform linux/amd64 -t ghcr.io/quazmoz/apply-os:<tag> <apply-os checkout>`
+   `docker save ghcr.io/quazmoz/apply-os:<tag> | ssh homelab-worker sudo ctr -n k8s.io images import -`
+2. Data folder on the HP node: `sudo install -d -o 10001 -g 10001 -m 0700 /mnt/k8s-data/apply-os`.
+   ponytail: plain ext4 (the node's disk is not encrypted), so anyone holding the laptop can read it. Upgrade path: fscrypt on this directory, plus an off-node encrypted backup.
+3. `- ./apply-os` in `apps/base/kustomization.yaml`; Flux applies it. Paperclip's rendered manifest is unchanged.
+4. TLS: a self-signed `apply-os-tls`, the same as `paperclip-tls`:
+   `openssl req -x509 -newkey rsa:2048 -nodes -days 3650 -subj /CN=apply-os.k8s.local -addext subjectAltName=DNS:apply-os.k8s.local -keyout k.pem -out c.pem && kubectl -n apply-os create secret tls apply-os-tls --cert c.pem --key k.pem`
+5. DNS: add `apply-os.k8s.local` to the `192.168.8.40` line in `/etc/hosts`.
+6. First account: `kubectl -n apply-os exec -it deploy/apply-os -- python -m apply_os.web create-account <email>`.
+   Agent token: `kubectl -n apply-os exec deploy/apply-os -- python -m apply_os.web create-api-token <email>`, stored as the Paperclip APP secret `APPLY_OS_API_TOKEN`.
+
+Rollback: remove the line from step 3. Flux prunes everything except the Retain PV and its data.

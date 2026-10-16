@@ -23,6 +23,7 @@ resources:
   - ./openwebui
   - ./searxng  # Private metasearch backend for AI assistants
   - ./changedetection  # Growth OS page-change triggers (internal + k8s.local UI)
+  - ./apply-os  # Private job-search runtime + pipeline worker (HP node)
   - ./pgadmin
 #  - ./llamafactory # Temporarily disabled to save RAM
 #  - ./uptime-kuma  # Removed - not needed
