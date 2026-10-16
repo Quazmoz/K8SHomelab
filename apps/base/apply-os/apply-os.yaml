@@ -270,3 +270,22 @@ spec:
       ports:
         - {port: 443, protocol: TCP}
         - {port: 80, protocol: TCP}
+---
+# Paperclip's Apply-OS agents call the bearer-token API (apply-os ADR-010). Paperclip manifests are untouched.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-paperclip-api
+  namespace: apply-os
+spec:
+  podSelector:
+    matchLabels: {app: apply-os}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: apps}
+          podSelector:
+            matchLabels: {app: paperclip}
+      ports:
+        - {port: 8080, protocol: TCP}

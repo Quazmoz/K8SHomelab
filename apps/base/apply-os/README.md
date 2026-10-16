@@ -7,6 +7,7 @@ Private Apply OS runtime ([source](https://github.com/Quazmoz/apply-os), `docs/R
 - Own `apply-os` namespace with Pod Security `restricted`. Non-root UID 10001, read-only root filesystem, no capabilities, no service-account token.
 - NetworkPolicy: default-deny ingress and egress. Port 8080 is reachable only from `ingress-nginx`. The web pod has no egress.
 - `apply-os-pipeline` CronJob (hourly, `backoffLimit: 0`, 1.5 Gi limit) discovers jobs, reads application forms with headless Chromium and submits **only jobs the applicant approved and queued** in the web UI ([pipeline](https://github.com/Quazmoz/apply-os/blob/main/docs/PIPELINE.md)). Its pods alone get egress: cluster DNS plus public 80/443, with private, link-local and CGNAT ranges excluded.
+- The Paperclip pod (`apps`, `app: paperclip`) may call the web pod's bearer-token API on 8080 (apply-os ADR-010).
 - Pinned to `quinn-hpprobook430g6` (24% CPU and 52% memory used at baseline). It shares nothing with Paperclip on `orangepi6plus`: no service, PVC, database or secret. Requests 25m/64Mi, limits 500m/256Mi.
 - Dedicated 2 Gi local PV; single SQLite writer with `Recreate`. Nightly online backup CronJob with 7-day rotation **on the same volume**.
 
