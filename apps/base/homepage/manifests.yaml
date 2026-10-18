@@ -76,6 +76,11 @@ data:
         style: row
         columns: 4
         tab: Cluster
+      Platform Services:
+        icon: mdi-server-network
+        style: row
+        columns: 3
+        tab: Cluster
 
   services.yaml: |-
     - Growth OS:
@@ -102,6 +107,10 @@ data:
             description: Page-change triggers for Growth OS
             siteMonitor: http://changedetection.apps.svc.cluster.local:5000/
             statusStyle: dot
+        - n8n Sandbox:
+            href: https://github.com/Quazmoz/K8SHomelab/tree/main/apps/base/n8n-sandbox
+            icon: mdi-cube-outline
+            description: Internal execution sandbox (source; no public UI)
     - Growth OS Storage:
         - Dedicated data total:
             href: http://grafana.k8s.local/d/storage/storage?orgId=1
@@ -216,36 +225,12 @@ data:
             description: LLM Chat Interface
             siteMonitor: http://openwebui.apps.svc.cluster.local:8080
             statusStyle: dot
-        - LLaMA Factory:
-            href: http://llamafactory.k8s.local
-            icon: mdi-tune-vertical
-            description: LLM Fine-Tuning
-            siteMonitor: http://llamafactory.apps.svc.cluster.local:7860/
-            statusStyle: dot
         - Qdrant:
             href: http://qdrant.k8s.local/dashboard
             icon: mdi-vector-combine
             description: Vector Database
             siteMonitor: http://qdrant.apps.svc.cluster.local:6333
             statusStyle: dot
-        - FreshRSS:
-            href: http://freshrss.k8s.local
-            icon: si-rss
-            description: RSS Intelligence
-            siteMonitor: http://freshrss.apps.svc.cluster.local:80
-            statusStyle: dot
-        - LibreChat:
-            href: http://librechat.k8s.local
-            icon: mdi-chat-processing
-            description: Alt LLM Interface
-            siteMonitor: http://librechat.apps.svc.cluster.local:3080
-            statusStyle: dot
-    #    - Jupyter:
-    #        href: http://jupyter.k8s.local
-    #        icon: si-jupyter
-    #        description: Python Notebooks
-    #        siteMonitor: http://jupyter-svc.apps.svc.cluster.local:8888
-    #        statusStyle: dot
         - Phoenix:
             href: http://phoenix.k8s.local
             icon: mdi-chart-timeline-variant
@@ -258,19 +243,24 @@ data:
             description: Autonomous AI Agent
             siteMonitor: http://openclaw.apps.svc.cluster.local:18789/
             statusStyle: dot
-        - Hermes:
-            href: https://hermes.k8s.local
-            icon: mdi-head-snowflake-outline
-            description: Hermes AI Agent
-            siteMonitor: http://hermes-agent.apps.svc.cluster.local:9119/
-            statusStyle: dot
-
     - MCP Tools:
         - Context Forge:
             href: http://mcp.k8s.local
             icon: mdi-connection
             description: MCP Gateway & Admin
             siteMonitor: http://context-forge.apps.svc.cluster.local:4444/health
+            statusStyle: dot
+        - MCPO Gateway:
+            href: http://mcpo.k8s.local/docs
+            icon: mdi-api
+            description: MCP-to-OpenAPI proxy (LAN access; no ingress auth)
+            siteMonitor: http://mcpo.apps.svc.cluster.local:8000/openapi.json
+            statusStyle: dot
+        - Azure MCP:
+            href: http://mcp.k8s.local
+            icon: mdi-microsoft-azure
+            description: Internal Azure integration (manage in Context Forge)
+            siteMonitor: http://azure-mcp-go.apps.svc.cluster.local:8080/health
             statusStyle: dot
         - GroupMe MCP:
             href: http://groupme.k8s.local
@@ -279,10 +269,9 @@ data:
             siteMonitor: http://groupme-backend.apps.svc.cluster.local:5000/health
             statusStyle: dot
         - ClickUp MCP:
+            href: http://mcp.k8s.local
             icon: mdi-checkbox-marked-circle
-            description: ClickUp Integration
-            siteMonitor: http://clickup-mcp-server.apps.svc.cluster.local:5000
-            statusStyle: dot
+            description: Internal ClickUp integration (TCP health only)
         - Kubernetes MCP:
             href: http://mcpo.k8s.local/kubernetes/docs
             icon: si-kubernetes
@@ -298,12 +287,6 @@ data:
 
     - DevOps:
 
-        - Jenkins:
-            href: http://jenkins.k8s.local
-            icon: jenkins.png
-            description: CI/CD Pipelines
-            siteMonitor: http://jenkins.apps.svc.cluster.local:8080
-            statusStyle: dot
         - Grafana:
             href: http://grafana.k8s.local
             icon: grafana.png
@@ -325,6 +308,10 @@ data:
             description: Log Aggregation
             siteMonitor: http://loki.apps.svc.cluster.local:3100/ready
             statusStyle: dot
+        - Grafana Alloy:
+            href: http://grafana.k8s.local/explore
+            icon: mdi-pipe
+            description: Metrics and telemetry collector (view in Grafana)
 
     - Operations:
         - pgAdmin:
@@ -337,14 +324,41 @@ data:
             href: http://redisinsight.k8s.local
             icon: si-redis
             description: Redis Admin
-            siteMonitor: http://redis-insight.apps.svc.cluster.local:5540
+            siteMonitor: http://redisinsight.apps.svc.cluster.local:5540/api/health
             statusStyle: dot
-        - Mongo Express:
-            href: http://mongo-express.k8s.local
-            icon: si-mongodb
-            description: MongoDB Admin
-            siteMonitor: http://mongo-express.apps.svc.cluster.local:8081
-            statusStyle: dot
+        - PostgreSQL:
+            href: http://pgadmin.k8s.local
+            icon: si-postgresql
+            description: Internal database (opens pgAdmin; no HTTP status)
+        - Redis:
+            href: http://redisinsight.k8s.local
+            icon: si-redis
+            description: Internal cache (opens RedisInsight; no HTTP status)
+    - Platform Services:
+        - Flux CD:
+            href: https://github.com/Quazmoz/K8SHomelab/tree/main/clusters/my-homelab
+            icon: mdi-source-branch
+            description: GitOps reconciliation (source; no web UI)
+        - NGINX Ingress:
+            href: https://github.com/Quazmoz/K8SHomelab/tree/main/apps/base/ingress-nginx
+            icon: mdi-router-network
+            description: Cluster HTTP ingress (source; no web UI)
+        - MetalLB:
+            href: https://github.com/Quazmoz/K8SHomelab/tree/main/apps/base/metallb-system
+            icon: mdi-lan
+            description: LAN service IP advertisement (source; no web UI)
+        - metrics-server:
+            href: https://github.com/Quazmoz/K8SHomelab/tree/main/apps/base/metrics-server
+            icon: mdi-chart-areaspline
+            description: Kubernetes resource metrics (source; no web UI)
+        - Sysbox:
+            href: https://github.com/Quazmoz/K8SHomelab/tree/main/apps/base/sysbox
+            icon: mdi-shield-check-outline
+            description: Isolated sandbox container runtime (source; no web UI)
+        - PostgreSQL Backups:
+            href: https://github.com/Quazmoz/K8SHomelab/tree/main/apps/base/backups
+            icon: mdi-backup-restore
+            description: Daily backup CronJob (source; no live job status)
 
     - Kubernetes Cluster:
         - Apps Workloads:
@@ -653,7 +667,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v39-growth-os-storage"
+        checksum/config: "v40-inventory-20261018"
     spec:
       serviceAccountName: homepage
       nodeSelector:
