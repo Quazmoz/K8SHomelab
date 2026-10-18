@@ -24,9 +24,9 @@ Central dashboard providing visibility into all homelab services with health mon
 
 ## Key Configuration
 
-- **RBAC:** ClusterRole with wide read access to pods, deployments, services, ingresses, nodes, etc.
+- **RBAC:** Read-only ClusterRole for pods, nodes, services, namespaces, ingresses, and node/pod metrics (not deployments or secrets).
 - **ConfigMap (`homepage-config`):** Contains `settings.yaml`, `services.yaml`, `widgets.yaml`, `bookmarks.yaml`, `kubernetes.yaml`, `custom.css`, `custom.js`
-- **Service list** in ConfigMap includes siteMonitor URLs for all services
+- **Service list** has HTTP `siteMonitor` URLs only where a meaningful HTTP endpoint exists; TCP-only and internal platform cards are informational.
 - Config is loaded into an emptyDir volume via init container, not directly from PVC
 - **Tabs:** `Applications` contains Growth OS (n8n, Paperclip, SearXNG, changedetection.io, n8n Sandbox), active AI/MCP, DevOps, data operations, and portfolio; `Cluster` contains Kubernetes workload/storage health, internal platform service source links, and discovered tools
 - **Kubernetes summaries:** Blank `podSelector` values aggregate all pods in the `apps` and `kube-system` namespaces
@@ -34,13 +34,13 @@ Central dashboard providing visibility into all homelab services with health mon
 
 ## Dependencies
 
-- **Depends on:** All services (monitors via siteMonitor), metrics-server (for cluster resource widgets)
+- **Depends on:** Kubernetes API and metrics-server for cluster widgets; Prometheus for metrics summaries. HTTP service checks are informational, not startup dependencies.
 - **Depended on by:** Nothing (end-user UI)
 
 ## Modification Notes
 
 - When adding a new service to the homelab, add an entry to `services.yaml` section of the ConfigMap in `manifests.yaml`
-- The manifests.yaml is a single large file (~650 lines) containing ALL resources — be careful with edits
+- The manifests.yaml is a single large file (~800 lines) containing ALL Homepage resources — be careful with edits
 - Dashboard sections: Growth OS, Growth OS Storage, AI & LLM, MCP Tools, DevOps, Operations, Admin, Portfolio, Kubernetes Cluster, Cluster Tools, Platform Services
 - Widget configuration provides cluster CPU/memory stats from metrics-server
 - Keep new application groups on the `Applications` tab unless they are cluster-operational views; put cluster-operational groups on the `Cluster` tab

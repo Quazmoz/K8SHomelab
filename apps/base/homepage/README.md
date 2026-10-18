@@ -29,7 +29,7 @@ Homepage is split into two tabs so the dashboard can grow without becoming one l
 | Applications | MCP Tools | Context Forge, MCPO Gateway, Azure, GroupMe, ClickUp, Kubernetes, and Postgres MCP endpoints |
 | Applications | DevOps | Grafana, Prometheus, Loki, Grafana Alloy |
 | Applications | Operations | pgAdmin, RedisInsight, PostgreSQL and Redis backends |
-| Applications | Admin | Auto-discovered cluster administration services such as Authentik |
+| Applications | Admin | Reserved for ingress-discovered administration tools when enabled |
 | Applications | Portfolio | Personal and professional links |
 | Cluster | Kubernetes Cluster | Apps/system pod status and resources, pod health metrics, and PVC/storage metrics |
 | Cluster | Cluster Tools | Auto-discovered ingress-backed cluster services (if present) |
@@ -53,7 +53,7 @@ Production check on 2026-09-30: the rendered dashboard showed n8n `64.5 MB`, cha
 - Uses ServiceAccount with cluster-wide read RBAC to discover Kubernetes resources
 - Config is mounted via ConfigMap (settings, services, widgets, bookmarks, CSS/JS)
 - Uses `emptyDir` + init container pattern for config initialization
-- Monitors HTTP services with verified `siteMonitor` endpoints; internal TCP-only services and infrastructure cards deliberately have no HTTP status dot
+- Monitors HTTP services through declared `siteMonitor` endpoints; internal TCP-only services and infrastructure cards deliberately have no HTTP status dot
 - Uses Homepage's Kubernetes pod integration for namespace-level status, CPU, and memory
 - Uses the Prometheus Metric widget for pod phase/readiness/restarts and PVC capacity/usage
 - Uses Homepage layout tabs (`Applications` and `Cluster`) to keep the dashboard compact
@@ -62,10 +62,10 @@ Production check on 2026-09-30: the rendered dashboard showed n8n `64.5 MB`, cha
 
 ```bash
 # Check pod
-kubectl get pods -n apps -l app=homepage
+kubectl get pods -n apps -l app.kubernetes.io/name=homepage
 
 # View logs
-kubectl logs -n apps -l app=homepage --tail=50
+kubectl logs -n apps deploy/homepage --tail=50
 
 # Check service monitors
 # Visit http://homepage.k8s.local and look for red status indicators
