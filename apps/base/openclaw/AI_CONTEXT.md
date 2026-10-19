@@ -10,7 +10,8 @@ OpenClaw runs as an autonomous agent service in the `apps` namespace and is expo
 - TLS is enabled at ingress for secure-context browser requirements.
 - `HOME` is explicitly set to `/home/user` so that OpenClaw's memory workspace (`~/.openclaw/workspace/`) resolves to the PVC mount, not ephemeral storage.
 - `NPM_CONFIG_CACHE` points to `/home/user/.openclaw/npm-cache` so non-root startup plugin migrations can use the writable PVC.
-- Deployment image is pinned to `ghcr.io/openclaw/openclaw:2026.9.5-arm64` (latest verified ARM64 release).
+- Both the gateway and migration init container use `ghcr.io/openclaw/openclaw:2026.10.5-arm64`, pinned to ARM64 manifest `sha256:31a4b7eb2bb9574527a1e46b2208e1b653f060753dd36fe3da444f79a7d03f0c`. OCI revision matches the official release commit `1b58cb9a1b4f4353e1add63c8506db4d890962e8`.
+- Preserve the private pre-upgrade recovery archive before state migrations. An image rollback alone does not reverse schema changes. See the [October 19 resource investigation](../../../docs/CLUSTER_HEALTH_2026-10-19.md).
 
 ## Memory System
 - Provider: `local` (on-device embeddings via node-llama-cpp, no external API needed)

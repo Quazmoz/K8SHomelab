@@ -169,7 +169,7 @@ spec:
       # run itself ("run openclaw doctor --fix"). Apply the safe ones before
       # start; the gateway still refuses to boot if one is left pending.
       - name: migrate-openclaw
-        image: ghcr.io/openclaw/openclaw:2026.9.5-arm64
+        image: ghcr.io/openclaw/openclaw:2026.10.5-arm64@sha256:31a4b7eb2bb9574527a1e46b2208e1b653f060753dd36fe3da444f79a7d03f0c
         imagePullPolicy: IfNotPresent
         command: ["node", "/app/openclaw.mjs", "doctor", "--fix", "--non-interactive"]
         env:
@@ -194,7 +194,7 @@ spec:
             memory: 2Gi
       containers:
       - name: openclaw
-        image: ghcr.io/openclaw/openclaw:2026.9.5-arm64
+        image: ghcr.io/openclaw/openclaw:2026.10.5-arm64@sha256:31a4b7eb2bb9574527a1e46b2208e1b653f060753dd36fe3da444f79a7d03f0c
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 18789

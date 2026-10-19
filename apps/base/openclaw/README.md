@@ -6,13 +6,25 @@ OpenClaw is an autonomous AI agent that can execute tasks, orchestrate tools, an
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `ghcr.io/openclaw/openclaw:2026.9.5-arm64` (pinned to latest verified ARM64 release) |
+| **Image** | `ghcr.io/openclaw/openclaw:2026.10.5-arm64` (ARM64 manifest digest pinned in the Deployment) |
 | **Node** | `orangepi6plus` (with control-plane toleration) |
 | **Gateway Port** | `18789` (WebSocket) |
 | **Canvas Port** | `18793` (HTTP) |
 | **Storage** | 5Gi PV on `/mnt/k8s-data/openclaw` |
 | **Memory** | 1Gi request / 6Gi limit |
 | **CPU** | 200m request / 2000m limit |
+
+**Fact:** Both the migration init container and gateway use the official
+[2026.10.5 release](https://github.com/openclaw/openclaw/releases/tag/v2026.10.5),
+published October 18, 2026. The Linux ARM64 manifest is pinned to
+`sha256:31a4b7eb2bb9574527a1e46b2208e1b653f060753dd36fe3da444f79a7d03f0c`;
+its OCI source revision matches release commit
+`1b58cb9a1b4f4353e1add63c8506db4d890962e8`.
+
+The [October 19 investigation](../../../docs/CLUSTER_HEALTH_2026-10-19.md)
+records the resource regression that prompted this update. Preserve the
+pre-upgrade recovery archive before running state migrations. Reverting the
+image alone does not reverse database migrations.
 
 ## Security
 
