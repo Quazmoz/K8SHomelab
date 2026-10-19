@@ -225,11 +225,29 @@ data:
             description: LLM Chat Interface
             siteMonitor: http://openwebui.apps.svc.cluster.local:8080
             statusStyle: dot
+        - LLaMA Factory:
+            href: http://llamafactory.k8s.local
+            icon: mdi-tune-vertical
+            description: Paused — LLM fine-tuning (disabled in GitOps to save RAM)
+            siteMonitor: http://llamafactory.apps.svc.cluster.local:7860/
+            statusStyle: dot
         - Qdrant:
             href: http://qdrant.k8s.local/dashboard
             icon: mdi-vector-combine
             description: Vector Database
             siteMonitor: http://qdrant.apps.svc.cluster.local:6333
+            statusStyle: dot
+        - FreshRSS:
+            href: http://freshrss.k8s.local
+            icon: si-rss
+            description: Paused — RSS intelligence (disabled in GitOps to save RAM)
+            siteMonitor: http://freshrss.apps.svc.cluster.local:80
+            statusStyle: dot
+        - LibreChat:
+            href: http://librechat.k8s.local
+            icon: mdi-chat-processing
+            description: Paused — alternate LLM interface (disabled in GitOps to save RAM)
+            siteMonitor: http://librechat.apps.svc.cluster.local:3080
             statusStyle: dot
         - Phoenix:
             href: http://phoenix.k8s.local
@@ -242,6 +260,13 @@ data:
             icon: mdi-robot-outline
             description: Autonomous AI Agent
             siteMonitor: http://openclaw.apps.svc.cluster.local:18789/
+            statusStyle: dot
+
+        - Hermes:
+            href: https://hermes.k8s.local
+            icon: mdi-head-snowflake-outline
+            description: Paused — Hermes AI agent (0 replicas in GitOps)
+            siteMonitor: http://hermes-agent.apps.svc.cluster.local:9119/
             statusStyle: dot
     - MCP Tools:
         - Context Forge:
@@ -287,6 +312,12 @@ data:
 
     - DevOps:
 
+        - Jenkins:
+            href: http://jenkins.k8s.local
+            icon: jenkins.png
+            description: Paused — CI/CD pipelines (disabled in GitOps to save RAM)
+            siteMonitor: http://jenkins.apps.svc.cluster.local:8080
+            statusStyle: dot
         - Grafana:
             href: http://grafana.k8s.local
             icon: grafana.png
@@ -325,6 +356,12 @@ data:
             icon: si-redis
             description: Redis Admin
             siteMonitor: http://redisinsight.apps.svc.cluster.local:5540/api/health
+            statusStyle: dot
+        - Mongo Express:
+            href: http://mongo-express.k8s.local
+            icon: si-mongodb
+            description: Paused — MongoDB admin (MongoDB disabled in GitOps)
+            siteMonitor: http://mongo-express.apps.svc.cluster.local:8081
             statusStyle: dot
         - PostgreSQL:
             href: http://pgadmin.k8s.local
@@ -667,7 +704,7 @@ spec:
         app.kubernetes.io/name: homepage
       annotations:
         # Force pod restart when ConfigMap changes
-        checksum/config: "v40-inventory-20261018"
+        checksum/config: "v41-restore-paused-20261019"
     spec:
       serviceAccountName: homepage
       nodeSelector:

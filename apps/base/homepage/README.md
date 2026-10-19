@@ -25,10 +25,10 @@ Homepage is split into two tabs so the dashboard can grow without becoming one l
 |-----|----------|----------|
 | Applications | Growth OS | n8n, Paperclip, SearXNG, changedetection.io, n8n Sandbox (internal runtime) |
 | Applications | Growth OS Storage | Actual directory bytes for three dedicated PVCs, plus shared backing-disk free space |
-| Applications | AI & LLM | OpenWebUI, Qdrant, Phoenix, OpenClaw |
+| Applications | AI & LLM | OpenWebUI, Qdrant, Phoenix, OpenClaw; paused: LLaMA Factory, FreshRSS, LibreChat, Hermes |
 | Applications | MCP Tools | Context Forge, MCPO Gateway, Azure, GroupMe, ClickUp, Kubernetes, and Postgres MCP endpoints |
-| Applications | DevOps | Grafana, Prometheus, Loki, Grafana Alloy |
-| Applications | Operations | pgAdmin, RedisInsight, PostgreSQL and Redis backends |
+| Applications | DevOps | Grafana, Prometheus, Loki, Grafana Alloy; paused: Jenkins |
+| Applications | Operations | pgAdmin, RedisInsight, PostgreSQL and Redis backends; paused: Mongo Express |
 | Applications | Admin | Reserved for ingress-discovered administration tools when enabled |
 | Applications | Portfolio | Personal and professional links |
 | Cluster | Kubernetes Cluster | Apps/system pod status and resources, pod health metrics, and PVC/storage metrics |
@@ -77,8 +77,10 @@ kubectl -n apps port-forward svc/prometheus-server 9090:80
 
 ## Inventory authority and deployment
 
-The dashboard is an inventory of components **enabled in `apps/base/kustomization.yaml`**, not a claim that every pod is healthy right now. The actual cluster and Prometheus cards are the runtime evidence. The list intentionally omits disabled AWX, Jenkins, Authentik, FreshRSS, LLaMA Factory, LibreChat, Coder, Jupyter, MongoDB, Mongo Express and Uptime Kuma. Hermes Agent is declared but scaled to zero by the top-level `replicas` override; Apply OS is not in the active Kustomization. Suspended MongoDB backups are not presented as active backups.
+Homepage is a **persistent service inventory**, not only a list of currently running workloads. **Do not remove a card merely because its deployment is disabled, scaled to zero, stopped or temporarily unhealthy.** The six previously listed cards for LLaMA Factory, FreshRSS, LibreChat, Hermes, Jenkins and Mongo Express remain visible in their original categories with a `Paused` description and their original HTTP `siteMonitor` checks. The resulting unavailable indicator is expected while paused, not evidence of an unexpected failure. They retain their UI links for future reactivation. If one is re-enabled, update its description rather than deleting the card.
+
+`apps/base/kustomization.yaml` is authoritative for **desired deployment state**, not Homepage visibility. Hermes is included but scaled to zero through the root `replicas` override; the other five are commented out to save resources or because MongoDB is disabled. The dashboard does not claim that an HTTP card is serving traffic merely because it is listed. Cluster/Prometheus views provide live workload evidence. Add newly adopted services deliberately; remove permanently retired services only with an explicit inventory decision. Other currently unlisted or retired resources (including AWX, Authentik, Coder, Jupyter, MongoDB, Uptime Kuma and Apply OS) are not automatically added or activated by this fix. Suspended MongoDB backups are not presented as active backups.
 
 Cards with a `k8s.local` link open a service UI. Source links to this GitHub repository represent internal-only services without a user-facing UI; they are **not** availability checks. PostgreSQL and Redis cards link to their already listed administration UIs, not to the database protocol ports. ClickUp MCP exposes only a TCP probe, so it intentionally has no HTTP `siteMonitor`. Ingress-accessible MCPO is currently unauthenticated on the LAN; review its network exposure separately before granting broader network access.
 
-**When the active manifest inventory changes:** update `services.yaml` and the categories here; verify endpoint and probe names against the currently included manifests. The ConfigMap is copied to `emptyDir` by an init container, so updating only the ConfigMap is insufficient: change the `checksum/config` pod-template annotation in `manifests.yaml` to trigger a rollout. Flux reconciles the `main` branch, but rollout and runtime reachability must still be checked on the cluster. Suggested checks: `kubectl -n apps rollout status deploy/homepage` and `kubectl -n apps logs deploy/homepage --tail=100`.
+**When a service is activated, paused or permanently retired:** keep the card visible unless retirement is explicit; update `services.yaml`, paused-state descriptions, and the categories here. Verify endpoint and probe names against the service manifests. Run `python3 -m unittest discover -s scripts -p 'test_homepage_inventory.py'` to catch inadvertent removals. The ConfigMap is copied to `emptyDir` by an init container, so updating only the ConfigMap is insufficient: change the `checksum/config` pod-template annotation in `manifests.yaml` to trigger a rollout. Flux reconciles the `main` branch, but rollout and runtime reachability must still be checked on the cluster. Suggested checks: `kubectl -n apps rollout status deploy/homepage` and `kubectl -n apps logs deploy/homepage --tail=100`.
