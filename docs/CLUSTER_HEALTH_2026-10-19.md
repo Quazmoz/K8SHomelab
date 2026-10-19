@@ -1,14 +1,15 @@
 # Homelab resource investigation — 2026-10-19
 
-Read-only live investigation beginning at approximately 17:23 UTC / 18:23 BST.
-No workloads were restarted, scaled, deployed, or otherwise changed by this
-investigation. This receipt contains operational summaries, not task content,
-credentials, or raw application logs.
+The initial read-only investigation began at approximately 17:23 UTC /
+18:23 BST. No workloads were changed during that pass. The subsequently
+authorized upgrade and its verification are recorded below. This receipt
+contains operational summaries, not task content, credentials, or raw
+application logs.
 
 ## Finding
 
 **Inference:** OpenClaw explains most of the additional Orange Pi CPU usage.
-Its container now consumes approximately 1.04 cores, compared with about
+At initial inspection its container consumed approximately 1.04 cores, compared with about
 0.016 cores in the available hourly samples from October 14–17: roughly 65
 times its earlier usage. One additional core on this 12-core node accounts
 for approximately 8 percentage points of node CPU, consistent with the
@@ -24,7 +25,7 @@ Receipts: live `kubectl top nodes`, `kubectl top pods -A --containers
 --sort-by=cpu`, and the Prometheus queries below, through the Kubernetes API
 service proxy for `apps/prometheus-server:80`.
 
-| Workload | Current observation | Available earlier observations | Classification |
+| Workload | Initial observation | Available earlier observations | Classification |
 | --- | --- | --- | --- |
 | OpenClaw | About 1.04 CPU cores and 2.1 GiB working-set memory | October 14–17: about 0.016 cores and 1.2 GiB memory | Fact |
 | Paperclip | About 0.33 CPU cores averaged over five minutes; 1.7 GiB memory | October 14–17: daily sampled means of 0.35–0.40 cores; 2.8–3.5 GiB memory | Fact |
@@ -165,6 +166,56 @@ Its production migration command, `doctor --fix --non-interactive`, completed
 successfully against the restored copy under the production 2 GiB memory
 limit. Live state was not mounted into the candidate migration container.
 Candidate diagnostics remain private beside the archive.
+
+**Fact:** Commit `b4379dc` deployed the upgrade through the Flux-tracked
+`main` branch. Both live init containers completed with exit code zero;
+the production migration finished at `18:20:03Z`. The gateway started at
+`18:20:05Z` and the replacement pod became Ready at `18:21:24Z`.
+`openclaw-6c969f9d77-wws6r` runs the verified ARM64 manifest and reports zero
+restarts for both containers.
+
+**Fact:** The new Control UI includes two different inline bootstrap
+scripts. The ingress previously allowed only the 2026.9.5 script hash, which
+would block both new scripts. Follow-up commit `2fb5709` updates only that
+script-hash allowlist; both new hashes were computed from the downloaded
+image and independently checked against the live HTTPS response. Kubernetes
+admission dry-run passes, Flux applied the follow-up, and the live policy
+permits both scripts without `unsafe-inline` in `script-src`. The HTTPS UI
+and its `/assets/index-BXEdQku5.js` bundle both return 200.
+
+**Fact:** The authenticated native gateway health check returns `ok: true`
+in 104 ms, with the five existing agents and no external chat channels.
+A deliberate invalid-token health request is rejected with
+`AUTH_TOKEN_MISMATCH`. No model inference or paid provider probe was used
+for verification.
+
+**Fact:** After verification commands finished, two observations at
+`18:26:16Z` and `18:26:46Z` reported approximately **0.055 CPU cores** and
+**1,313 MiB** working-set memory. The last-interval CPU observation uses
+`irate(container_cpu_usage_seconds_total[5m])` for the new pod, giving a
+roughly **95% reduction** from the initial 1.04 cores. A subsequent
+`kubectl top` sample reported **27m CPU / 1,389 MiB** for the gateway. The Pi
+reported **8% CPU / 39% memory**, versus approximately 19% / 45% at initial
+inspection. The short samples differ in timing and averaging; they are not
+long-term averages.
+
+**Fact:** A bounded five-minute gateway log check contained 21 lines, with
+zero instances of the earlier `Failed to fetch OpenRouter models` warning,
+invalid configuration, or fatal/OOM messages. Authentication warnings from
+the deliberate invalid-token test were expected. Both Flux Kustomizations
+and all four HelmReleases remained Ready after the application and ingress
+changes.
+
+**Inference:** The observed continuous one-core idle regression is resolved
+in this post-upgrade observation window. The update and restart happened
+together, so these results do not isolate the contribution of a specific
+upstream fix or establish behavior over days of uptime. Shared-Postgres
+backup failures and the HP disk warning remain separate unresolved findings.
+
+Operational post-rollout metric snapshots were retained temporarily at
+`/private/tmp/openclaw-upgrade-20261019/`. The durable results are recorded
+above. A one-minute CPU rate query returned no vector with the current
+scrape spacing; missing data was never treated as zero CPU.
 
 ## Reproducible read-only checks
 
