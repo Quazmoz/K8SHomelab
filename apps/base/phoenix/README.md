@@ -4,6 +4,19 @@
 
 Arize Phoenix provides LLM observability — tracing, evaluation, and debugging for AI/LLM applications. Receives OpenTelemetry traces from OpenWebUI and Alloy.
 
+## Current GitOps state: paused (2026-10-19)
+
+The root `apps/base/kustomization.yaml` still includes `./phoenix` but sets
+`replicas: 0`. The 5Gi PVC, PostgreSQL trace database, ingress, Service and
+source definitions remain. No recent cluster trace-volume statistics were
+available from GitHub. **OpenWebUI and Alloy still target Phoenix; OTLP export
+errors or retries may occur while the receiver is offline.**
+
+**Resume:** change only the root `phoenix` override to `count: 1`, let
+Flux reconcile, and check `kubectl -n apps rollout status deploy/phoenix`
+and the retained trace data. Do not remove `./phoenix` with Flux
+`prune: true`; that could delete the PVC.
+
 ## Access
 
 - **URL:** [http://phoenix.k8s.local](http://phoenix.k8s.local)

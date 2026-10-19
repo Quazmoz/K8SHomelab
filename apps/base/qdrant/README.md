@@ -4,6 +4,19 @@
 
 Qdrant is a high-performance vector similarity search engine. It stores embeddings for RAG (Retrieval-Augmented Generation) used by OpenWebUI and Jupyter notebooks.
 
+## Current GitOps state: paused (2026-10-19)
+
+The root `apps/base/kustomization.yaml` still includes `./qdrant` but sets
+`replicas: 0`. This retains the 10Gi PVC, collections, ingress, Service and
+source definitions. No recent cluster usage telemetry was available to verify
+how often retrieval was being used. **RAG retrieval and Qdrant-backed n8n
+workflows are unavailable while paused.**
+
+**Resume:** change only the root `qdrant` override to `count: 1`, let Flux
+reconcile, then check `kubectl -n apps rollout status deploy/qdrant` and
+the existing collections. Never remove `./qdrant` while Flux `prune: true`
+is enabled; that could delete its PVC.
+
 ## Access
 
 - **HTTP API:** [http://qdrant.k8s.local](http://qdrant.k8s.local)

@@ -43,6 +43,12 @@ resources:
   - ./hermes-agent # Hermes Agent AI autonomous agent
   - ./paperclip  # Paperclip agent orchestration (orangepi6plus)
 
+# Paused apps must remain in resources: Flux apps has prune: true and removing
+# a resource directory could delete its PVC. Restore count: 1 to resume.
 replicas:
   - name: hermes-agent
+    count: 0
+  - name: qdrant
+    count: 0
+  - name: phoenix
     count: 0

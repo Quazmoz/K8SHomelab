@@ -61,10 +61,32 @@ A production-grade **GitOps-managed Kubernetes homelab** running on hybrid infra
 | **changedetection.io** | http://changedetection.k8s.local | Growth OS page-change triggers (LAN UI; ClusterIP for n8n) |
 | **Homepage** | http://homepage.k8s.local | Service dashboard |
 | **Ansible AWX** | http://awx.k8s.local | Automation & config management |
-| **Phoenix** | http://phoenix.k8s.local | LLM observability |
 | **Paperclip** | https://paperclip.k8s.local | AI-agent organization/orchestration control plane |
 | **MCPO Gateway** | http://mcpo.k8s.local/docs | OpenAPI proxy for MCP servers |
 | **Context Forge** | http://mcp.k8s.local | Dynamic MCP server hub |
+
+### Temporarily paused AI services (2026-10-19)
+
+**Qdrant** and **Phoenix** remain in the Flux resource list, but the root
+`apps/base/kustomization.yaml` overrides each Deployment to `replicas: 0`.
+Their Services, Ingresses, PVCs, PostgreSQL data and original code remain
+managed and preserved; they are not decommissioned. Homepage should continue
+to show both as unavailable until restarted.
+
+| Paused service | Impact while offline |
+|----------------|----------------------|
+| Qdrant (`qdrant.k8s.local`) | OpenWebUI document/RAG retrieval and Qdrant-backed n8n workflows unavailable |
+| Phoenix (`phoenix.k8s.local`) | OTLP trace collection/UI unavailable; OpenWebUI and Alloy may report retry/export errors |
+
+Plain OpenWebUI chat can still operate without these integrations, but actual
+end-to-end behavior must be checked after Flux reconciles. This is a
+temporary operator-directed resource reduction; the cluster's recent usage
+metrics were **not** available from GitHub.
+
+To restore one service, change its **root** `replicas` override `count: 0`
+to `count: 1`, commit to the Flux-tracked branch, and check the Deployment
+rollout and retained data. **Do not comment out `./qdrant` or `./phoenix`**
+in the root resource list: Flux has `prune: true` and could delete PVCs.
 
 ---
 

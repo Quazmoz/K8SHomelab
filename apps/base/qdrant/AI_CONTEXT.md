@@ -28,6 +28,14 @@ Vector similarity search engine for RAG. Stores document embeddings used by Open
 | `qdrant-pvc.yaml` | 10Gi PVC |
 | `qdrant-pdb.yaml` | PodDisruptionBudget |
 
+## Current operational state (2026-10-19)
+
+- Root `apps/base/kustomization.yaml` preserves the resource and sets the Qdrant Deployment to **0 replicas**. The component's `replicas: 1` remains intentionally unchanged.
+- Do not remove the root resource: Flux `prune: true` could delete the PVC and embeddings.
+- To resume, set the root override to `count: 1`, reconcile and verify rollout/collections.
+- OpenWebUI RAG and Qdrant-backed n8n workflows will be unavailable; Homepage should retain Qdrant's offline card.
+- No live usage statistics were verified; this is a temporary operator pause.
+
 ## Key Details
 
 - Image is SHA-pinned for reproducibility

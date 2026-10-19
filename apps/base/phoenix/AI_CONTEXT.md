@@ -27,6 +27,14 @@ LLM observability platform. Receives OpenTelemetry traces from OpenWebUI and All
 | `phoenix-ingress.yaml` | Ingress for web UI |
 | `phoenix-pvc.yaml` | 5Gi PVC |
 
+## Current operational state (2026-10-19)
+
+- Root `apps/base/kustomization.yaml` preserves the resource and sets Phoenix to **0 replicas**. Component Deployment remains `replicas: 1`.
+- Do not remove the root resource: Flux `prune: true` could delete its PVC; the PostgreSQL trace database also remains unchanged.
+- To resume, change the root override to `count: 1`; reconcile and verify trace UI/rollout.
+- OpenWebUI and Alloy still export traces to Phoenix; delivery retry/error logs may result while paused. Homepage should retain Phoenix's offline card.
+- No live usage statistics were verified; this is a temporary operator pause.
+
 ## Key Configuration
 
 - `PHOENIX_SQL_DATABASE_URL` → PostgreSQL (`phoenix` DB via `postgres-credentials` secret)
