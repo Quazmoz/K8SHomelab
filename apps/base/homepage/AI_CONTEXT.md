@@ -28,7 +28,7 @@ Central dashboard providing visibility into all homelab services with health mon
 - **ConfigMap (`homepage-config`):** Contains `settings.yaml`, `services.yaml`, `widgets.yaml`, `bookmarks.yaml`, `kubernetes.yaml`, `custom.css`, `custom.js`
 - **Service list** has HTTP `siteMonitor` URLs only where a meaningful HTTP endpoint exists; TCP-only and internal platform cards are informational.
 - Config is loaded into an emptyDir volume via init container, not directly from PVC
-- **Tabs:** `Applications` contains Growth OS (n8n, Paperclip, SearXNG, changedetection.io, n8n Sandbox), active AI/MCP, DevOps, data operations, and portfolio; `Cluster` contains Kubernetes workload/storage health, internal platform service source links, and discovered tools
+- **Tabs:** `Applications` contains Growth OS (n8n, Paperclip, SearXNG, changedetection.io, n8n Sandbox), active and paused AI/MCP, DevOps, data operations, and portfolio; `Cluster` contains Kubernetes workload/storage health, internal platform service source links, and discovered tools
 - **Kubernetes summaries:** Blank `podSelector` values aggregate all pods in the `apps` and `kube-system` namespaces
 - **Prometheus summaries:** The `prometheusmetric` widgets show running/not-ready pods, pending/failed pods, recent restarts, bound/pending PVCs, requested bytes, and aggregate PVC utilization
 
@@ -48,10 +48,11 @@ Central dashboard providing visibility into all homelab services with health mon
 
 ## Inventory sync (2026-10-18)
 
-- Inventory authority: uncommented resources in `apps/base/kustomization.yaml`; this is desired state, **not** a live workload observation.
-- Removed inactive or zero-replica cards for LLaMA Factory, FreshRSS, LibreChat, Hermes, Jenkins and Mongo Express (plus stale Jupyter placeholder). Hermes is explicitly scaled to 0 at the root Kustomization; Apply OS is excluded entirely.
+- Inventory visibility is independent of active deployment state. Keep known application cards visible when paused, down or scaled to zero; use the root `apps/base/kustomization.yaml` only to determine GitOps desired state. A permanently decommissioned service requires a deliberate inventory removal.
+- Restored paused cards for LLaMA Factory, FreshRSS, LibreChat, Hermes, Jenkins and Mongo Express to their original sections, with `Paused` descriptions and original HTTP checks. Hermes is included but scaled to 0; the other five are excluded by commented root resources. Red/unavailable status while paused is expected, not a claim of a live failure. Jupyter was already a commented placeholder and remains unlisted.
 - Added n8n Sandbox, MCPO Gateway, Azure MCP, Grafana Alloy, PostgreSQL, Redis, Flux CD, NGINX Ingress, MetalLB, metrics-server, Sysbox and PostgreSQL backups.
 - Non-HTTP backends/infrastructure link to their UI or GitOps source and have **no synthetic uptime indicators**. The ClickUp MCP service has TCP-only liveness/readiness; remove its unreliable HTTP `siteMonitor`. The RedisInsight service and `/api/health` probe are aligned with its deployment, correcting the previous `redis-insight` DNS name.
 - MCPO is currently unauthenticated via LAN ingress, so that card explicitly identifies its access boundary. Do not embed new secrets in ConfigMap service cards.
-- `checksum/config` bumped to `v40-inventory-20261018` so the init container reloads the changed ConfigMap on pod rollout.
+- `checksum/config` bumped to `v41-restore-paused-20261019` to reload the restored inventory on rollout.
+- Regression check: `python3 -m unittest discover -s scripts -p 'test_homepage_inventory.py'`. Update the paused-state assertions when reactivating a service rather than removing its card.
 - Validate GitOps build and rendered Homepage YAML, then Flux reconciliation and dashboard URLs on the real cluster. GitHub contents alone cannot establish pod readiness or on-LAN reachability.
