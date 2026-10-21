@@ -164,6 +164,7 @@ flux get all -A
 | [apps/base/paperclip/README.md](apps/base/paperclip/README.md) | Paperclip deployment, architectural role, and productionization guidance |
 | [docs/SUPABASE_KNOWLEDGE_LAYER_REFERENCE.md](docs/SUPABASE_KNOWLEDGE_LAYER_REFERENCE.md) | Reference Postgres + pgvector business-knowledge layer and Drive sync/ACL pattern |
 | [docs/GROWTH_OS_INFRASTRUCTURE.md](docs/GROWTH_OS_INFRASTRUCTURE.md) | Homelab runtime boundary for Growth OS (n8n, Paperclip, SearXNG, changedetection) |
+| [docs/CLUSTER_HEALTH_2026-10-21.md](docs/CLUSTER_HEALTH_2026-10-21.md) | Full upgrade receipt, recovery points, node repairs and stability checks |
 | [docs/CLUSTER_HEALTH_2026-10-13.md](docs/CLUSTER_HEALTH_2026-10-13.md) | Verified wired-ingress repair and Paperclip 2026.1012.0 upgrade receipt |
 
 ---
@@ -182,7 +183,7 @@ flux get all -A
 |-------|-----------|
 | Orchestration | Kubernetes (bare-metal kubeadm) |
 | GitOps | Flux CD v2 |
-| Networking | Calico (VXLAN), MetalLB, NGINX Ingress |
+| Networking | Calico (VXLAN), MetalLB, Traefik |
 | Package Management | Helm, Kustomize |
 | Secrets | SOPS + Age |
 | Monitoring | Prometheus, Grafana |
