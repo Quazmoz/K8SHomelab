@@ -9,7 +9,7 @@ Central dashboard providing visibility into all homelab services with health mon
 ## Architecture
 
 - **Type:** Custom Deployment (all resources in single `manifests.yaml`)
-- **Image:** `ghcr.io/gethomepage/homepage:v2.4.0`
+- **Image:** `ghcr.io/gethomepage/homepage:v2.6.0`
 - **Namespace:** `apps`
 - **Node:** `quinn-hpprobook430g6`
 - **Port:** 3000
@@ -56,3 +56,5 @@ Central dashboard providing visibility into all homelab services with health mon
 - `checksum/config` bumped to `v41-restore-paused-20261019` to reload the restored inventory on rollout.
 - Regression check: `python3 -m unittest discover -s scripts -p 'test_homepage_inventory.py'`. Update the paused-state assertions when reactivating a service rather than removing its card.
 - Validate GitOps build and rendered Homepage YAML, then Flux reconciliation and dashboard URLs on the real cluster. GitHub contents alone cannot establish pod readiness or on-LAN reachability.
+
+2026-10-21 maintenance: the application image is pinned to `v2.6.0`. Persistent state and the existing Helm chart/configuration are preserved; protected file and SQLite recovery copies are under `/var/backups/homelab-upgrade-20261021/` on the worker.

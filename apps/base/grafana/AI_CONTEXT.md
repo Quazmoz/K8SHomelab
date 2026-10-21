@@ -44,3 +44,5 @@ Central dashboarding and visualization platform. Consumes metrics from Prometheu
 - To add a dashboard: create a ConfigMap with `grafana_dashboard: "1"` label, or add JSON to `dashboards/`
 - Database credentials are embedded in Helm values — if DB passwords change, update here
 - The `grafana-mongodb-datasource` plugin requires the `grafana` Helm chart's `plugins` field
+
+2026-10-21 maintenance: the application image is pinned to `13.2.4`. Persistent state and the existing Helm chart/configuration are preserved; protected file and SQLite recovery copies are under `/var/backups/homelab-upgrade-20261021/` on the worker.

@@ -56,3 +56,5 @@ kubectl get pods -n apps -l app.kubernetes.io/name=grafana
 # Force reconcile
 flux reconcile helmrelease grafana -n apps --with-source
 ```
+
+2026-10-21 maintenance: the application image is pinned to `13.2.4`. Persistent state and the existing Helm chart/configuration are preserved; protected file and SQLite recovery copies are under `/var/backups/homelab-upgrade-20261021/` on the worker.

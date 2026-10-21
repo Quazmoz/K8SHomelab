@@ -285,3 +285,5 @@ kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.p
 kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw config get models.providers.mistral
 kubectl -n apps exec deploy/openclaw -c openclaw -- openclaw models list
 ```
+
+2026-10-21 ingress compatibility: replace the upstream CSP with `more_set_headers`, preserving the two pinned bootstrap hashes, and keep the WebSocket rewrite/break last. This preserves the single CSP header, token-to-Bearer behavior, cleared WebSocket Authorization header, and overwritten client-IP attribution on both NGINX and the maintained Traefik compatibility provider.

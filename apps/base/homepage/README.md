@@ -12,7 +12,7 @@ Homepage is a modern, customizable dashboard that provides a single pane of glas
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `ghcr.io/gethomepage/homepage:v2.4.0` |
+| **Image** | `ghcr.io/gethomepage/homepage:v2.6.0` |
 | **Port** | 3000 |
 | **Node** | `quinn-hpprobook430g6` |
 | **Resources** | Requests: 64Mi/10m, Limits: 256Mi/500m |
@@ -84,3 +84,5 @@ Homepage is a **persistent service inventory**, not only a list of currently run
 Cards with a `k8s.local` link open a service UI. Source links to this GitHub repository represent internal-only services without a user-facing UI; they are **not** availability checks. PostgreSQL and Redis cards link to their already listed administration UIs, not to the database protocol ports. ClickUp MCP exposes only a TCP probe, so it intentionally has no HTTP `siteMonitor`. Ingress-accessible MCPO is currently unauthenticated on the LAN; review its network exposure separately before granting broader network access.
 
 **When a service is activated, paused or permanently retired:** keep the card visible unless retirement is explicit; update `services.yaml`, paused-state descriptions, and the categories here. Verify endpoint and probe names against the service manifests. Run `python3 -m unittest discover -s scripts -p 'test_homepage_inventory.py'` to catch inadvertent removals. The ConfigMap is copied to `emptyDir` by an init container, so updating only the ConfigMap is insufficient: change the `checksum/config` pod-template annotation in `manifests.yaml` to trigger a rollout. Flux reconciles the `main` branch, but rollout and runtime reachability must still be checked on the cluster. Suggested checks: `kubectl -n apps rollout status deploy/homepage` and `kubectl -n apps logs deploy/homepage --tail=100`.
+
+2026-10-21 maintenance: the application image is pinned to `v2.6.0`. Persistent state and the existing Helm chart/configuration are preserved; protected file and SQLite recovery copies are under `/var/backups/homelab-upgrade-20261021/` on the worker.
