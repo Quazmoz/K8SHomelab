@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress-nginx
+---
+# Keep the legacy class so existing and paused app Ingresses keep working.
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: nginx
+spec:
+  controller: k8s.io/ingress-nginx
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik
+  namespace: ingress-nginx
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: traefik-ingress-classes
+rules:
+  - apiGroups: [networking.k8s.io]
+    resources: [ingressclasses]
+    verbs: [list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: traefik-ingress-classes
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-ingress-classes
+subjects:
+  - kind: ServiceAccount
+    name: traefik
+    namespace: ingress-nginx
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: traefik-ingress
+  namespace: apps
+rules:
+  - apiGroups: ['']
+    resources: [services, secrets, configmaps]
+    verbs: [list, watch]
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses]
+    verbs: [list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses/status]
+    verbs: [update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: traefik-ingress
+  namespace: apps
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: traefik-ingress
+subjects:
+  - kind: ServiceAccount
+    name: traefik
+    namespace: ingress-nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  namespace: ingress-nginx
+  labels:
+    app: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik
+      nodeSelector:
+        kubernetes.io/hostname: quinn-hpprobook430g6
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+      containers:
+        - name: traefik
+          image: traefik:v3.7.16
+          args:
+            - --global.checknewversion=false
+            - --global.sendanonymoususage=false
+            - --entrypoints.web.address=:8000
+            - --entrypoints.websecure.address=:8443
+            - --entrypoints.health.address=:9000
+            - --entrypoints.web.transport.respondingtimeouts.readtimeout=3600s
+            - --entrypoints.websecure.transport.respondingtimeouts.readtimeout=3600s
+            - --providers.kubernetesingressnginx=true
+            - --providers.kubernetesingressnginx.watchnamespace=apps
+            - --providers.kubernetesingressnginx.ingressclass=nginx
+            - --providers.kubernetesingressnginx.controllerclass=k8s.io/ingress-nginx
+            - --providers.kubernetesingressnginx.publishstatusaddress=192.168.8.40
+            - --providers.kubernetesingressnginx.httpentrypoint=web
+            - --providers.kubernetesingressnginx.httpsentrypoint=websecure
+            - --providers.kubernetesingressnginx.allowsnippetannotations=true
+            - --ping=true
+            - --ping.entrypoint=health
+          ports:
+            - {name: http, containerPort: 8000}
+            - {name: https, containerPort: 8443}
+            - {name: health, containerPort: 9000}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          readinessProbe:
+            httpGet: {path: /ping, port: health}
+          livenessProbe:
+            httpGet: {path: /ping, port: health}
+          resources:
+            requests: {cpu: 20m, memory: 64Mi}
+            limits: {cpu: '1', memory: 512Mi}
