@@ -37,3 +37,5 @@ Defines all `StorageClass` and `PersistentVolume` resources for the cluster. Eve
 - The physical directory must exist on the target node before the pod starts
 - `Retain` reclaim policy means PVs are NOT deleted when PVCs are removed — manual cleanup required
 - Slow-storage PVs (`llamafactory`, `postgres-backup`, `mongodb-backup`) use SD card and are significantly slower
+
+PostgreSQL backup storage exception (2026-10-21): `postgres-backup-pv` retains its `slow-storage` class and `/mnt/backup/postgres` path but now lives on the Orange Pi root SSD because the former backup device is absent. It remains on a different node from PostgreSQL. Do not recreate the PV/PVC or mount a replacement disk over existing backups without migrating and verifying them.

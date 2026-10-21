@@ -1,7 +1,7 @@
 ---
 # PostgreSQL Backup CronJob
 # Runs daily at 2 AM, keeps last 7 backups
-# Stores compressed pg_dump on Orange Pi SD card
+# Stores compressed pg_dump on the Orange Pi SSD, separate from the database node
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -13,7 +13,7 @@ metadata:
     app.kubernetes.io/component: backup
     app.kubernetes.io/part-of: data-stack
   annotations:
-    description: "Daily PostgreSQL backup to SD card storage"
+    description: "Daily PostgreSQL backup to the Orange Pi SSD"
 spec:
   schedule: "0 2 * * *"  # Daily at 2 AM
   concurrencyPolicy: Forbid
@@ -29,7 +29,7 @@ spec:
             app: postgres-backup
         spec:
           restartPolicy: OnFailure
-          # Must run on Orange Pi where SD card is mounted
+          # The backup PV lives on the Orange Pi, separate from the database node
           nodeSelector:
             kubernetes.io/hostname: orangepi6plus
           tolerations:
@@ -38,7 +38,7 @@ spec:
               effect: "NoSchedule"
           containers:
           - name: postgres-backup
-            image: postgres:18
+            image: postgres:18.6
             imagePullPolicy: IfNotPresent
             env:
             - name: PGHOST
@@ -56,14 +56,21 @@ spec:
               value: "/backup"
             - name: RETENTION_DAYS
               value: "7"
+            - name: PGCONNECT_TIMEOUT
+              value: "10"
+            - name: PGOPTIONS
+              value: "-c statement_timeout=900000 -c lock_timeout=60000"
             command:
             - /bin/bash
             - -c
             - |
-              set -eo pipefail
+              set -euo pipefail
+              umask 077
               TIMESTAMP=$(date +%Y%m%d_%H%M%S)
               BACKUP_FILE="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql.gz"
-              
+              PARTIAL=$(mktemp "${BACKUP_DIR}/.postgres_backup.XXXXXX")
+              trap 'rm -f "${PARTIAL}"' EXIT
+
               echo "Starting PostgreSQL backup at $(date)"
               echo "Testing database connection..."
               
@@ -75,17 +82,10 @@ spec:
               
               echo "Backing up all databases..."
               
-              # Dump all databases with compression (pipefail will catch pg_dumpall errors)
-              pg_dumpall --clean --if-exists 2>&1 | gzip > "${BACKUP_FILE}"
-              
-              # Verify backup is not empty (minimum valid gzip header is ~20 bytes)
-              BACKUP_SIZE=$(stat -c%s "${BACKUP_FILE}" 2>/dev/null || echo "0")
-              if [ "${BACKUP_SIZE}" -lt 100 ]; then
-                echo "ERROR: Backup file is too small (${BACKUP_SIZE} bytes), likely failed"
-                cat "${BACKUP_FILE}" | gunzip 2>/dev/null || true
-                rm -f "${BACKUP_FILE}"
-                exit 1
-              fi
+              # Publish only a complete archive; keep diagnostic stderr out of the SQL.
+              pg_dumpall --clean --if-exists | gzip > "${PARTIAL}"
+              gzip -t "${PARTIAL}"
+              mv "${PARTIAL}" "${BACKUP_FILE}"
               
               echo "Backup completed successfully: ${BACKUP_FILE}"
               ls -lh "${BACKUP_FILE}"

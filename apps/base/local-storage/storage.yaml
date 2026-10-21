@@ -467,7 +467,7 @@ spec:
 # Used for backups and cold data
 # ============================================
 
-# PersistentVolume for PostgreSQL backups on SD card
+# PostgreSQL backups: Orange Pi SSD since 2026-10-21; slow-storage is a legacy class name.
 apiVersion: v1
 kind: PersistentVolume
 metadata:

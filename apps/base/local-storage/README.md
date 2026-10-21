@@ -65,3 +65,5 @@ kubectl get pvc -n apps
 # Check if PV is bound or available
 kubectl describe pv <pv-name>
 ```
+
+PostgreSQL backup storage exception (2026-10-21): `postgres-backup-pv` retains its `slow-storage` class and `/mnt/backup/postgres` path but now lives on the Orange Pi root SSD because the former backup device is absent. It remains on a different node from PostgreSQL. Do not recreate the PV/PVC or mount a replacement disk over existing backups without migrating and verifying them.

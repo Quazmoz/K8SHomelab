@@ -2,7 +2,7 @@
 
 ## Overview
 
-Automated daily database backups for PostgreSQL and MongoDB using Kubernetes CronJobs. Backups are stored on the Orange Pi's SD card for off-node redundancy.
+Automated daily database backups for PostgreSQL and MongoDB using Kubernetes CronJobs. PostgreSQL backups are stored at `/mnt/backup/postgres` on the Orange Pi SSD, on a different node from the primary database. The former `/dev/sdb1` backup device was absent on 2026-10-21; its stale fstab entry was disabled, with the original saved under `/var/backups/homelab-upgrade-20261021/`. The existing PVC and PV path are preserved; `slow-storage` is a legacy class name for this PV. MongoDB backups remain suspended while MongoDB is disabled.
 
 ## Schedule
 
@@ -16,9 +16,9 @@ Automated daily database backups for PostgreSQL and MongoDB using Kubernetes Cro
 ### PostgreSQL Backup
 | Setting | Value |
 |---------|-------|
-| **Image** | `postgres:15` |
+| **Image** | `postgres:18.6` |
 | **Method** | `pg_dumpall` (compressed) |
-| **Storage** | 20Gi PVC (`slow-storage` on Orange Pi) |
+| **Storage** | 20Gi PVC (legacy `slow-storage`, Orange Pi SSD) |
 | **Node** | `orangepi6plus` (control-plane toleration) |
 | **Timeout** | 1 hour |
 
@@ -62,3 +62,5 @@ kubectl get cronjobs -n apps
 # View last job logs
 kubectl logs -n apps job/$(kubectl get jobs -n apps -l job-name -o name | tail -1)
 ```
+
+PostgreSQL dumps use bounded connection/lock/statement waits, private file permissions, and an atomic rename after gzip verification. Failed dumps never publish a final archive or prune older backups; stderr remains in pod logs. Before database upgrades, restore into an isolated PostgreSQL instance, never the production instance.
