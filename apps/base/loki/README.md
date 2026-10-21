@@ -13,7 +13,7 @@ Loki is a log aggregation system designed for Kubernetes. It stores and indexes 
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `grafana/loki:3.6.3` |
+| **Image** | `grafana/loki:3.7.9` |
 | **Port** | 3100 |
 | **Mode** | Single-binary (all components in one process) |
 | **Storage** | 10Gi PVC (`local-storage`, filesystem backend) |
@@ -51,3 +51,5 @@ kubectl exec -it -n apps deploy/loki -- wget -qO- http://localhost:3100/ready
 # Check log ingestion via Grafana
 # Explore → Loki → {namespace="apps"} | last 1h
 ```
+
+2026-10-21 maintenance: application image `grafana/loki:3.7.9` is pinned explicitly; existing storage and configuration are preserved.

@@ -13,6 +13,9 @@ metadata:
     docs: "https://docs.n8n.io/"
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
+    rollingUpdate: null
   selector:
     matchLabels:
       app: n8n
@@ -28,7 +31,7 @@ spec:
         fsGroupChangePolicy: "OnRootMismatch"
       containers:
       - name: n8n
-        image: n8nio/n8n:2.41.7
+        image: n8nio/n8n:2.44.5
         ports:
         - containerPort: 5678
           name: http

@@ -63,10 +63,10 @@ spec:
                 - oracle-groupmebot
       containers:
       - name: changedetection
-        # 0.60.8 multi-arch index (linux/amd64, linux/arm64, linux/arm/v7, linux/arm/v8)
-        # verified on Docker Hub 2026-09-28. HTTP fetcher only in this pass;
+        # 0.60.9 multi-arch index (linux/amd64, linux/arm64, linux/arm/v7, linux/arm/v8)
+        # verified on Docker Hub 2026-10-21. HTTP fetcher only in this pass;
         # do not point watches at Playwright/Selenium/Browserless.
-        image: docker.io/dgtlmoon/changedetection.io:0.60.8@sha256:34df3680db1cbffc45ac1e9c1514bc0507dd0c5b5fde47d1992fe6f14a7b40e4
+        image: docker.io/dgtlmoon/changedetection.io:0.60.9@sha256:04eaae7915bad711160cb15abe160f6d3fabe98bbbd658509d4b7a654000fb2d
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false

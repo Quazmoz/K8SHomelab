@@ -33,6 +33,8 @@ spec:
         kubernetes.io/hostname: quinn-hpprobook430g6
 
     server:
+      image:
+        tag: "v3.15.0"
       persistentVolume:
         enabled: true
         storageClass: "local-storage"

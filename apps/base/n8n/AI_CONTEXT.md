@@ -63,3 +63,5 @@ OpenClaw has an `n8n` skill that calls the n8n REST API (`/api/v1`).
 - Secret environment variables remain in the deployment spec
 - The PV is defined separately (`n8n-pv.yaml`) from the main `local-storage/storage.yaml`
 - GroupMe token is optional — deployment works without it
+
+2026-10-21 maintenance: application image `n8nio/n8n:2.44.5` is pinned explicitly; existing storage and configuration are preserved. Recreate stops the old process before startup migrations, preserving the PVC and avoiding concurrent versions writing the same database. Protected SQLite/file recovery points are under `/var/backups/homelab-upgrade-20261021/` on the worker.

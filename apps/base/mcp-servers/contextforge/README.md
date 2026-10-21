@@ -207,3 +207,5 @@ Delete the server from the MCP Servers page in the UI, then re-add it with the c
 | ClickUp | `http://clickup-mcp-server.apps.svc.cluster.local:5000/mcp` | HTTP |
 | Ansible MCP | `http://ansible-mcp-server.apps.svc.cluster.local:5000/mcp` | Streamable HTTP |
 | Context Forge | `http://context-forge.apps.svc.cluster.local:4444` | — |
+
+2026-10-21 maintenance: pinned `ghcr.io/ibm/mcp-context-forge:v1.1.0` with Recreate so only one version writes during migrations. Existing authentication, grants, storage, and upstream server configuration are preserved. Modern protocol negotiation now uses upstream auto/legacy fallback; Origin/Host settings retain their existing defaults. Database and file recovery points were verified before rollout.

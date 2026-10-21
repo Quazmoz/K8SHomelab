@@ -12,7 +12,7 @@ Growth OS contract: `Quazmoz/growth-os` `docs/self-hosted-acquisition-layer.md`.
 
 | Area | State |
 |---|---|
-| Image | `docker.io/dgtlmoon/changedetection.io:0.60.8` (digest pinned, multi-arch; verified sha256:34df3680…) |
+| Image | `docker.io/dgtlmoon/changedetection.io:0.60.9` (digest pinned, multi-arch; verified sha256:34df3680…) |
 | Service | `http://changedetection.apps.svc.cluster.local:5000` |
 | LAN UI | `http://changedetection.k8s.local` (ingress-nginx, not public Internet) |
 | Storage | 5 GiB RWO `local-storage` PV `changedetection-local-pv` |
@@ -64,3 +64,5 @@ kubectl get pods,svc,pvc,ingress -n apps -l app.kubernetes.io/name=changedetecti
 kubectl exec -n apps deploy/n8n -- wget -qO- http://changedetection.apps.svc.cluster.local:5000/ | head
 kubectl exec -n apps deploy/changedetection -- wget -qO- http://n8n.apps.svc.cluster.local:5678/healthz
 ```
+
+2026-10-21 maintenance: the shared change-detection/exporter base image is pinned to multi-architecture version `0.60.9`, digest `sha256:04eaae7915bad711160cb15abe160f6d3fabe98bbbd658509d4b7a654000fb2d`. Existing watch data, exporter logic, and PVCs are preserved.

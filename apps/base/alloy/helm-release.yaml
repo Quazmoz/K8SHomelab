@@ -21,6 +21,8 @@ spec:
         namespace: flux-system
       interval: 1m
   values:
+    image:
+      tag: "v1.21.0"
     alloy:
       configMap:
         create: true

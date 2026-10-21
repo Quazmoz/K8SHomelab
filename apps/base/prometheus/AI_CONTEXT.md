@@ -9,7 +9,7 @@ Primary metrics collection, storage, and alerting system. Scrapes Kubernetes met
 ## Architecture
 
 - **Type:** Flux HelmRelease
-- **Chart:** `prometheus` v28.3.0 from `prometheus-community`
+- **Chart:** `prometheus` v29.33.0 from `prometheus-community`
 - **Namespace:** `apps`
 - **Node:** `quinn-hpprobook430g6` (all components)
 - **Storage:** 45Gi PVC (`prometheus-server`, `local-storage` class)
@@ -43,3 +43,5 @@ Primary metrics collection, storage, and alerting system. Scrapes Kubernetes met
 - Adding new scrape targets: add under `extraScrapeConfigs` in helm-release.yaml
 - Adding new alert rules: add under `serverFiles.alerting_rules.yml.groups`
 - The PVC is pre-created (not managed by Helm) — deleting the HelmRelease won't delete data
+
+2026-10-21 maintenance: application image `quay.io/prometheus/prometheus:v3.15.0` is pinned explicitly; existing storage and configuration are preserved.

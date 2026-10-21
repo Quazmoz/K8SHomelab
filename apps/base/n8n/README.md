@@ -77,3 +77,5 @@ When setting up external OAuth integrations (such as the Gmail OAuth2 API), you 
 - Generate your Credential in the n8n UI, copy the provided OAuth Redirect URL.
 - Paste it exactly into your OAuth App settings (e.g., Google Cloud Console Web Application).
 - Click "Sign in with Google," and the tokens will capture seamlessly!
+
+2026-10-21 maintenance: application image `n8nio/n8n:2.44.5` is pinned explicitly; existing storage and configuration are preserved. Recreate stops the old process before startup migrations, preserving the PVC and avoiding concurrent versions writing the same database. Protected SQLite/file recovery points are under `/var/backups/homelab-upgrade-20261021/` on the worker.

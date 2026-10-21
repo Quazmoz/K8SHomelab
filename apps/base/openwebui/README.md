@@ -57,3 +57,5 @@ kubectl logs -n apps -l app=openwebui --tail=100
 # Check database connectivity
 kubectl exec -it -n apps deploy/openwebui -- python -c "import psycopg2; print('OK')"
 ```
+
+2026-10-21 maintenance: application image `ghcr.io/open-webui/open-webui:v0.12.3` is pinned explicitly; existing storage and configuration are preserved. Recreate stops the old process before startup migrations, preserving the PVC and avoiding concurrent versions writing the same database. The active PostgreSQL database had 2 users and 435 chats before migration; its full SQL recovery point was restore-tested. Protected supplemental SQLite/file recovery points are under `/var/backups/homelab-upgrade-20261021/` on the worker.

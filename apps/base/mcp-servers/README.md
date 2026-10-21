@@ -145,3 +145,5 @@ Flux will auto-sync on commit to main branch.
 4.  **Use Tools**:
     *   "List my GroupMe groups"
     *   "Send a message to 'Family': Hello!"
+
+2026-10-21 maintenance: ContextForge is pinned to `v1.1.0` and uses Recreate to stop old writers before migrations. Authentication, grants, upstream registrations, and storage are preserved; rollback requires compatible database recovery rather than only changing the image.

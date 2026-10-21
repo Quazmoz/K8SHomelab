@@ -53,3 +53,5 @@ the digest-pinned v0.7.1 amd64 image, which supports Ubuntu 24.04, kernel 6.8+,
 and containerd 2.x. The worker runs Ubuntu-based KDE Neon, so the installer pod
 receives an Ubuntu 24.04 `os-release` compatibility view; the host file is not
 modified.
+
+2026-10-21 node maintenance: the worker runs checksum-verified containerd 2.2.10 through `/etc/systemd/system/containerd.service.d/50-homelab-version.conf`; its original package/configuration remain available for recovery. The CRI configuration explicitly sets `enable_unprivileged_ports = false` and `enable_unprivileged_icmp = false`: injecting these namespaced sysctls prevents fresh Sysbox sandboxes from starting on this host. Preserve the `sysbox-runc` handler and verify a newly created user namespace after runtime changes.

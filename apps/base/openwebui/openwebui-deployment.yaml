@@ -21,10 +21,7 @@ spec:
     matchLabels:
       app: openwebui
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+    type: Recreate
   template:
     metadata:
       labels:
@@ -49,7 +46,7 @@ spec:
         runAsGroup: 1000
       containers:
       - name: openwebui
-        image: ghcr.io/open-webui/open-webui:v0.11.4
+        image: ghcr.io/open-webui/open-webui:v0.12.3
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080

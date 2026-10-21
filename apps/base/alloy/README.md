@@ -17,7 +17,7 @@ OTLP gRPC/HTTP ──→ Alloy ──→ Prometheus (metrics)
 
 | Setting | Value |
 |---------|-------|
-| **Chart** | `alloy` v1.5.2 from `grafana` |
+| **Chart** | `alloy` v1.12.1 from `grafana` |
 | **Extra Ports** | 4317 (OTLP gRPC), 4318 (OTLP HTTP) |
 | **Resources** | Requests: 128Mi/50m, Limits: 512Mi/500m |
 
@@ -49,3 +49,5 @@ kubectl get pods -n apps -l app.kubernetes.io/name=alloy
 # Force reconcile
 flux reconcile helmrelease alloy -n apps --with-source
 ```
+
+2026-10-21 maintenance: application image `grafana/alloy:v1.21.0` is pinned explicitly; existing storage and configuration are preserved.

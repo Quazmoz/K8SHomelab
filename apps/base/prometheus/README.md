@@ -22,7 +22,7 @@ Prometheus is the primary metrics collection and alerting system for the cluster
 
 | Setting | Value |
 |---------|-------|
-| **Chart** | `prometheus` v28.3.0 from `prometheus-community` |
+| **Chart** | `prometheus` v29.33.0 from `prometheus-community` |
 | **Storage** | 45Gi PVC (`local-storage`) |
 | **Retention** | 15 days |
 | **Node** | `quinn-hpprobook430g6` (all components) |
@@ -64,3 +64,5 @@ flux reconcile helmrelease prometheus -n apps --with-source
 # Check targets
 # Visit http://prometheus.k8s.local/targets
 ```
+
+2026-10-21 maintenance: application image `quay.io/prometheus/prometheus:v3.15.0` is pinned explicitly; existing storage and configuration are preserved.

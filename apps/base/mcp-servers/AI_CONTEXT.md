@@ -56,3 +56,5 @@ mcp-servers/
 - Adding a new MCP server: create deployment in appropriate subdirectory, add to kustomization.yaml
 - GroupMe network policy may need updating if new egress targets are added
 - See `README.md` in this directory for detailed MCP setup guide
+
+2026-10-21 maintenance: ContextForge is pinned to `v1.1.0` and uses Recreate to stop old writers before migrations. Authentication, grants, upstream registrations, and storage are preserved; rollback requires compatible database recovery rather than only changing the image.

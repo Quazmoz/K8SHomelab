@@ -9,7 +9,7 @@ Unified telemetry collector. Scrapes Kubernetes pod logs, receives OTLP signals 
 ## Architecture
 
 - **Type:** Flux HelmRelease
-- **Chart:** `alloy` v1.5.2 from `grafana`
+- **Chart:** `alloy` v1.12.1 from `grafana`
 - **Namespace:** `apps`
 - **Extra Ports:** 4317 (OTLP gRPC), 4318 (OTLP HTTP)
 - **No PVC, no Ingress** (collector only)
@@ -39,3 +39,5 @@ Unified telemetry collector. Scrapes Kubernetes pod logs, receives OTLP signals 
 - Adding a new pipeline: edit the config content in HelmRelease values
 - Port 4317/4318 are exposed as Service ports for apps to send OTLP data
 - If Loki/Prometheus/Phoenix endpoints change, update the send targets in config
+
+2026-10-21 maintenance: application image `grafana/alloy:v1.21.0` is pinned explicitly; existing storage and configuration are preserved.

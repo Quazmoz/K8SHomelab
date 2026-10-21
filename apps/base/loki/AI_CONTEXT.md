@@ -9,7 +9,7 @@ Centralized log aggregation. Receives logs from Alloy, stores them with filesyst
 ## Architecture
 
 - **Type:** StatefulSet
-- **Image:** `grafana/loki:3.6.3`
+- **Image:** `grafana/loki:3.7.9`
 - **Namespace:** `apps`
 - **Port:** 3100
 - **Mode:** Single-binary (all targets in one process)
@@ -45,3 +45,5 @@ Centralized log aggregation. Receives logs from Alloy, stores them with filesyst
 - Schema changes (period/index type) require careful migration
 - Retention is enforced by compactor, configured in `limits_config`
 - The deployment is a StatefulSet (not a Deployment) for stable storage identity
+
+2026-10-21 maintenance: application image `grafana/loki:3.7.9` is pinned explicitly; existing storage and configuration are preserved.

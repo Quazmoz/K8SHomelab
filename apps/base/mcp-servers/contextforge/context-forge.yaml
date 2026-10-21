@@ -25,6 +25,9 @@ metadata:
     app: context-forge
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
+    rollingUpdate: null
   selector:
     matchLabels:
       app: context-forge
@@ -39,7 +42,7 @@ spec:
       serviceAccountName: context-forge
       containers:
       - name: context-forge
-        image: ghcr.io/ibm/mcp-context-forge:v1.0.10
+        image: ghcr.io/ibm/mcp-context-forge:v1.1.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4444
