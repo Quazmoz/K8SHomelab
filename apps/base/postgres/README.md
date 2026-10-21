@@ -29,7 +29,7 @@ PostgreSQL is the primary relational database for the cluster. Multiple services
 
 | Setting | Value |
 |---------|-------|
-| **Image** | `postgres:18` |
+| **Image** | `postgres:18.6` |
 | **Port** | 5432 |
 | **Storage** | 10Gi PVC (`local-storage`) |
 | **Node** | `quinn-hpprobook430g6` |
@@ -76,3 +76,5 @@ kubectl exec -n apps postgres-0 -- psql -U postgres -d postgres -Atc "SELECT col
 
 PostgreSQL 18 no longer exposes checkpoint counters like `checkpoints_timed` in `pg_stat_bgwriter`; those counters live in `pg_stat_checkpointer`.
 Use `prometheuscommunity/postgres-exporter:v0.19.1` or another release that includes the PostgreSQL 17+ stats-view update, and keep the exporter probes on `/metrics` rather than `/healthz`.
+
+2026-10-21 maintenance: pin the server and backup client to PostgreSQL 18.6. The fresh 391 MiB full SQL archive restored all 14 databases into a network-isolated 18.6 instance before production rollout; the checksum and restore receipt stay under `/mnt/backup/postgres/` on the Orange Pi SSD. This is an in-place minor update preserving the existing PGDATA and PVC, not a major-version migration.

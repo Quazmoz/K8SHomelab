@@ -47,7 +47,7 @@ metadata:
     app.kubernetes.io/part-of: data-stack
   annotations:
     description: "Primary PostgreSQL database for homelab services"
-    docs: "https://www.postgresql.org/docs/15/"
+    docs: "https://www.postgresql.org/docs/18/"
 spec:
   replicas: 1
   selector:
@@ -64,7 +64,7 @@ spec:
       # Scheduling is now driven by the nodeAffinity of the PersistentVolume.
       containers:
       - name: postgres
-        image: postgres:18
+        image: postgres:18.6
         ports:
         - containerPort: 5432
         env:

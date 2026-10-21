@@ -9,7 +9,7 @@ Primary relational database. Shared single-instance PostgreSQL serving multiple 
 ## Architecture
 
 - **Type:** StatefulSet
-- **Image:** `postgres:18`
+- **Image:** `postgres:18.6`
 - **Namespace:** `apps`
 - **Port:** 5432
 - **Node:** `quinn-hpprobook430g6`
@@ -50,3 +50,5 @@ Primary relational database. Shared single-instance PostgreSQL serving multiple 
 - The exporter is a separate Deployment, not a sidecar
 - For `postgres-exporter` v0.19.x, probes must target `/metrics`; `/healthz` returns `404` and will cause CrashLoopBackOff
 - This is a **critical service** — most of the cluster depends on it
+
+2026-10-21 maintenance: pin the server and backup client to PostgreSQL 18.6. The fresh 391 MiB full SQL archive restored all 14 databases into a network-isolated 18.6 instance before production rollout; the checksum and restore receipt stay under `/mnt/backup/postgres/` on the Orange Pi SSD. This is an in-place minor update preserving the existing PGDATA and PVC, not a major-version migration.
