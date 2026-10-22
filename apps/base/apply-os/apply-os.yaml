@@ -69,7 +69,8 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: apply-os
-          image: ghcr.io/quazmoz/apply-os:0.4.0   # not yet published; see README
+          image: ghcr.io/quazmoz/apply-os:0.4.0
+          imagePullPolicy: IfNotPresent   # imported into the HP node's containerd; no registry
           env:
             - {name: APPLY_OS_PUBLIC_ORIGIN, value: "https://apply-os.k8s.local"}
           ports:
@@ -124,6 +125,7 @@ spec:
           containers:
             - name: backup
               image: ghcr.io/quazmoz/apply-os:0.4.0
+              imagePullPolicy: IfNotPresent   # imported into the HP node's containerd; no registry
               # ponytail: same-volume online backup with 7-day rotation; add encrypted off-node copy before real data
               command: [sh, -c, 'mkdir -p /data/backups && python -m apply_os.web backup /data/backups/apply-os-$(date +%u).db']
               resources:
@@ -227,6 +229,7 @@ spec:
           containers:
             - name: pipeline
               image: ghcr.io/quazmoz/apply-os:0.4.0
+              imagePullPolicy: IfNotPresent   # imported into the HP node's containerd; no registry
               command: [python, -m, apply_os.pipeline, run, --live]
               resources:
                 requests: {cpu: 100m, memory: 512Mi}
