@@ -23,7 +23,7 @@ with tempfile.TemporaryDirectory(prefix="paperclip-lock-check-") as directory:
     inode = sqlite.stat().st_ino
     command = ["sh", "-ec", script.replace("/paperclip/", str(volume) + "/")]
     subprocess.run(command, check=True)
-    preserved = volume / "upgrade-2026-10-13-2026.1012.0/legacy-locks" / legacy.name
+    preserved = next(volume.glob("upgrade-*/legacy-locks")) / legacy.name
     assert not legacy.exists() and (preserved / "owner.json").read_text() == '{"pid":123}'
     assert sqlite.stat().st_ino == inode and sqlite.read_bytes() == b"preserve this lock inode"
     subprocess.run(command, check=True)  # An unchanged rerun is safe.

@@ -12,7 +12,7 @@ Current manifest: `paperclip.yaml`.
 
 | Area | Current state |
 |---|---|
-| Image | `ghcr.io/paperclipai/paperclip:2026.1012.0`, digest pinned |
+| Image | `ghcr.io/paperclipai/paperclip:2026.1023.0`, digest pinned |
 | Deployment | Kubernetes `Deployment`, 1 replica, `Recreate` strategy |
 | Scheduling | Pinned to `orangepi6plus` |
 | Exposure | `authenticated` + `private` |
