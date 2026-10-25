@@ -1,0 +1,25 @@
+# Calico's operator-managed tier permits only tigera-prometheus by default.
+# Allow this installation's Prometheus server to scrape controller metrics.
+apiVersion: crd.projectcalico.org/v1
+kind: NetworkPolicy
+metadata:
+  name: calico-system.homelab-prometheus-metrics
+  namespace: calico-system
+spec:
+  tier: calico-system
+  order: 0
+  selector: k8s-app == 'calico-kube-controllers'
+  types:
+    - Ingress
+  ingress:
+    - action: Allow
+      protocol: TCP
+      source:
+        namespaceSelector: kubernetes.io/metadata.name == 'apps'
+        selector: >-
+          app.kubernetes.io/name == 'prometheus' &&
+          app.kubernetes.io/instance == 'prometheus' &&
+          app.kubernetes.io/component == 'server'
+      destination:
+        ports:
+          - 9094
