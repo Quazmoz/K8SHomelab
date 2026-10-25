@@ -34,7 +34,7 @@ spec:
 
     server:
       image:
-        tag: "v3.15.0"
+        tag: "v3.15.1"
       persistentVolume:
         enabled: true
         storageClass: "local-storage"
@@ -55,12 +55,26 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: quinn-hpprobook430g6
 
+    prometheus-node-exporter:
+      extraArgs:
+        # Pi ACPI cpufreq reads hang indefinitely and exhaust all 40 scrapes.
+        # CPU usage, memory, disk, thermal and network collectors remain enabled.
+        - --no-collector.cpufreq
+
     # §4c, §7b, §7c — MCP Security Alerting Rules
     serverFiles:
       alerting_rules.yml:
         groups:
           - name: mcp-security
             rules:
+              - alert: NodeExporterDown
+                expr: up{namespace="apps", service="prometheus-prometheus-node-exporter"} == 0
+                for: 5m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "Node metrics exporter is unavailable"
+                  description: "Node exporter {{ $labels.instance }} has failed scrapes for 5 minutes."
               # §4c — High error rate from MCP servers
               - alert: MCPOHighErrorRate
                 expr: |
