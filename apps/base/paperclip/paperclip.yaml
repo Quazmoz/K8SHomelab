@@ -52,27 +52,27 @@ spec:
       # ponytail: first boot needs npm; bake these into an image if startup must work offline.
       initContainers:
       - name: install-otel
-        image: ghcr.io/paperclipai/paperclip:2026.1012.0@sha256:1661b3dd3fdf7a9b59542d1ced464c3faf9dc8309798b4d15a9923ed32795307
+        image: ghcr.io/paperclipai/paperclip:2026.1023.0@sha256:40f46940c4612ead131aebe6079cd4651f8cd1434af49f7c621887f4a452a62e
         command: [sh, -ec]
         args:
         - |
           # Recreate has stopped the old instance; preserve its legacy restore locks.
           lock_root=/paperclip/instances/default/locks/directory-merge
-          scratch=/paperclip/upgrade-2026-10-13-2026.1012.0/legacy-locks
+          scratch=/paperclip/upgrade-2026-10-25-2026.1023.0/legacy-locks
           for lock in "$lock_root"/*.lock; do
             test -d "$lock" || continue
             mkdir -p "$scratch"
             test ! -e "$scratch/${lock##*/}"
             mv "$lock" "$scratch/"
           done
-          if ! test -f /paperclip/otel/.ready-2026.1012.0 || ! npm ls --prefix /paperclip/otel --depth=0 >/dev/null 2>&1; then
+          if ! test -f /paperclip/otel/.ready-2026.1023.0 || ! npm ls --prefix /paperclip/otel --depth=0 >/dev/null 2>&1; then
             npm install --prefix /paperclip/otel --ignore-scripts --omit=dev --no-audit --no-fund --save-exact \
               @opentelemetry/sdk-node@0.221.0 \
               @opentelemetry/auto-instrumentations-node@0.79.0 \
               @opentelemetry/exporter-trace-otlp-grpc@0.221.0 \
               @opentelemetry/resources@2.10.0 \
               @opentelemetry/semantic-conventions@1.43.0
-            touch /paperclip/otel/.ready-2026.1012.0
+            touch /paperclip/otel/.ready-2026.1023.0
           fi
         volumeMounts:
         - name: data
@@ -80,8 +80,8 @@ spec:
       # Image entrypoint starts as root, chowns /paperclip, then drops to node (1000) via gosu.
       containers:
       - name: paperclip
-        # 2026.1012.0 multi-arch index; ~2.4 GB compressed — pre-pull on slow uplink.
-        image: ghcr.io/paperclipai/paperclip:2026.1012.0@sha256:1661b3dd3fdf7a9b59542d1ced464c3faf9dc8309798b4d15a9923ed32795307
+        # 2026.1023.0 multi-arch index — pre-pull on slow uplink.
+        image: ghcr.io/paperclipai/paperclip:2026.1023.0@sha256:40f46940c4612ead131aebe6079cd4651f8cd1434af49f7c621887f4a452a62e
         imagePullPolicy: IfNotPresent
         # Resolve optional packages from the PVC while preserving the image's entrypoint.
         args:
@@ -119,7 +119,7 @@ spec:
         - name: OTEL_SERVICE_NAME
           value: "paperclip"
         - name: OTEL_SERVICE_VERSION
-          value: "2026.1012.0"
+          value: "2026.1023.0"
         # Ollama Cloud: OpenCode's built-in "ollama-cloud" provider turns on when
         # OLLAMA_API_KEY (paperclip-secrets) is set. Agents: adapter OpenCode, model
         # ollama-cloud/nemotron-3-super. Cloudflare Workers AI ("cloudflare-workers-ai")
