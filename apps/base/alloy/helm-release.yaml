@@ -22,7 +22,7 @@ spec:
       interval: 1m
   values:
     image:
-      tag: "v1.21.0"
+      tag: "v1.21.2"
     alloy:
       configMap:
         create: true
