@@ -144,6 +144,16 @@ and Paperclip lock checks pass. The unrelated pre-existing edits to
 are excluded. `trail check` reports a conflict in that pre-existing Claude
 permission change; upgrade commits explain the exclusion.
 
+The final documentation diff also produces lexical Trail matches against
+historical lessons (Ready Pods/alerts, repository tags, write modes, backup
+deadlines, and certificate timeouts). These are documented false positives:
+the receipt verifies every Prometheus target and live application versions;
+it does not rely on Pod readiness or tags alone. Permission settings are
+unchanged, production SQL probes are read-only, restores target temporary
+isolated databases, backup deadlines were not raised to address a missing
+disk, and kubeadm/etcd certificates or TLS settings were not changed. The
+follow-up audit commit records this rationale without weakening the checks.
+
 OpenClaw's staged image independently verified Node 24.22.1 and the two
 unchanged CSP bootstrap hashes. The existing migration init container exited
 successfully, and the new Pod reached 2/2 Ready with zero restarts. Gateway,
