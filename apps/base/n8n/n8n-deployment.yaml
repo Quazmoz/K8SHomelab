@@ -76,6 +76,35 @@ spec:
               name: marketing-credentials
               key: GROWTH_OS_GITHUB_TOKEN
               optional: true
+        # Consulting outreach (n8n repo marketing/consulting, workflows 04D/04E/04F).
+        # consulting-outreach-credentials is created outside Git because it holds the
+        # postal address and sender mailbox. Every key is optional: without the Secret
+        # intake and sending fail closed. 04F sends only when CONSULTING_SEND_ENABLED
+        # is exactly "true"; leave that key absent except during an approved send window.
+        - name: MARKETING_POSTAL_ADDRESS
+          valueFrom:
+            secretKeyRef:
+              name: consulting-outreach-credentials
+              key: MARKETING_POSTAL_ADDRESS
+              optional: true
+        - name: CONSULTING_SENDER_ADDRESS
+          valueFrom:
+            secretKeyRef:
+              name: consulting-outreach-credentials
+              key: CONSULTING_SENDER_ADDRESS
+              optional: true
+        - name: CONSULTING_APPROVAL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: consulting-outreach-credentials
+              key: CONSULTING_APPROVAL_TOKEN
+              optional: true
+        - name: CONSULTING_SEND_ENABLED
+          valueFrom:
+            secretKeyRef:
+              name: consulting-outreach-credentials
+              key: CONSULTING_SEND_ENABLED
+              optional: true
         volumeMounts:
         - name: n8n-data
           mountPath: /home/node/.n8n
